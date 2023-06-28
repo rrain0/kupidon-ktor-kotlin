@@ -1,11 +1,6 @@
-package com.rrain.kupidon.examples
+package com.rrain.kupidon.archive
 
 import com.rrain.kupidon.entity.app.Role
-import com.rrain.kupidon.examples.User
-import com.rrain.kupidon.examples.UserService
-import com.rrain.kupidon.examples.RoleDbService
-import com.rrain.kupidon.examples.UserDbService
-import com.rrain.kupidon.examples.UserRoleDbService
 import com.rrain.kupidon.util.get
 import org.jetbrains.exposed.sql.*
 import io.ktor.http.*
@@ -13,12 +8,8 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
-import io.r2dbc.postgresql.PostgresqlConnectionConfiguration
-import io.r2dbc.postgresql.PostgresqlConnectionFactory
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Application.configureDatabases() {
   

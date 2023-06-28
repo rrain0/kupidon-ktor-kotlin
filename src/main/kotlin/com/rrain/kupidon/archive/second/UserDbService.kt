@@ -1,30 +1,18 @@
-package com.rrain.kupidon.examples.second
+package com.rrain.kupidon.archive.second
 
 import com.rrain.kupidon.entity.app.User
 import io.ktor.server.util.*
 import io.ktor.util.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import kotlinx.serialization.Serializable
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.Contextual
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.javatime.timestamp
 import java.sql.ResultSet
-import java.time.LocalDate
-import java.time.ZonedDateTime
-
 
 
 class UserDbService(private val database: Database) {
   
   
   @OptIn(InternalAPI::class)
-  fun ResultSet.toUser() = User(
+  fun ResultSet.toUser() = User0(
     id = this.getString(1),
     
     email = this.getString(2),
@@ -47,8 +35,8 @@ class UserDbService(private val database: Database) {
   
   
   // todo if wrong uuid string postgres throws error
-  fun getById(id: String): User? = transaction(database) {
-    val data = mutableListOf<User>()
+  fun getById(id: String): User0? = transaction(database) {
+    val data = mutableListOf<User0>()
     exec("""
         select * from "User" where "id" = uuid '$id';
     """.trimIndent()){

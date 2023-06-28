@@ -1,5 +1,7 @@
 package com.rrain.kupidon.entity.app
 
+import java.lang.IllegalStateException
+
 
 /*
 Принципы ролей:
@@ -18,6 +20,14 @@ package com.rrain.kupidon.entity.app
 
 enum class Role {
   ADMIN,
-  //USER, // обычный пользователь
-  //WANDERER, // странник, просто гость
+  ;
+  
+  init {
+    if (!this.name.matches(rolePattern))
+      throw IllegalStateException(
+        "Role name '${this.name}' does not match '${rolePattern}' pattern."
+      )
+  }
 }
+
+val rolePattern = Regex("""^[a-zA-Z][a-zA-Z_\-\d]*$""")

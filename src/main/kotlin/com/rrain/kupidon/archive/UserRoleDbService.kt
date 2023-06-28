@@ -1,4 +1,4 @@
-package com.rrain.kupidon.examples.second
+package com.rrain.kupidon.archive
 
 import com.rrain.kupidon.entity.app.Role
 import kotlinx.coroutines.Dispatchers
@@ -16,8 +16,8 @@ data class UserRoleDb(
 class UserRoleDbService(private val database: Database) {
   
   object UserRoleT : Table(""""UserRole"""") {
-    val userId = reference(""""userId"""", com.rrain.kupidon.examples.UserDbService.UserT.id)
-    val role = reference(""""role"""", com.rrain.kupidon.examples.RoleDbService.RoleT.role)
+    val userId = reference(""""userId"""", UserDbService.UserT.id)
+    val role = reference(""""role"""", RoleDbService.RoleT.role)
     
     override val primaryKey = PrimaryKey(userId, role)
   }
@@ -82,7 +82,7 @@ class UserRoleDbService(private val database: Database) {
   }
   
   suspend fun delete(userRoleDb: UserRoleDb): Unit = dbQuery {
-    com.rrain.kupidon.examples.UserDbService.UserT.deleteWhere {
+    UserDbService.UserT.deleteWhere {
       UserRoleT.userId eq userRoleDb.userId.run(UUID::fromString) and
       (UserRoleT.role eq userRoleDb.role.toString())
     }

@@ -1,7 +1,10 @@
 package com.rrain.kupidon.service.db
 
 import com.rrain.kupidon.entity.app.Role
+import com.rrain.kupidon.service.db.table.RoleT
+import com.rrain.kupidon.service.db.table.RoleTrole
 import io.r2dbc.pool.ConnectionPool
+import io.r2dbc.spi.Connection
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
@@ -12,16 +15,17 @@ import org.jetbrains.exposed.sql.*
 import reactor.kotlin.core.publisher.toFlux
 
 
-class RoleDbService(private val pool: ConnectionPool) {
+class RoleDbService(val pool: ConnectionPool) {
   
-  suspend fun exists(role: String): Boolean {
-    val connection = pool.create().awaitSingle()
+  suspend fun exists(role: String, connection: Connection? = null): Boolean {
+    val conn = connection ?: pool.create().awaitSingle()
     @Language("sql") val sql = """
-      select count(1) from "Role" where "role" = '$role';
+      select count(1) from ${RoleT.name} where ${RoleTrole.name} = $1
     """.trimIndent()
     return try {
-      connection
+      conn
         .createStatement(sql)
+        .bind("$1",role)
         .execute() // тут вернётся реактивный поток
         .awaitSingle() // подождем, пока все соберется - мы же в корутине.
         .map { row, rowMetadata ->
@@ -29,20 +33,20 @@ class RoleDbService(private val pool: ConnectionPool) {
         }
         .awaitSingle()
     } finally {
-      connection
+      if (connection==null) conn
         .close() // реактивно закроем соединение
         .awaitFirstOrNull() // и подождем null - мы же в корутине.
     }
   }
   
   
-  suspend fun getAll(): Flow<Role> {
-    val connection = pool.create().awaitSingle()
+  suspend fun getAll(connection: Connection? = null): Flow<Role> {
+    val conn = connection ?: pool.create().awaitSingle()
     @Language("sql") val sql = """
-      select "Role"."role" as "Role.role" from "Role";
+      select ${RoleT.allColsAs()} from ${RoleT.name}
     """.trimIndent()
     return try {
-      connection
+      conn
         .createStatement(sql)
         .execute() // тут вернётся реактивный поток
         .toFlux() // который мы преобразуем в удобный Reactor Flux
@@ -53,10 +57,11 @@ class RoleDbService(private val pool: ConnectionPool) {
         }
         .asFlow()
     } finally {
-      connection
+      if (connection==null) conn
         .close() // реактивно закроем соединение
         .awaitFirstOrNull() // и подождем null - мы же в корутине.
     }
   }
+  
   
 }

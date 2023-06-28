@@ -1,53 +1,61 @@
 package com.rrain.kupidon.routes
 
-import com.auth0.jwt.exceptions.AlgorithmMismatchException
-import com.auth0.jwt.exceptions.SignatureVerificationException
-import com.auth0.jwt.exceptions.TokenExpiredException
+import com.auth0.jwt.exceptions.*
 import com.rrain.kupidon.service.DatabaseService
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.PwdHashing
-import com.rrain.kupidon.util.get
+import com.rrain.kupidon.service.TokenError
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.util.NoSuchElementException
-
-
-val authBaseRoute = "/api/auth"
-val loginRoute = "$authBaseRoute/login"
-val refreshRoute = "$authBaseRoute/refresh"
-val logoutRoute = "$authBaseRoute/logout"
 
 
 
-class NoSuchUserException(msg: String): RuntimeException(msg)
+object AuthRoutes {
+  val base = "/api/auth"
+  val login = "$base/login"
+  val refresh = "$base/refresh"
+  //val logout = "$base/logout"
+}
+
+//class NoSuchUserException(msg: String): RuntimeException(msg)
 
 fun Application.configureAuthRoutes(){
-  
-  val appConfig = environment.config
   
   val userServ = DatabaseService.userServ
   
   routing {
     
-    class AccessTokenResponse(val accessToken: String)
     
-    data class LoginRequest(val login: String?, val pwd: String?)
-    post(loginRoute) {
-      val loginRequest = call.receive<LoginRequest>()
+    
+    data class LoginRequest(val login: String, val pwd: String)
+    post(AuthRoutes.login) {
+      val loginRequest = try {
+        call.receive<LoginRequest>()
+      } catch (ex: Exception){
+        return@post call.respond(HttpStatusCode.BadRequest, object {
+          val code = "INVALID_INPUT_BODY"
+          val msg = "Invalid request body format"
+        })
+      }
+      val login = loginRequest.login
+      val pwd = loginRequest.pwd
       
-      // TODO validation layer for form fields
-      val login = loginRequest.login!!
-      val pwd = loginRequest.pwd!!
       
       val user = userServ.getByEmail(login)
-        ?: throw NoSuchUserException("There is no user with such login-password")
+      user ?: return@post call.respond(HttpStatusCode.BadRequest, object {
+        val code = "NO_USER"
+        val msg = "There is no user with such login-password"
+      })
       
       if (!PwdHashing.checkPwd(pwd, user.pwd!!))
-        throw NoSuchUserException("There is no user with such login-password")
+        return@post call.respond(HttpStatusCode.BadRequest, object {
+          val code = "NO_USER"
+          val msg = "There is no user with such login-password"
+        })
       
       val id = user.id!!
       val roles = user.roles
@@ -57,58 +65,104 @@ fun Application.configureAuthRoutes(){
       val accessToken = JwtService.generateAccessToken(id, roles)
       val refreshToken = JwtService.generateRefreshToken(id)
       
-      // todo save refresh token & device info to db as opened session
+      // сделать позже save refresh token & device info to db as opened session
       
       call.response.cookies.append(
         JwtService.generateRefreshTokenCookie(refreshToken,domain)
       )
-      
-      call.respond(AccessTokenResponse(accessToken))
+      call.respond(object {
+        val accessToken = accessToken
+        val user = user.copy(pwd=null)
+      })
     }
     
     
-    put(refreshRoute){
-      call.request.cookies[JwtService.refreshTokenCookieName]?.let { refreshToken ->
-        val refreshJwtSecret = appConfig["jwt.refresh-token.secret"]
-        val verifier = JwtService.getRefreshTokenVerifier(refreshJwtSecret)
-        val decodedJwt = try {
-          verifier.verify(refreshToken)
-        } catch (signatureEx: SignatureVerificationException){
-          throw signatureEx
-        } catch (algorithmEx: AlgorithmMismatchException){
-          throw algorithmEx
-        } catch (expiredEx: TokenExpiredException){
-          throw expiredEx
+    
+    get(AuthRoutes.refresh){
+      
+      val refreshToken = call.request.cookies[JwtService.refreshTokenCookieName]
+      
+      refreshToken ?: return@get call.respond(
+        HttpStatusCode.BadRequest,
+        object {
+          val code = "NO_REFRESH_TOKEN_COOKIE"
+          val msg = "No refresh token cookie"
         }
-        
-        val id = decodedJwt.subject
-        val user = try {
-          userServ.getById(id)
-            ?: throw RuntimeException("Пользователь с таким id не найден")
-        } catch (ex: NoSuchElementException){
-          throw RuntimeException("Пользователь с таким id не найден")
+      )
+      
+      val verifier = JwtService.refreshTokenVerifier
+      val decodedRefresh = try { verifier.verify(refreshToken) }
+      // Token was encoded by wrong algorithm. Required HMAC256.
+      catch (ex: AlgorithmMismatchException) { return@get call.respond(
+        HttpStatusCode.BadRequest, object {
+          val code = TokenError.TOKEN_ALGORITHM_MISMATCH.name
+          val msg = TokenError.TOKEN_ALGORITHM_MISMATCH.msg
         }
-        val roles = user.roles
-        
-        val domain = call.request.origin.serverHost
-        
-        val newAccessToken = JwtService.generateAccessToken(id, roles)
-        val newRefreshToken = JwtService.generateRefreshToken(id)
-        
-        // todo save refresh token & device info to db as opened session
-        
-        call.response.cookies.append(
-          JwtService.generateRefreshTokenCookie(newRefreshToken,domain)
+      )}
+      // Damaged Token - Токен повреждён и не может быть декодирован
+      catch (ex: JWTDecodeException) { return@get call.respond(
+        HttpStatusCode.BadRequest, object {
+          val code = TokenError.TOKEN_DAMAGED.name
+          val msg = TokenError.TOKEN_DAMAGED.msg
+        }
+      )}
+      // Modified Token - Токен умышленно модифицирован (подделан)
+      catch (ex: SignatureVerificationException) { return@get call.respond(
+        HttpStatusCode.BadRequest, object {
+          val code = TokenError.TOKEN_MODIFIED.name
+          val msg = TokenError.TOKEN_MODIFIED.msg
+        }
+      )}
+      // Token has expired
+      catch (ex: TokenExpiredException) { return@get call.respond(
+        HttpStatusCode.BadRequest,
+        object {
+          val code = TokenError.TOKEN_EXPIRED.name
+          val msg = TokenError.TOKEN_EXPIRED.msg
+        }
+      )}
+      // Common Verification Exception
+      catch (ex: JWTVerificationException) {
+        ex.printStackTrace()
+        return@get call.respond(
+          HttpStatusCode.BadRequest, object {
+            val code = TokenError.UNKNOWN_VERIFICATION_ERROR.name
+            val msg = TokenError.UNKNOWN_VERIFICATION_ERROR.msg
+          }
         )
-        
-        call.respond(AccessTokenResponse(newAccessToken))
       }
       
-      call.respond(HttpStatusCode.BadRequest)
+      
+      val id = decodedRefresh.subject
+      val user = userServ.getById(id)
+      
+      user ?: return@get call.respond(HttpStatusCode.BadRequest, object {
+        val code = "NO_USER"
+        val msg = "There is no user with such id"
+      })
+      
+      val roles = user.roles
+      
+      val domain = call.request.origin.serverHost
+      
+      val newAccessToken = JwtService.generateAccessToken(id, roles)
+      val newRefreshToken = JwtService.generateRefreshToken(id)
+      
+      // сделать позже save refresh token & device info to db as opened session
+      
+      call.response.cookies.append(
+        JwtService.generateRefreshTokenCookie(newRefreshToken,domain)
+      )
+      call.respond(object {
+        val accessToken = newAccessToken
+      })
     }
     
     
-    delete(logoutRoute) {
+    /*
+    delete(AuthRoutes.logout) {
+      
+      // сделать позже remove refresh/access tokens from database
       
       val domain = call.request.origin.serverHost
       
@@ -119,6 +173,7 @@ fun Application.configureAuthRoutes(){
       
       call.respond(HttpStatusCode.OK)
     }
+    */
     
     
   }

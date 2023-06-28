@@ -1,14 +1,13 @@
 package com.rrain.kupidon.util
 
-import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
 
-val appZone = ZoneId.of("UTC+0")
-fun zonedNow() = ZonedDateTime.now(appZone)
 
+fun zonedNow() = ZonedDateTime.now(ZoneOffset.UTC) // this is just offset, without timezone daylight saving rules
 
 
 /*
@@ -22,7 +21,18 @@ fun zonedNow() = ZonedDateTime.now(appZone)
     timestamptz '2020-08-26 06:53:27.609+0730'
     => 2020-08-26 07:23:27.609+08
  */
-val timestamptzFormat = DateTimeFormatter.ofPattern(
+val zonedDateTimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern(
   "yyyy-MM-dd HH:mm:ss.SSSZ",  // 2020-08-26 06:53:27.609+0000
   Locale.ENGLISH
 )
+
+
+fun String.toZonedDateTime() = ZonedDateTime.parse(this, zonedDateTimeFormat)
+
+
+
+
+
+fun main(){
+  println("2020-08-26 06:53:27.609+0001".toZonedDateTime())
+}

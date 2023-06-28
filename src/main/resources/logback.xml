@@ -10,5 +10,5 @@
     <logger name="org.eclipse.jetty" level="info"/>
     <logger name="io.netty" level="info"/>
     <logger name="reactor.netty" level="info"/>
-    <logger name="io.r2dbc" level="info"/>
+    <logger name="io.r2dbc" level="debug"/>
 </configuration>

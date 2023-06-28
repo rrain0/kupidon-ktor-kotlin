@@ -1,4 +1,4 @@
-package com.rrain.kupidon.examples
+package com.rrain.kupidon.archive
 
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq

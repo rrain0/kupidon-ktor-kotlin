@@ -1,8 +1,5 @@
 package com.rrain.kupidon.routes.`exception-handling`
 
-import com.rrain.kupidon.plugins.AuthenticationException
-import com.rrain.kupidon.plugins.AuthorizationException
-import com.rrain.kupidon.routes.NoSuchUserException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*
@@ -28,37 +25,37 @@ fun Application.configureExceptionHandling(){
     // Configure responses by exceptions
     exception<Throwable> { call, cause ->
       when (cause){
-        is AuthenticationException -> call.respond(
+        /*is AuthenticationException -> call.respond(
           HttpStatusCode.Unauthorized,
           object {
-            val code = 401
-            //val httpError = "401 Unauthorized"
+            val code = cause.code
             val msg = cause.message
           }
-        )
+        )*/
         
-        is AuthorizationException -> call.respond(
+        /*is AuthorizationException -> call.respond(
           HttpStatusCode.Forbidden,
           object {
             val code = 403
-            //val httpError = "403 Forbidden"
             val insufficientRoles = cause.insufficientRoles
             val msg = cause.message
           }
-        )
+        )*/
         
-        is NoSuchUserException -> call.respond(
+        /*is NoSuchUserException -> call.respond(
           HttpStatusCode.BadRequest,
           object {
             val code = "incorrect-login-pwd"
-            //val httpError = "400 Bad Request"
             val msg = cause.message
           }
-        )
+        )*/
         
         else -> {
-          call.respondText(text = "500 Server Error: $cause" , status = HttpStatusCode.InternalServerError)
-          System.err.print(cause.printStackTrace())
+          call.respondText(
+            status = HttpStatusCode.InternalServerError,
+            text = "500 Internal Server Error: $cause",
+          )
+          cause.printStackTrace()
         }
       }
     }

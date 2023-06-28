@@ -5,24 +5,30 @@ import java.time.ZonedDateTime
 
 
 data class User(
-  val id: String? = null, // string UUID
+  // string UUID
+  // e.g. "4f699e2d-a492-40de-a54f-ed05c42203a4"
+  val id: String? = null,
   
   // login can be email, phone, nickname#subnickname
-  val email: String? = null, // email, phone etc
+  val email: String? = null,
+  val emailVerified: Boolean? = null,
+  
+  // hashed password
   val pwd: String? = null,
   
   val roles: Set<Role> = setOf(),
   
-  // must be unique(nickname, subnickname)
-  // nickname#subnickname (rrain#cool)
-  val nickname: String? = null,
-  val subnickname: String? = null,
-  
-  val created: ZonedDateTime? = null, // UTC+0
-  val updated: ZonedDateTime? = null, // UTC+0
+  // e.g. string representation "2023-06-04 15:21:18.094+08"
+  // default timezone is UTC+0
+  val created: ZonedDateTime? = null,
+  val updated: ZonedDateTime? = null,
   val enabled: Boolean? = null,
   
-  val firstName: String? = null,
-  val lastName: String? = null,
+  val firstName: String? = null, // имя
+  val lastName: String? = null, // фамилия
+  // e.g. string representation "2023-06-29"
   val birthDate: LocalDate? = null,
+  val sex: Sex? = null, // пол: мужской / женский
 )
+
+

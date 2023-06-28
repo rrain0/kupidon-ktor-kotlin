@@ -1,4 +1,4 @@
-package com.rrain.kupidon.examples
+package com.rrain.kupidon.archive
 
 import com.rrain.kupidon.entity.app.Role
 import com.rrain.kupidon.service.JwtService

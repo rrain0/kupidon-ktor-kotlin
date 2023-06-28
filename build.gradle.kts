@@ -30,12 +30,23 @@ dependencies {
   implementation("io.ktor:ktor-server-websockets-jvm:$ktor_version")
   
   //implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
-  implementation("io.ktor:ktor-serialization-gson:$ktor_version")
+  //implementation("io.ktor:ktor-serialization-gson:$ktor_version")
+  implementation("io.ktor:ktor-serialization-jackson:$ktor_version")
+  // Kotlin Jackson Support
+  // https://github.com/FasterXML/jackson-module-kotlin
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.+")
+  // Java Time Jackson Support
+  // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
+  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.+")
+  
   
   
   implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
   implementation("io.ktor:ktor-network-tls-certificates:$ktor_version")
   
+  
+  
+  // -------remove
   implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
   implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
   implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
@@ -45,10 +56,13 @@ dependencies {
   implementation("com.zaxxer:HikariCP:$hikari_version")
   
   implementation("com.h2database:h2:$h2_version")
+  // --------end
+  
   
   // R2DBC with PostgreSQL & Kotlin
   implementation("io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE")
   implementation("io.r2dbc:r2dbc-pool:1.0.0.RELEASE")
+  //implementation("org.postgresql:r2dbc-postgresql:1.0.1.RELEASE") // драйвер от команды спринга, работа с DatabaseClient вместо пула соединений
   implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.2.2")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.7.1")
   

@@ -1,10 +1,8 @@
-package com.rrain.kupidon.examples.second
+package com.rrain.kupidon.archive.second
 
 import com.rrain.kupidon.service.PwdHashing
-import com.rrain.kupidon.examples.second.RoleDbService
-import com.rrain.kupidon.examples.second.UserDbService
 import com.rrain.kupidon.util.get
-import com.rrain.kupidon.util.timestamptzFormat
+import com.rrain.kupidon.util.zonedDateTimeFormat
 import com.rrain.kupidon.util.zonedNow
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -101,8 +99,8 @@ fun Application.configureDatabases() {
         'rrain',
         '',
         
-        timestamptz '${now.format(timestamptzFormat)}',
-        timestamptz '${now.format(timestamptzFormat)}',
+        timestamptz '${now.format(zonedDateTimeFormat)}',
+        timestamptz '${now.format(zonedDateTimeFormat)}',
         true,
         
         'Дмитрий',

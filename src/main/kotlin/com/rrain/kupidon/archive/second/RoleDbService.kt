@@ -1,15 +1,10 @@
-package com.rrain.kupidon.examples.second
+package com.rrain.kupidon.archive.second
 
 import com.rrain.kupidon.entity.app.Role
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import kotlinx.serialization.Serializable
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import kotlin.coroutines.CoroutineContext
 
 
