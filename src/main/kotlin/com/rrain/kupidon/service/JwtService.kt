@@ -35,7 +35,7 @@ fun Application.configureJwtService(){
 enum class TokenError(val msg: String) {
   TOKEN_ALGORITHM_MISMATCH("Token was encoded by wrong algorithm, required ${JwtService.algorithmName}"),
   TOKEN_DAMAGED("Token is damaged - failed to decode JSON token data"),
-  TOKEN_MODIFIED("Token was modified"),
+  TOKEN_MODIFIED("Token was modified"), // or Token was tampered
   TOKEN_EXPIRED("Token has expired"),
   TOKEN_LACKS_OF_CLAIM("Token lacks some required claims"),
   TOKEN_CLAIM_VALUE_IS_INCORRECT("Token has incorrect claim value"),

@@ -5,6 +5,7 @@ val exposed_version : String by project
 val h2_version : String by project
 val postgresql_version : String by project
 val hikari_version : String by project
+val jackson_version : String by project
 
 plugins {
   kotlin("jvm") version "1.8.21"
@@ -34,10 +35,10 @@ dependencies {
   implementation("io.ktor:ktor-serialization-jackson:$ktor_version")
   // Kotlin Jackson Support
   // https://github.com/FasterXML/jackson-module-kotlin
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.+")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version")
   // Java Time Jackson Support
   // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
-  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.+")
+  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version")
   
   
   
