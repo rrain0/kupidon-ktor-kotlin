@@ -6,20 +6,18 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.util.DefaultIndenter
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinFeature
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.addDeserializer
-import com.fasterxml.jackson.module.kotlin.addSerializer
-import com.google.gson.*
+import com.fasterxml.jackson.module.kotlin.*
+//import com.google.gson.*
 import com.rrain.kupidon.util.localDateFormat
 import com.rrain.kupidon.util.zonedDateTimeFormat
-import io.ktor.serialization.gson.*
+//import io.ktor.serialization.gson.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.application.*
@@ -41,6 +39,8 @@ fun Application.configureJsonSerialization() {
         indentArraysWith(DefaultPrettyPrinter.FixedSpaceIndenter.instance)
         indentObjectsWith(DefaultIndenter("  ", "\n"))
       })*/
+      
+      configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
       
       // support java.time.* types
       registerModule(JavaTimeModule())
