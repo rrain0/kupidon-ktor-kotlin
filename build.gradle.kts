@@ -1,5 +1,6 @@
 val ktor_version: String by project
 val kotlin_version: String by project
+val kotlin_coroutines_version: String by project
 val logback_version: String by project
 val exposed_version : String by project
 val h2_version : String by project
@@ -8,9 +9,11 @@ val hikari_version : String by project
 val jackson_version : String by project
 
 plugins {
-  kotlin("jvm") version "1.9.10"
-  id("io.ktor.plugin") version "2.3.0"
-  id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
+  val kotlin_v = "1.9.10"
+  val ktor_v = "2.3.4"
+  kotlin("jvm") version kotlin_v
+  id("io.ktor.plugin") version ktor_v
+  id("org.jetbrains.kotlin.plugin.serialization") version kotlin_v
 }
 
 group = "com.rrain.kupidon"
@@ -65,7 +68,7 @@ dependencies {
   implementation("io.r2dbc:r2dbc-pool:1.0.0.RELEASE")
   //implementation("org.postgresql:r2dbc-postgresql:1.0.1.RELEASE") // драйвер от команды спринга, работа с DatabaseClient вместо пула соединений
   implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.2.2")
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.7.1")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:$kotlin_coroutines_version")
   
   // mail sending
   implementation("org.apache.commons:commons-email:1.5")
