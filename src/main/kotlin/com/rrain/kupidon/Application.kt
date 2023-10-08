@@ -46,6 +46,7 @@ fun Application.module() {
   configureAuthorizationTestRoutes()
   configureSendEmailTestRoutes()
   configureMainRoutes()
+  configurePwaManifestRoute()
   configureAuthRoutes()
   configureRoleRoutes()
   configureUserRoutes()
