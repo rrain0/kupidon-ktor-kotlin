@@ -1,6 +1,7 @@
 package com.rrain.kupidon.routes
 
 import com.rrain.kupidon.util.printHeaders
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -39,33 +40,6 @@ fun Application.configurePwaManifestRoute(){
       //}
       println("call.parameters ${call.parameters}")
       
-      val baseId = "kupidon-react-pwa"
-      val nodeEnvMap = mapOf(
-        "development" to mapOf(
-          "id" to "$baseId-development"
-        ),
-        "production" to mapOf(
-          "id" to "$baseId-production"
-        ),
-      )
-      
-      
-      val lacalizationMap = mapOf(
-        "en-US" to mapOf(
-          "lang" to "en-US",
-          "name" to "Kupidon",
-          "short_name" to "Kupidon",
-          "description" to "Kupidon date app",
-        ),
-        "ru-RU" to mapOf(
-          "lang" to "ru-RU",
-          "name" to "Купидон",
-          "short_name" to "Купидон",
-          "description" to "Купидон - приложение для свидания",
-        ),
-      )
-      
-      
       
       val manifest = mutableMapOf(
         "lang" to "en-US",
@@ -96,6 +70,33 @@ fun Application.configurePwaManifestRoute(){
         )
       )
       
+      
+      val baseId = "kupidon-react-pwa"
+      val nodeEnvMap = mapOf(
+        "development" to mapOf(
+          "id" to "$baseId-development"
+        ),
+        "production" to mapOf(
+          "id" to "$baseId-production"
+        ),
+      )
+      
+      val lacalizationMap = mapOf(
+        "en-US" to mapOf(
+          "lang" to "en-US",
+          "name" to "Kupidon",
+          "short_name" to "Kupidon",
+          "description" to "Kupidon date app",
+        ),
+        "ru-RU" to mapOf(
+          "lang" to "ru-RU",
+          "name" to "Купидон",
+          "short_name" to "Купидон",
+          "description" to "Купидон - приложение для свидания",
+        ),
+      )
+      
+      
       val nodeEnv = call.parameters["nodeEnv"]
       if (nodeEnv in nodeEnvMap) manifest.putAll(nodeEnvMap[nodeEnv]!!)
       
@@ -107,6 +108,7 @@ fun Application.configurePwaManifestRoute(){
         manifest["short_name"] = "Dev ${manifest["short_name"]}"
         manifest["description"] = "Dev ${manifest["description"]}"
       }
+      
       
       call.respond(manifest)
     }

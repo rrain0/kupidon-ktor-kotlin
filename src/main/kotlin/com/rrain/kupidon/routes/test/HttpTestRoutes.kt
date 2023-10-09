@@ -1,6 +1,7 @@
 package com.rrain.kupidon.routes.test
 
 import com.rrain.kupidon.util.printHeaders
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.response.*
@@ -14,6 +15,10 @@ fun Application.configureHttpTestRoutes(){
     get("/test/http/headers"){
       val headers = call.printHeaders()
       call.respond(headers)
+      
+      
+      // Set headers: https://ktor.io/docs/responses.html#file
+      //call.response.header(HttpHeaders.ContentType, "application/json")
     }
     
     get("/test/http/proxy-info"){
