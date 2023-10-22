@@ -42,12 +42,13 @@ fun Application.configureHTTP() {
     
     maxAgeInSeconds = 2 * 60 * 60 // results of preflight request will be valid for 2 hours
     
-    // development
-    allowHost("dev.kupidon.rrain.ydns.eu:50030", listOf("https"))
-    allowHost("localhost:50030", listOf("http","https"))
-    allowHost("192.168.0.178:50030", listOf("http","https"))
     
-    // production
+    // dev react hosts
+    allowHost("dev.kupidon.rrain.ydns.eu:50030", listOf("https"))
+    allowHost("localhost:40030", listOf("http","https"))
+    allowHost("192.168.0.178:40030", listOf("http","https"))
+    
+    // prod react hosts
     allowHost("kupidon.rrain.ydns.eu", listOf("https"))
   }
   

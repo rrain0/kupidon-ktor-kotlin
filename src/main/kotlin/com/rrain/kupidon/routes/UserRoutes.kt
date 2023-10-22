@@ -96,29 +96,25 @@ fun Application.configureUserRoutes(){
       
       if (!userCreate.email.matches(Regex("^.+@.+$"))){
         return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = "INVALID_INPUT_BODY"
-          val extraCode = "INVALID_EMAIL_FORMAT"
+          val code = "INVALID_INPUT_BODY__INVALID_EMAIL_FORMAT"
           val msg = "Invalid email format"
         })
       }
       if (userCreate.pwd.length<6){
         return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = "INVALID_INPUT_BODY"
-          val extraCode = "INVALID_PWD_FORMAT"
+          val code = "INVALID_INPUT_BODY__INVALID_PWD_FORMAT"
           val msg = "Password must be at least 6 chars length"
         })
       }
       if (userCreate.firstName.isEmpty()){
         return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = "INVALID_INPUT_BODY"
-          val extraCode = "INVALID_FIRST_NAME_FORMAT"
+          val code = "INVALID_INPUT_BODY__INVALID_FIRST_NAME_FORMAT"
           val msg = "First Name must not be empty"
         })
       }
       if (userCreate.lastName.isEmpty()){
         return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = "INVALID_INPUT_BODY"
-          val extraCode = "INVALID_LAST_NAME_FORMAT"
+          val code = "INVALID_INPUT_BODY__INVALID_LAST_NAME_FORMAT"
           val msg = "Last Name must not be empty"
         })
       }
