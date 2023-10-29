@@ -24,8 +24,7 @@ data class User(
   val updated: ZonedDateTime? = null,
   val enabled: Boolean? = null,
   
-  val firstName: String? = null, // имя
-  val lastName: String? = null, // фамилия
+  val name: String? = null, // имя
   // e.g. string representation "2023-06-29"
   val birthDate: LocalDate? = null,
   val sex: Sex? = null, // пол: мужской / женский

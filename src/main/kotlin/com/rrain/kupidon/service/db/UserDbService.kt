@@ -29,6 +29,7 @@ import kotlin.reflect.full.companionObject
 import kotlin.reflect.full.companionObjectInstance
 
 
+
 class UserDbService(val pool: ConnectionPool) {
   
   fun rowToUser(row: Row, rowMetadata: RowMetadata) = User(
@@ -46,8 +47,7 @@ class UserDbService(val pool: ConnectionPool) {
     updated = row[UserTupdated.tableJoinColNoQuotes(), ZonedDateTime::class.java],
     enabled = row[UserTenabled.tableJoinColNoQuotes(), Boolean::class.javaObjectType],
     
-    firstName = row[UserTfirstName.tableJoinColNoQuotes(), String::class.java],
-    lastName = row[UserTlastName.tableJoinColNoQuotes(), String::class.java],
+    name = row[UserTname.tableJoinColNoQuotes(), String::class.java],
     birthDate = row[UserTbirthDate.tableJoinColNoQuotes(), LocalDate::class.java],
     sex = row[UserTsex.tableJoinColNoQuotes(), String::class.java]?.let(Sex::valueOf),
   )
@@ -63,8 +63,7 @@ class UserDbService(val pool: ConnectionPool) {
     updated = row[UserTupdated.tableJoinColNoQuotes(), ZonedDateTime::class.java],
     enabled = row[UserTenabled.tableJoinColNoQuotes(), Boolean::class.javaObjectType],
     
-    firstName = row[UserTfirstName.tableJoinColNoQuotes(), String::class.java],
-    lastName = row[UserTlastName.tableJoinColNoQuotes(), String::class.java],
+    name = row[UserTname.tableJoinColNoQuotes(), String::class.java],
     birthDate = row[UserTbirthDate.tableJoinColNoQuotes(), LocalDate::class.java],
     sex = row[UserTsex.tableJoinColNoQuotes(), String::class.java]?.let(Sex::valueOf),
   )
@@ -136,8 +135,7 @@ class UserDbService(val pool: ConnectionPool) {
           ${UserTcreated.name},
           ${UserTupdated.name},
           
-          ${UserTfirstName.name},
-          ${UserTlastName.name},
+          ${UserTname.name},
           ${UserTsex.name},
           ${UserTbirthDate.name}
         ) values (
@@ -149,8 +147,7 @@ class UserDbService(val pool: ConnectionPool) {
           
           $3,
           $4,
-          $5,
-          $6
+          $5
         ) returning ${UserT.allColsAs()}
       """.trimIndent()
     return try {
@@ -158,10 +155,9 @@ class UserDbService(val pool: ConnectionPool) {
         .createStatement(sql)
         .bind("$1",user.email!!)
         .bind("$2",user.pwd!!.let(PwdHashing::generateHash))
-        .bind("$3",user.firstName!!)
-        .bind("$4",user.lastName!!)
-        .bind("$5",user.sex!!.name)
-        .bind("$6",user.birthDate!!)
+        .bind("$3",user.name!!)
+        .bind("$4",user.sex!!.name)
+        .bind("$5",user.birthDate!!)
         .execute()
         .awaitSingle()
         .map(::rowToCreatedUser)

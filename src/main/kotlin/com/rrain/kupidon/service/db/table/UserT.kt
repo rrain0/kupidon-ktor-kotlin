@@ -18,8 +18,7 @@ object UserT : Table() {
       UserTcreated,
       UserTupdated,
       UserTenabled,
-      UserTfirstName,
-      UserTlastName,
+      UserTname,
       UserTbirthDate,
       UserTsex
     )
@@ -76,16 +75,9 @@ object UserTenabled : Column() {
     type = Boolean::class.javaObjectType
   }
 }
-object UserTfirstName : Column() {
+object UserTname : Column() {
   init {
-    name = """"firstName""""
-    table = UserT
-    type = String::class.java
-  }
-}
-object UserTlastName : Column() {
-  init {
-    name = """"lastName""""
+    name = """"name""""
     table = UserT
     type = String::class.java
   }

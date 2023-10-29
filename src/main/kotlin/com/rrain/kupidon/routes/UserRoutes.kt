@@ -79,8 +79,7 @@ fun Application.configureUserRoutes(){
     data class UserCreateReq(
       val email: String,
       val pwd: String,
-      val firstName: String,
-      val lastName: String,
+      val name: String,
       val sex: Sex,
       val birthDate: LocalDate
     )
@@ -106,24 +105,17 @@ fun Application.configureUserRoutes(){
           val msg = "Password must be at least 6 chars length"
         })
       }
-      if (userCreate.firstName.isEmpty()){
+      if (userCreate.name.isEmpty()){
         return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = "INVALID_INPUT_BODY__INVALID_FIRST_NAME_FORMAT"
+          val code = "INVALID_INPUT_BODY__INVALID_NAME_FORMAT"
           val msg = "First Name must not be empty"
-        })
-      }
-      if (userCreate.lastName.isEmpty()){
-        return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = "INVALID_INPUT_BODY__INVALID_LAST_NAME_FORMAT"
-          val msg = "Last Name must not be empty"
         })
       }
       
       val tryUser = User(
         email = userCreate.email,
         pwd = userCreate.pwd,
-        firstName = userCreate.firstName,
-        lastName = userCreate.lastName,
+        name = userCreate.name,
         sex = userCreate.sex,
         birthDate = userCreate.birthDate,
       )

@@ -10,6 +10,7 @@ import org.intellij.lang.annotations.Language
 import reactor.kotlin.core.publisher.toMono
 
 
+
 fun Application.initDatabase(){
   val appConfig = environment.config
   val connection = DatabaseService.pool.create().block()!!
@@ -53,8 +54,7 @@ fun Application.initDatabase(){
           "updated" timestamptz(3) not null,
           "enabled" bool not null default true,
           
-          "firstName" varchar(100) not null,
-          "lastName" varchar(100) not null,
+          "name" varchar(100) not null,
           "birthDate" date not null,
           "sex" varchar(50) not null,
           constraint sex_pattern check ("sex" in ('MALE','FEMALE'))
@@ -72,7 +72,7 @@ fun Application.initDatabase(){
           "id",
           "email","emailVerified","pwd",
           "created","updated","enabled",
-          "firstName","lastName","birthDate","sex"
+          "name","lastName","birthDate","sex"
         ) values (
           uuid'${appConfig["database.users.admin.id"]}',
         
@@ -84,7 +84,7 @@ fun Application.initDatabase(){
           timestamptz'2023-06-02 18:19:07.186+0800',
           true,
           
-          'Дмитрий','Дедков',date'1997-11-22','MALE'
+          'Дмитрий',date'1997-11-22','MALE'
         )
           on conflict("id") do nothing;
       """.trimIndent()
@@ -98,7 +98,7 @@ fun Application.initDatabase(){
           "id",
           "email","emailVerified","pwd",
           "created","updated","enabled",
-          "firstName","lastName","birthDate","sex"
+          "name","lastName","birthDate","sex"
         ) values (
           uuid'628671b8-aca9-40dd-90db-5a07d6b33025',
         
@@ -108,7 +108,7 @@ fun Application.initDatabase(){
           timestamptz'2023-06-04 15:21:18.094+0800',
           true,
           
-          'Обычный','Пользователь',date'2000-06-15','MALE'
+          'Обычный Пользователь',date'2000-06-15','MALE'
         )
           on conflict("id") do nothing;
       """.trimIndent()
@@ -130,7 +130,6 @@ fun Application.initDatabase(){
     // fill UserRole table
     run {
       @Language("sql") val sql = """
-        
         insert into "UserRole" values (
           uuid'${appConfig["database.users.admin.id"]}',
           uuid'1bb41bb5-d396-4cd0-86a4-2e0354eb28b9'
