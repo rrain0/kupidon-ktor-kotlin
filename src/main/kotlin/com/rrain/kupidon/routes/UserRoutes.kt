@@ -8,6 +8,7 @@ import com.rrain.kupidon.service.DatabaseService.userServ
 import com.rrain.kupidon.service.EmailService
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.db.table.UserTemailVerified
+import com.rrain.kupidon.service.db.table.UserTname
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -34,6 +35,7 @@ object UserRoutes {
   val base = "/api/user"
   val current = "$base/current"
   val create = "$base/create"
+  val update = "$base/update"
   val verifyEmail = "$base/verify/email"
   val getById = "$base/getById/{id}"
   
@@ -108,7 +110,7 @@ fun Application.configureUserRoutes(){
       if (userCreate.name.isEmpty()){
         return@post call.respond(HttpStatusCode.BadRequest, object {
           val code = "INVALID_INPUT_BODY__INVALID_NAME_FORMAT"
-          val msg = "First Name must not be empty"
+          val msg = "Name must not be empty"
         })
       }
       
@@ -169,6 +171,117 @@ fun Application.configureUserRoutes(){
         val user = user.copy(pwd=null)
       })
     }
+    
+    
+    
+    
+    
+    
+    
+    data class UserUpdateReq(
+      val map: MutableMap<String,Any?>
+    ){
+      val name: String by map
+    }
+    authenticate {
+      put(UserRoutes.update) {
+        val principal = call.principal<JWTPrincipal>()!!
+        val userId = principal.subject!!
+        
+        val dataAsMap = try {
+          call.receive<MutableMap<String, Any?>>()
+        } catch (ex: Exception) {
+          return@put call.respond(HttpStatusCode.BadRequest, object {
+            val code = "INVALID_INPUT_BODY"
+            val msg = "Invalid request body format"
+          })
+        }
+        
+        if ("name" in dataAsMap && dataAsMap["name"] !is String) {
+          return@put call.respond(HttpStatusCode.BadRequest, object {
+            val code = "INVALID_INPUT_BODY"
+            val msg = "Invalid 'name' type"
+          })
+        }
+        
+        
+        val updateUser = UserUpdateReq(dataAsMap)
+        
+        if ("name" in dataAsMap && updateUser.name.isEmpty()) {
+          return@put call.respond(HttpStatusCode.BadRequest, object {
+            val code = "INVALID_INPUT_BODY__INVALID_NAME_FORMAT"
+            val msg = "Name must not be empty"
+          })
+        }
+        
+        
+        
+        
+        
+        /*val conn = userServ.pool.create().awaitSingle()
+        try {
+          conn.transactionIsolationLevel = IsolationLevel.SERIALIZABLE
+          conn.beginTransaction()
+          val user = userServ.getById(decodedJwt.subject, conn)
+          if (user==null){ // пользователь не найден
+            return@get call.respondText(
+              status = HttpStatusCode.BadRequest,
+              text = getHtmlResponse("Ошибка! Пользователь с таким id не найден"),
+              contentType = ContentType.Text.Html
+            )
+          }
+          if (user.email != decodedJwt.claims["email"]!!.asString()){ // пользователь найден, но у него другой имэйл
+            return@get call.respondText(
+              status = HttpStatusCode.BadRequest,
+              text = getHtmlResponse("Ошибка! Данный токен верификации предназначен для другого email"),
+              contentType = ContentType.Text.Html
+            )
+          }
+          if (user.emailVerified!!){ // пользователь найден, но имэйл уже верифицирован
+            return@get call.respondText(
+              status = HttpStatusCode.OK,
+              text = getHtmlResponse("Успешно завершено! Ваш email уже был подтверждён ранее"),
+              contentType = ContentType.Text.Html
+            )
+          }
+          userServ.update(
+            decodedJwt.subject,
+            mapOf(UserTemailVerified to true)
+          )
+          conn.commitTransaction()
+        } finally {
+          conn.close()
+        }*/
+        
+        
+        
+        
+        
+        val user = userServ.update(
+          userId,
+          dataAsMap.mapKeys { (k,_) -> when(k){
+            "name" -> UserTname
+            else -> TODO("Implement update of other columns")
+          } }
+        )
+        
+        
+        // todo check id in transaction
+        user ?: return@put call.respond(HttpStatusCode.BadRequest, object {
+          val code = "NO_USER"
+          val msg = "There is no user with such id"
+        })
+        
+        
+        
+        
+        call.respond(object {
+          val user = user.copy(pwd=null)
+        })
+      }
+    }
+    
+    
     
     
     

@@ -27,6 +27,11 @@ fun Application.configureJsonSerializationTestRoutes() {
        */
     }
     
+    
+    
+    
+    
+    
     data class TestData(
       val intProp: Int,
       val boolProp: Boolean,
@@ -61,5 +66,35 @@ fun Application.configureJsonSerializationTestRoutes() {
       )
       call.respond(testData)
     }
+    
+    
+    
+    data class TestDataByMap(
+      val map: MutableMap<String,Any?>,
+    ){
+      val intProp: Int by map
+      val boolProp: Boolean by map
+      val doubleProp: Double by map
+      val stringProp: String by map
+      val nullProp: Nothing? by map
+      val arrayProp: List<Any?> by map
+      val mapProp: MutableMap<String,Any?> by map
+      
+      val intNullProp: Int? by map
+      val doubleProp2: Double by map
+    }
+    get("/test/json/parseToMap") {
+      var dataAsMap = call.receive<MutableMap<String,Any?>>()
+      println("parseToMap: $dataAsMap")
+      val objectByMap = TestDataByMap(dataAsMap)
+      // Если в мапе не все свойства, то метод toString() просто скипнет отсутствующие.
+      println("objectByMap $objectByMap")
+      // Если в мапе не все свойства, то Jackson отправит кусок JSON как ответ и не завершит его.
+      call.respond(objectByMap)
+    }
+    
+    
+    
+    
   }
 }

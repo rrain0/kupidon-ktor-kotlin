@@ -48,6 +48,12 @@ fun Map<Column,Any?>.toSql(): String {
 }
 
 
+/*
+* makes list <column-name>=<column-index>
+* "name"=$1
+* "age"=$2
+* ...
+* */
 fun List<Pair<Column,*>>.toSqlBind(): String {
   return this
     .mapIndexed { i,(k,_) -> "${k.name}=$${i+1}" }
