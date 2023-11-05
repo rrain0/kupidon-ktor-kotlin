@@ -5,14 +5,10 @@ import com.rrain.kupidon.entity.app.Sex
 import com.rrain.kupidon.entity.app.User
 import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.service.db.mappings.bindList
-import com.rrain.kupidon.service.db.mappings.toSql
 import com.rrain.kupidon.service.db.mappings.toSqlBind
 import com.rrain.kupidon.service.db.table.*
 import com.rrain.kupidon.service.table.Column
 import com.rrain.kupidon.util.cast
-import com.rrain.kupidon.util.localDateFormat
-import io.ktor.server.util.*
-import io.ktor.util.*
 import io.r2dbc.pool.ConnectionPool
 import io.r2dbc.spi.Connection
 import io.r2dbc.spi.Row
@@ -21,12 +17,9 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingle
 import org.intellij.lang.annotations.Language
-import org.jetbrains.exposed.sql.*
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.*
-import kotlin.reflect.full.companionObject
-import kotlin.reflect.full.companionObjectInstance
 
 
 
@@ -67,6 +60,7 @@ class UserDbService(val pool: ConnectionPool) {
     birthDate = row[UserTbirthDate.tableJoinColNoQuotes(), LocalDate::class.java],
     sex = row[UserTsex.tableJoinColNoQuotes(), String::class.java]?.let(Sex::valueOf),
   )
+  
   
   
   suspend fun getById(id: String, connection: Connection? = null): User? {
@@ -171,18 +165,19 @@ class UserDbService(val pool: ConnectionPool) {
   
   suspend fun update(id: String, values: Map<Column,Any?>, connection: Connection? = null): User {
     val conn = connection ?: pool.create().awaitSingle()
-    val values = values.toList()
+    val vs = values.toList()
+    val idIdx = vs.size+1
     @Language("sql") val sql = """
         update ${UserT.name} set
-        ${values.toSqlBind()}
-        where ${UserTid.tableDotCol()} = $${values.size+1}
+        ${vs.toSqlBind()}
+        where ${UserTid.tableDotCol()} = $$idIdx
         returning ${UserT.allColsAs()}
       """.trimIndent()
     return try {
       conn
         .createStatement(sql)
-        .bindList(values)
-        .bind("$${values.size+1}", UUID.fromString(id))
+        .bindList(vs)
+        .bind("$$idIdx", UUID.fromString(id))
         .execute()
         .awaitSingle()
         .map(::rowToCreatedUser)

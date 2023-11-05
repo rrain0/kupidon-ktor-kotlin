@@ -1,7 +1,6 @@
 package com.rrain.kupidon.routes.test
 
-import com.rrain.kupidon.util.printHeaders
-import io.ktor.http.*
+import com.rrain.kupidon.util.extension.printHeaders
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.response.*

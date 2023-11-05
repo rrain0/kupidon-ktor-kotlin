@@ -1,23 +1,13 @@
 package com.rrain.kupidon.service
 
-import com.rrain.kupidon.entity.app.Sex
 import com.rrain.kupidon.service.db.RoleDbService
 import com.rrain.kupidon.service.db.UserDbService
-import com.rrain.kupidon.util.cast
-import com.rrain.kupidon.util.get
+import com.rrain.kupidon.util.extension.get
 import io.ktor.server.application.*
-import io.netty.buffer.ByteBuf
 import io.r2dbc.pool.ConnectionPool
 import io.r2dbc.pool.ConnectionPoolConfiguration
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration
 import io.r2dbc.postgresql.PostgresqlConnectionFactory
-import io.r2dbc.postgresql.client.Parameter
-import io.r2dbc.postgresql.codec.Codec
-import io.r2dbc.postgresql.message.Format
-import io.r2dbc.postgresql.type.PostgresqlObjectId
-import io.r2dbc.postgresql.util.ByteBufUtils
-import reactor.core.publisher.Mono
-import kotlin.reflect.full.companionObjectInstance
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 

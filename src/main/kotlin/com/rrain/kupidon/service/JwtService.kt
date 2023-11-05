@@ -5,7 +5,7 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.rrain.kupidon.entity.app.Role
 import com.rrain.kupidon.routes.AuthRoutes
-import com.rrain.kupidon.util.get
+import com.rrain.kupidon.util.extension.get
 import com.rrain.kupidon.util.zonedNow
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -13,6 +13,7 @@ import io.ktor.server.util.*
 import io.ktor.util.date.*
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
+
 
 
 fun Application.configureJwtService(){

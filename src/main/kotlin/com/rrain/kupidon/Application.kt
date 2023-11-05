@@ -4,7 +4,7 @@ import io.ktor.server.application.*
 import com.rrain.kupidon.plugins.*
 import com.rrain.kupidon.plugins.configureJsonSerialization
 import com.rrain.kupidon.routes.*
-import com.rrain.kupidon.routes.`exception-handling`.configureExceptionHandling
+import com.rrain.kupidon.routes.util.configureExceptionHandling
 import com.rrain.kupidon.routes.test.configureAuthorizationTestRoutes
 import com.rrain.kupidon.routes.test.configureHttpTestRoutes
 import com.rrain.kupidon.routes.test.configureJsonSerializationTestRoutes

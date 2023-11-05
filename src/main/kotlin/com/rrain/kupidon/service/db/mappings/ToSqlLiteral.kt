@@ -35,7 +35,7 @@ fun Any?.toSqlLiteral(): String {
     is UUID -> "uuid'$this'"
     is LocalDate -> "date'${this.format(localDateFormat)}'"
     is ZonedDateTime -> "timestamptz'${this.format(zonedDateTimeFormat)}'"
-    else -> throw UnsupportedOperationException()
+    else -> throw UnsupportedOperationException("Can't find appropriate SQL literal for provided data type")
   }
 }
 

@@ -1,6 +1,6 @@
 package com.rrain.kupidon.service
 
-import com.rrain.kupidon.util.get
+import com.rrain.kupidon.util.extension.get
 import io.ktor.server.application.*
 import java.security.spec.KeySpec
 import javax.crypto.SecretKey
@@ -8,7 +8,6 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
-import kotlin.time.Duration
 
 
 fun main() {

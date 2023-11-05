@@ -3,12 +3,15 @@ package com.rrain.kupidon.routes
 import com.auth0.jwt.exceptions.*
 import com.rrain.kupidon.entity.app.Sex
 import com.rrain.kupidon.entity.app.User
-import com.rrain.kupidon.service.DatabaseService.roleServ
+import com.rrain.kupidon.routes.util.RequestError
 import com.rrain.kupidon.service.DatabaseService.userServ
 import com.rrain.kupidon.service.EmailService
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.db.table.UserTemailVerified
 import com.rrain.kupidon.service.db.table.UserTname
+import com.rrain.kupidon.util.extension.respondInvalidInputBody
+import com.rrain.kupidon.util.extension.respondNoUser
+import com.rrain.kupidon.util.extension.use
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -17,12 +20,10 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.util.reflect.*
 import io.r2dbc.postgresql.api.PostgresqlException
 import io.r2dbc.spi.IsolationLevel
 import io.r2dbc.spi.R2dbcBadGrammarException
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactor.awaitSingle
 import org.apache.commons.mail.EmailException
@@ -32,14 +33,14 @@ import java.time.LocalDate
 
 
 object UserRoutes {
-  val base = "/api/user"
-  val current = "$base/current"
-  val create = "$base/create"
-  val update = "$base/update"
-  val verifyEmail = "$base/verify/email"
-  val getById = "$base/getById/{id}"
+  const val base = "/api/user"
+  const val current = "$base/current"
+  const val create = "$base/create"
+  const val update = "$base/update"
+  const val verifyEmail = "$base/verify/email"
+  const val getById = "$base/getById/{id}"
   
-  val verifyTokenParamName = "verification-token"
+  const val verifyTokenParamName = "verificationToken"
 }
 
 fun Application.configureUserRoutes(){
@@ -53,10 +54,7 @@ fun Application.configureUserRoutes(){
         val principal = call.principal<JWTPrincipal>()!!
         val userId = principal.subject!!
         val user = userServ.getById(userId)
-        user ?: return@get call.respond(HttpStatusCode.BadRequest, object {
-          val code = "NO_USER"
-          val msg = "No user with such id"
-        })
+        user ?: return@get call.respondNoUser()
         call.respond(object {
           val user = user.copy(pwd=null)
         })
@@ -66,13 +64,14 @@ fun Application.configureUserRoutes(){
     
     
     get(UserRoutes.getById) {
-      val user = try { userServ.getById(call.parameters["id"]!!) }
+      var user = try { userServ.getById(call.parameters["id"]!!) }
       catch (ex: R2dbcBadGrammarException){
         null
       }
       
+      user = user?.copy(pwd=null)
       call.respond(object {
-        val user = user?.copy(pwd=null)
+        val user = user
       })
     }
     
@@ -86,43 +85,40 @@ fun Application.configureUserRoutes(){
       val birthDate: LocalDate
     )
     post(UserRoutes.create) {
-      val userCreate = try {
+      val userToCreate = try {
         call.receive<UserCreateReq>()
       } catch (ex: Exception){
-        return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = "INVALID_INPUT_BODY"
-          val msg = "Invalid request body format"
-        })
+        return@post call.respondInvalidInputBody()
       }
       
-      if (!userCreate.email.matches(Regex("^.+@.+$"))){
+      if (!userToCreate.email.matches(Regex("^.+@.+$"))){
         return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = "INVALID_INPUT_BODY__INVALID_EMAIL_FORMAT"
+          val code = "${RequestError.INVALID_INPUT_BODY.name}__INVALID_EMAIL_FORMAT"
           val msg = "Invalid email format"
         })
       }
-      if (userCreate.pwd.length<6){
+      if (userToCreate.pwd.length<6){
         return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = "INVALID_INPUT_BODY__INVALID_PWD_FORMAT"
+          val code = "${RequestError.INVALID_INPUT_BODY.name}__INVALID_PWD_FORMAT"
           val msg = "Password must be at least 6 chars length"
         })
       }
-      if (userCreate.name.isEmpty()){
+      if (userToCreate.name.isEmpty()){
         return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = "INVALID_INPUT_BODY__INVALID_NAME_FORMAT"
+          val code = "${RequestError.INVALID_INPUT_BODY.name}__INVALID_NAME_FORMAT"
           val msg = "Name must not be empty"
         })
       }
       
       val tryUser = User(
-        email = userCreate.email,
-        pwd = userCreate.pwd,
-        name = userCreate.name,
-        sex = userCreate.sex,
-        birthDate = userCreate.birthDate,
+        email = userToCreate.email,
+        pwd = userToCreate.pwd,
+        name = userToCreate.name,
+        sex = userToCreate.sex,
+        birthDate = userToCreate.birthDate,
       )
       
-      val user = try { userServ.create(tryUser) }
+      var user = try { userServ.create(tryUser) }
       catch (ex: R2dbcDataIntegrityViolationException){
         if (ex is PostgresqlException){
           ex.errorDetails.constraintName.let { cons ->
@@ -137,7 +133,8 @@ fun Application.configureUserRoutes(){
         throw ex
       }
       
-      val verificationToken = JwtService.generateVerificationAccessToken(user.id!!, user.email!!)
+      val id = user.id!!
+      val verificationToken = JwtService.generateVerificationAccessToken(id, user.email!!)
       
       launch {
         try {
@@ -147,13 +144,13 @@ fun Application.configureUserRoutes(){
               "$scheme://$serverHost:$serverPort${UserRoutes.verifyEmail}?${UserRoutes.verifyTokenParamName}=$verificationToken"
             }
           )
-        } catch (ex: EmailException) { // Ошибка отправки
-          // сделать позже validate if email was sent successfully
+        } catch (ex: EmailException) {
+          // Ошибка отправки
+          // todo validate if email was sent successfully
           ex.printStackTrace()
         }
       }
       
-      val id = user.id!!
       val roles = user.roles
       
       val domain = call.request.origin.serverHost
@@ -166,9 +163,10 @@ fun Application.configureUserRoutes(){
       call.response.cookies.append(
         JwtService.generateRefreshTokenCookie(refreshToken,domain)
       )
+      user = user.copy(pwd=null)
       call.respond(object {
         val accessToken = accessToken
-        val user = user.copy(pwd=null)
+        val user = user
       })
     }
     
@@ -191,15 +189,12 @@ fun Application.configureUserRoutes(){
         val dataAsMap = try {
           call.receive<MutableMap<String, Any?>>()
         } catch (ex: Exception) {
-          return@put call.respond(HttpStatusCode.BadRequest, object {
-            val code = "INVALID_INPUT_BODY"
-            val msg = "Invalid request body format"
-          })
+          return@put call.respondInvalidInputBody()
         }
         
         if ("name" in dataAsMap && dataAsMap["name"] !is String) {
           return@put call.respond(HttpStatusCode.BadRequest, object {
-            val code = "INVALID_INPUT_BODY"
+            val code = RequestError.INVALID_INPUT_BODY.name
             val msg = "Invalid 'name' type"
           })
         }
@@ -209,74 +204,32 @@ fun Application.configureUserRoutes(){
         
         if ("name" in dataAsMap && updateUser.name.isEmpty()) {
           return@put call.respond(HttpStatusCode.BadRequest, object {
-            val code = "INVALID_INPUT_BODY__INVALID_NAME_FORMAT"
+            val code = "${RequestError.INVALID_INPUT_BODY.name}__INVALID_NAME_FORMAT"
             val msg = "Name must not be empty"
           })
         }
         
         
-        
-        
-        
-        /*val conn = userServ.pool.create().awaitSingle()
-        try {
-          conn.transactionIsolationLevel = IsolationLevel.SERIALIZABLE
-          conn.beginTransaction()
-          val user = userServ.getById(decodedJwt.subject, conn)
-          if (user==null){ // пользователь не найден
-            return@get call.respondText(
-              status = HttpStatusCode.BadRequest,
-              text = getHtmlResponse("Ошибка! Пользователь с таким id не найден"),
-              contentType = ContentType.Text.Html
-            )
-          }
-          if (user.email != decodedJwt.claims["email"]!!.asString()){ // пользователь найден, но у него другой имэйл
-            return@get call.respondText(
-              status = HttpStatusCode.BadRequest,
-              text = getHtmlResponse("Ошибка! Данный токен верификации предназначен для другого email"),
-              contentType = ContentType.Text.Html
-            )
-          }
-          if (user.emailVerified!!){ // пользователь найден, но имэйл уже верифицирован
-            return@get call.respondText(
-              status = HttpStatusCode.OK,
-              text = getHtmlResponse("Успешно завершено! Ваш email уже был подтверждён ранее"),
-              contentType = ContentType.Text.Html
-            )
-          }
+        val conn = userServ.pool.create().awaitSingle()
+        conn.transactionIsolationLevel = IsolationLevel.SERIALIZABLE
+        var user = conn.use {
+          val user = userServ.getById(userId)
+          
+          user ?: return@put call.respondNoUser()
+          
           userServ.update(
-            decodedJwt.subject,
-            mapOf(UserTemailVerified to true)
+            userId,
+            dataAsMap.mapKeys { (k,_) -> when(k){
+              "name" -> UserTname
+              else -> TODO("Implement update of other columns")
+            } }
           )
-          conn.commitTransaction()
-        } finally {
-          conn.close()
-        }*/
+        }
         
         
-        
-        
-        
-        val user = userServ.update(
-          userId,
-          dataAsMap.mapKeys { (k,_) -> when(k){
-            "name" -> UserTname
-            else -> TODO("Implement update of other columns")
-          } }
-        )
-        
-        
-        // todo check id in transaction
-        user ?: return@put call.respond(HttpStatusCode.BadRequest, object {
-          val code = "NO_USER"
-          val msg = "There is no user with such id"
-        })
-        
-        
-        
-        
+        user = user.copy(pwd=null)
         call.respond(object {
-          val user = user.copy(pwd=null)
+          val user = user
         })
       }
     }
@@ -284,7 +237,7 @@ fun Application.configureUserRoutes(){
     
     
     
-    
+    // todo Language
     get(UserRoutes.verifyEmail) {
       val verificationToken = call.request.queryParameters[UserRoutes.verifyTokenParamName]
       
@@ -321,11 +274,11 @@ fun Application.configureUserRoutes(){
           contentType = ContentType.Text.Html
         )
       }
-      // Modified Token - Токен умышленно модифицирован (подделан)
+      // Modified Token - Токен модифицирован (подделан)
       catch (ex: SignatureVerificationException){
         return@get call.respondText(
           status = HttpStatusCode.BadRequest,
-          text = getHtmlResponse("Ошибка! Токен верификации умышленно модифицирован (подделан)"),
+          text = getHtmlResponse("Ошибка! Токен верификации модифицирован (подделан)"),
           contentType = ContentType.Text.Html
         )
       }
@@ -369,21 +322,24 @@ fun Application.configureUserRoutes(){
         conn.transactionIsolationLevel = IsolationLevel.SERIALIZABLE
         conn.beginTransaction()
         val user = userServ.getById(decodedJwt.subject, conn)
-        if (user==null){ // пользователь не найден
+        // пользователь не найден
+        if (user==null){
           return@get call.respondText(
             status = HttpStatusCode.BadRequest,
             text = getHtmlResponse("Ошибка! Пользователь с таким id не найден"),
             contentType = ContentType.Text.Html
           )
         }
-        if (user.email != decodedJwt.claims["email"]!!.asString()){ // пользователь найден, но у него другой имэйл
+        // пользователь найден, но у него другой имэйл
+        if (user.email != decodedJwt.claims["email"]!!.asString()){
           return@get call.respondText(
             status = HttpStatusCode.BadRequest,
             text = getHtmlResponse("Ошибка! Данный токен верификации предназначен для другого email"),
             contentType = ContentType.Text.Html
           )
         }
-        if (user.emailVerified!!){ // пользователь найден, но имэйл уже верифицирован
+        // пользователь найден, но имэйл уже верифицирован
+        if (user.emailVerified!!){
           return@get call.respondText(
             status = HttpStatusCode.OK,
             text = getHtmlResponse("Успешно завершено! Ваш email уже был подтверждён ранее"),

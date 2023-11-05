@@ -1,4 +1,4 @@
-package com.rrain.kupidon.routes.`exception-handling`
+package com.rrain.kupidon.routes.util
 
 import io.ktor.http.*
 import io.ktor.server.application.*

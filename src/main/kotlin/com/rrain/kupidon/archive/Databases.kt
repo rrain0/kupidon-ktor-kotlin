@@ -1,7 +1,7 @@
 package com.rrain.kupidon.archive
 
 import com.rrain.kupidon.entity.app.Role
-import com.rrain.kupidon.util.get
+import com.rrain.kupidon.util.extension.get
 import org.jetbrains.exposed.sql.*
 import io.ktor.http.*
 import io.ktor.server.request.*

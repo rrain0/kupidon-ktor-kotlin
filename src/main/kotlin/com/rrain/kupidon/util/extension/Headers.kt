@@ -1,4 +1,4 @@
-package com.rrain.kupidon.util
+package com.rrain.kupidon.util.extension
 
 import io.ktor.server.application.*
 import io.ktor.util.*
