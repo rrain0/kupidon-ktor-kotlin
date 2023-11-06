@@ -5,6 +5,8 @@ import com.rrain.kupidon.service.DatabaseService
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.service.TokenError
+import com.rrain.kupidon.util.extension.respondInvalidInputBody
+import com.rrain.kupidon.util.extension.respondNoUser
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -15,13 +17,14 @@ import io.ktor.server.routing.*
 
 
 object AuthRoutes {
-  val base = "/api/auth"
-  val login = "$base/login"
-  val refresh = "$base/refresh"
-  //val logout = "$base/logout"
+  const val base = "/api/auth"
+  const val login = "$base/login"
+  const val refresh = "$base/refresh"
+  //const val logout = "$base/logout"
 }
 
-//class NoSuchUserException(msg: String): RuntimeException(msg)
+
+
 
 fun Application.configureAuthRoutes(){
   
@@ -36,16 +39,13 @@ fun Application.configureAuthRoutes(){
       val loginRequest = try {
         call.receive<LoginRequest>()
       } catch (ex: Exception){
-        return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = "INVALID_INPUT_BODY"
-          val msg = "Invalid request body format"
-        })
+        return@post call.respondInvalidInputBody()
       }
       val login = loginRequest.login
       val pwd = loginRequest.pwd
       
       
-      val user = userServ.getByEmail(login)
+      var user = userServ.getByEmail(login)
       user ?: return@post call.respond(HttpStatusCode.BadRequest, object {
         val code = "NO_USER"
         val msg = "There is no user with such login-password"
@@ -70,9 +70,10 @@ fun Application.configureAuthRoutes(){
       call.response.cookies.append(
         JwtService.generateRefreshTokenCookie(refreshToken,domain)
       )
+      user = user.copy(pwd=null)
       call.respond(object {
         val accessToken = accessToken
-        val user = user.copy(pwd=null)
+        val user = user
       })
     }
     
@@ -136,10 +137,7 @@ fun Application.configureAuthRoutes(){
       val id = decodedRefresh.subject
       val user = userServ.getById(id)
       
-      user ?: return@get call.respond(HttpStatusCode.BadRequest, object {
-        val code = "NO_USER"
-        val msg = "There is no user with such id"
-      })
+      user ?: return@get call.respondNoUser()
       
       val roles = user.roles
       

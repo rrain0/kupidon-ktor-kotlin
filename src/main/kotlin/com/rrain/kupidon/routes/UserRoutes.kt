@@ -7,11 +7,13 @@ import com.rrain.kupidon.routes.util.RequestError
 import com.rrain.kupidon.service.DatabaseService.userServ
 import com.rrain.kupidon.service.EmailService
 import com.rrain.kupidon.service.JwtService
+import com.rrain.kupidon.service.db.table.UserTbirthDate
 import com.rrain.kupidon.service.db.table.UserTemailVerified
 import com.rrain.kupidon.service.db.table.UserTname
 import com.rrain.kupidon.util.extension.respondInvalidInputBody
 import com.rrain.kupidon.util.extension.respondNoUser
 import com.rrain.kupidon.util.extension.use
+import com.rrain.kupidon.util.toLocalDate
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -180,6 +182,7 @@ fun Application.configureUserRoutes(){
       val map: MutableMap<String,Any?>
     ){
       val name: String by map
+      val birthDate: LocalDate by map
     }
     authenticate {
       put(UserRoutes.update) {
@@ -192,11 +195,26 @@ fun Application.configureUserRoutes(){
           return@put call.respondInvalidInputBody()
         }
         
-        if ("name" in dataAsMap && dataAsMap["name"] !is String) {
-          return@put call.respond(HttpStatusCode.BadRequest, object {
-            val code = RequestError.INVALID_INPUT_BODY.name
-            val msg = "Invalid 'name' type"
-          })
+        
+        if ("name" in dataAsMap) {
+          if (dataAsMap["name"] !is String)
+            return@put call.respond(HttpStatusCode.BadRequest, object {
+              val code = RequestError.INVALID_INPUT_BODY.name
+              val msg = "Invalid 'name' type"
+            })
+        }
+        
+        if ("birthDate" in dataAsMap){
+          val value = dataAsMap["birthDate"]
+          try {
+            if (value !is String) throw RuntimeException()
+            dataAsMap["birthDate"] = value.toLocalDate()
+          } catch (ex: Exception){
+            return@put call.respond(HttpStatusCode.BadRequest, object {
+              val code = RequestError.INVALID_INPUT_BODY.name
+              val msg = "Invalid 'birthDate' type, must be string 'yyyy-MM-dd'"
+            })
+          }
         }
         
         
@@ -204,10 +222,17 @@ fun Application.configureUserRoutes(){
         
         if ("name" in dataAsMap && updateUser.name.isEmpty()) {
           return@put call.respond(HttpStatusCode.BadRequest, object {
-            val code = "${RequestError.INVALID_INPUT_BODY.name}__INVALID_NAME_FORMAT"
+            val code = "INVALID_NAME__NAME_IS_EMPTY"
             val msg = "Name must not be empty"
           })
         }
+        
+        /*if ("birthDate" in dataAsMap && updateUser.birthDate.isEmpty()) {
+          return@put call.respond(HttpStatusCode.BadRequest, object {
+            val code = "INVALID_BIRTH_DATE__YOUNGER_18"
+            val msg = "You must be at least 18 years old"
+          })
+        }*/
         
         
         val conn = userServ.pool.create().awaitSingle()
@@ -221,6 +246,7 @@ fun Application.configureUserRoutes(){
             userId,
             dataAsMap.mapKeys { (k,_) -> when(k){
               "name" -> UserTname
+              "birthDate" -> UserTbirthDate
               else -> TODO("Implement update of other columns")
             } }
           )
