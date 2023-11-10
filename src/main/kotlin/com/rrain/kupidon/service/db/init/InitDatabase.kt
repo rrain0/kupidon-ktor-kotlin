@@ -80,8 +80,8 @@ fun Application.initDatabase(){
           true,
           '${PwdHashing.generateHash(appConfig["database.users.admin.pwd"])}',
           
-          timestamptz'2023-06-02 18:19:07.186+0800',
-          timestamptz'2023-06-02 18:19:07.186+0800',
+          timestamptz'2023-06-02T18:19:07.186+08:00',
+          timestamptz'2023-06-02T18:19:07.186+08:00',
           true,
           
           'Дмитрий',date'1997-11-22','MALE'
@@ -104,8 +104,8 @@ fun Application.initDatabase(){
         
           'usual_user@test.test',true,'${PwdHashing.generateHash("usual")}',
           
-          timestamptz'2023-06-04 15:21:18.094+0800',
-          timestamptz'2023-06-04 15:21:18.094+0800',
+          timestamptz'2023-06-04T15:21:18.094+08:00',
+          timestamptz'2023-06-04T15:21:18.094+08:00',
           true,
           
           'Обычный Пользователь',date'2000-06-15','MALE'

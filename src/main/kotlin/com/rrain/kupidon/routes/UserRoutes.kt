@@ -14,6 +14,9 @@ import com.rrain.kupidon.util.extension.respondInvalidInputBody
 import com.rrain.kupidon.util.extension.respondNoUser
 import com.rrain.kupidon.util.extension.use
 import com.rrain.kupidon.util.toLocalDate
+import com.rrain.kupidon.util.toZonedDateTime
+import com.rrain.kupidon.util.zonedDateTimePattern
+import com.rrain.kupidon.util.zonedNow
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -31,7 +34,8 @@ import kotlinx.coroutines.reactor.awaitSingle
 import org.apache.commons.mail.EmailException
 import org.intellij.lang.annotations.Language
 import java.time.LocalDate
-
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 
 object UserRoutes {
@@ -84,7 +88,7 @@ fun Application.configureUserRoutes(){
       val pwd: String,
       val name: String,
       val sex: Sex,
-      val birthDate: LocalDate
+      val birthDate: ZonedDateTime
     )
     post(UserRoutes.create) {
       val userToCreate = try {
@@ -95,29 +99,42 @@ fun Application.configureUserRoutes(){
       
       if (!userToCreate.email.matches(Regex("^.+@.+$"))){
         return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = "${RequestError.INVALID_INPUT_BODY.name}__INVALID_EMAIL_FORMAT"
+          val code = RequestError.INVALID_INPUT_BODY.name
           val msg = "Invalid email format"
         })
       }
       if (userToCreate.pwd.length<6){
         return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = "${RequestError.INVALID_INPUT_BODY.name}__INVALID_PWD_FORMAT"
+          val code = RequestError.INVALID_INPUT_BODY.name
           val msg = "Password must be at least 6 chars length"
         })
       }
       if (userToCreate.name.isEmpty()){
         return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = "${RequestError.INVALID_INPUT_BODY.name}__INVALID_NAME_FORMAT"
+          val code = RequestError.INVALID_INPUT_BODY.name
           val msg = "Name must not be empty"
         })
       }
+      val nowWithUserZone = zonedNow()
+        .withZoneSameInstant(userToCreate.birthDate.zone)
+        .withHour(0)
+        .withMinute(0)
+        .withSecond(0)
+        .withNano(0)
+      if (ChronoUnit.YEARS.between(userToCreate.birthDate, nowWithUserZone)<18){
+        return@post call.respond(HttpStatusCode.BadRequest, object {
+          val code = RequestError.INVALID_INPUT_BODY.name
+          val msg = "You must be at least 18 years old"
+        })
+      }
+      
       
       val tryUser = User(
         email = userToCreate.email,
         pwd = userToCreate.pwd,
         name = userToCreate.name,
         sex = userToCreate.sex,
-        birthDate = userToCreate.birthDate,
+        birthDate = userToCreate.birthDate.toLocalDate(),
       )
       
       var user = try { userServ.create(tryUser) }
@@ -178,12 +195,7 @@ fun Application.configureUserRoutes(){
     
     
     
-    data class UserUpdateReq(
-      val map: MutableMap<String,Any?>
-    ){
-      val name: String by map
-      val birthDate: LocalDate by map
-    }
+    
     authenticate {
       put(UserRoutes.update) {
         val principal = call.principal<JWTPrincipal>()!!
@@ -196,43 +208,60 @@ fun Application.configureUserRoutes(){
         }
         
         
+        val unknownProperties = dataAsMap.keys - setOf("name","birthDate")
+        if (unknownProperties.isNotEmpty()){
+          return@put call.respond(HttpStatusCode.BadRequest, object {
+            val code = RequestError.INVALID_INPUT_BODY.name
+            val msg = "Unknown properties: $unknownProperties"
+          })
+        }
+        
+        
         if ("name" in dataAsMap) {
-          if (dataAsMap["name"] !is String)
+          val value = dataAsMap["name"]
+          if (value !is String)
             return@put call.respond(HttpStatusCode.BadRequest, object {
               val code = RequestError.INVALID_INPUT_BODY.name
               val msg = "Invalid 'name' type"
             })
+          if (value.isEmpty())
+            return@put call.respond(HttpStatusCode.BadRequest, object {
+              val code = RequestError.INVALID_INPUT_BODY.name
+              val msg = "Name must not be empty"
+            })
         }
+        
         
         if ("birthDate" in dataAsMap){
           val value = dataAsMap["birthDate"]
           try {
             if (value !is String) throw RuntimeException()
+            val birthDate = value.toZonedDateTime()
+            val nowWithUserZone = zonedNow()
+              .withZoneSameInstant(birthDate.zone)
+              .withHour(0)
+              .withMinute(0)
+              .withSecond(0)
+              .withNano(0)
+            if (ChronoUnit.YEARS.between(birthDate, nowWithUserZone)<18){
+              return@put call.respond(HttpStatusCode.BadRequest, object {
+                val code = RequestError.INVALID_INPUT_BODY.name
+                val msg = "You must be at least 18 years old"
+              })
+            }
             dataAsMap["birthDate"] = value.toLocalDate()
           } catch (ex: Exception){
             return@put call.respond(HttpStatusCode.BadRequest, object {
               val code = RequestError.INVALID_INPUT_BODY.name
-              val msg = "Invalid 'birthDate' type, must be string 'yyyy-MM-dd'"
+              val msg =
+                """'birthDate' must be string "$zonedDateTimePattern", for example "2005-11-10T00:00:00.000+08:00""""
             })
           }
+          
         }
         
         
-        val updateUser = UserUpdateReq(dataAsMap)
         
-        if ("name" in dataAsMap && updateUser.name.isEmpty()) {
-          return@put call.respond(HttpStatusCode.BadRequest, object {
-            val code = "INVALID_NAME__NAME_IS_EMPTY"
-            val msg = "Name must not be empty"
-          })
-        }
-        
-        /*if ("birthDate" in dataAsMap && updateUser.birthDate.isEmpty()) {
-          return@put call.respond(HttpStatusCode.BadRequest, object {
-            val code = "INVALID_BIRTH_DATE__YOUNGER_18"
-            val msg = "You must be at least 18 years old"
-          })
-        }*/
         
         
         val conn = userServ.pool.create().awaitSingle()

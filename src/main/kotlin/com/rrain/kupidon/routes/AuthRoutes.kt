@@ -34,6 +34,7 @@ fun Application.configureAuthRoutes(){
     
     
     
+    
     data class LoginRequest(val login: String, val pwd: String)
     post(AuthRoutes.login) {
       val loginRequest = try {
