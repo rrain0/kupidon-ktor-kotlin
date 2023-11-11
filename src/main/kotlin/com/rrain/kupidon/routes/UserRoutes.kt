@@ -249,7 +249,7 @@ fun Application.configureUserRoutes(){
                 val msg = "You must be at least 18 years old"
               })
             }
-            dataAsMap["birthDate"] = value.toLocalDate()
+            dataAsMap["birthDate"] = birthDate.toLocalDate()
           } catch (ex: Exception){
             return@put call.respond(HttpStatusCode.BadRequest, object {
               val code = RequestError.INVALID_INPUT_BODY.name

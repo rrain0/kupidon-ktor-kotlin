@@ -3,8 +3,6 @@ package com.rrain.kupidon.plugins
 //import io.ktor.serialization.kotlinx.json.*
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.core.util.DefaultIndenter
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -16,12 +14,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.*
 //import com.google.gson.*
 import com.rrain.kupidon.util.localDateFormat
-import com.rrain.kupidon.util.zonedDateTimeFormat
+import com.rrain.kupidon.util.toLocalDate
+import com.rrain.kupidon.util.toZonedDateTime
+import com.rrain.kupidon.util.zonedDateTimeFormatter
 //import io.ktor.serialization.gson.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.application.*
-import java.lang.reflect.Type
 import java.time.LocalDate
 import java.time.ZonedDateTime
 
@@ -49,14 +48,14 @@ fun Application.configureJsonSerialization() {
         .addSerializer(
           ZonedDateTime::class, object : StdSerializer<ZonedDateTime>(ZonedDateTime::class.java) {
             override fun serialize(value: ZonedDateTime, gen: JsonGenerator, provider: SerializerProvider) {
-              return gen.writeString(value.format(zonedDateTimeFormat))
+              return gen.writeString(value.format(zonedDateTimeFormatter))
             }
           }
         )
         .addDeserializer(
           ZonedDateTime::class, object : StdDeserializer<ZonedDateTime>(ZonedDateTime::class.java) {
             override fun deserialize(p: JsonParser, ctxt: DeserializationContext): ZonedDateTime {
-              return ZonedDateTime.parse(p.valueAsString, zonedDateTimeFormat)
+              return p.valueAsString.toZonedDateTime()
             }
           }
         )
@@ -70,7 +69,7 @@ fun Application.configureJsonSerialization() {
         .addDeserializer(
           LocalDate::class, object : StdDeserializer<LocalDate>(LocalDate::class.java) {
             override fun deserialize(p: JsonParser, ctxt: DeserializationContext): LocalDate {
-              return LocalDate.parse(p.valueAsString, localDateFormat)
+              return p.valueAsString.toLocalDate()
             }
           }
         )

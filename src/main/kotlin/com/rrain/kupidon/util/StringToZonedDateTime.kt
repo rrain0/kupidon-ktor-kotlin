@@ -1,6 +1,5 @@
 package com.rrain.kupidon.util
 
-import io.ktor.server.util.*
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -28,12 +27,12 @@ fun zonedNow() = ZonedDateTime.now(ZoneOffset.UTC) // this is just offset, witho
     => 2023-11-10 16:32:55.798+08
  */
 val zonedDateTimePattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX" // 2020-08-26T06:53:27.609+00:00
-val zonedDateTimeFormat: DateTimeFormatter =
+val zonedDateTimeFormatter: DateTimeFormatter =
   DateTimeFormatter.ofPattern(zonedDateTimePattern, Locale.ENGLISH)
 
 
 
-fun String.toZonedDateTime() = ZonedDateTime.parse(this, zonedDateTimeFormat)
+fun String.toZonedDateTime() = ZonedDateTime.parse(this, zonedDateTimeFormatter)
 
 
 

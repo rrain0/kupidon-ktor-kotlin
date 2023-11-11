@@ -34,7 +34,7 @@ fun Any?.toSqlLiteral(): String {
     is Enum<*> -> this.name
     is UUID -> "uuid'$this'"
     is LocalDate -> "date'${this.format(localDateFormat)}'"
-    is ZonedDateTime -> "timestamptz'${this.format(zonedDateTimeFormat)}'"
+    is ZonedDateTime -> "timestamptz'${this.format(zonedDateTimeFormatter)}'"
     else -> throw UnsupportedOperationException("Can't find appropriate SQL literal for provided data type")
   }
 }

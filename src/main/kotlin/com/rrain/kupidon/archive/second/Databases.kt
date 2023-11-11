@@ -2,7 +2,7 @@ package com.rrain.kupidon.archive.second
 
 import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.util.extension.get
-import com.rrain.kupidon.util.zonedDateTimeFormat
+import com.rrain.kupidon.util.zonedDateTimeFormatter
 import com.rrain.kupidon.util.zonedNow
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -99,8 +99,8 @@ fun Application.configureDatabases() {
         'rrain',
         '',
         
-        timestamptz '${now.format(zonedDateTimeFormat)}',
-        timestamptz '${now.format(zonedDateTimeFormat)}',
+        timestamptz '${now.format(zonedDateTimeFormatter)}',
+        timestamptz '${now.format(zonedDateTimeFormatter)}',
         true,
         
         'Дмитрий',
