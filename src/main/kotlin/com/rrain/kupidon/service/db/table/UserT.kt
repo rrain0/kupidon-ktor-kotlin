@@ -20,7 +20,7 @@ object UserT : Table() {
       UserTenabled,
       UserTname,
       UserTbirthDate,
-      UserTsex
+      UserTgender
     )
   }
 }
@@ -89,9 +89,9 @@ object UserTbirthDate : Column() {
     type = LocalDate::class.java
   }
 }
-object UserTsex : Column() {
+object UserTgender : Column() {
   init {
-    name = """"sex""""
+    name = """"gender""""
     table = UserT
     type = String::class.java
   }

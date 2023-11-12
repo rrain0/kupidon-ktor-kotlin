@@ -38,6 +38,12 @@ fun Any?.toSqlLiteral(): String {
     else -> throw UnsupportedOperationException("Can't find appropriate SQL literal for provided data type")
   }
 }
+fun Any.toSqlBind(): Any {
+  return when (this){
+    is Enum<*> -> this.name
+    else -> this
+  }
+}
 
 
 
@@ -54,15 +60,19 @@ fun Map<Column,Any?>.toSql(): String {
 * "age"=$2
 * ...
 * */
-fun List<Pair<Column,*>>.toSqlBind(): String {
+fun List<Pair<Column,*>>.toSqlBind(startIndex: Int = 0): String {
   return this
-    .mapIndexed { i,(k,_) -> "${k.name}=$${i+1}" }
+    .mapIndexed { i,(k,_) ->
+      val idx = startIndex + i + 1
+      "${k.name}=$$idx"
+    }
     .joinToString(",\n")
 }
-fun Statement.bindList(list: List<Pair<Column,Any?>>): Statement {
+fun Statement.bindList(list: List<Pair<Column,Any?>>, startIndex: Int = 0): Statement {
   list.forEachIndexed { i, (col,v) ->
-    if (v!=null) this.bind("$${i+1}",v)
-    else this.bindNull("$${i+1}",col.type)
+    val idx = startIndex + i + 1
+    if (v!=null) this.bind("$$idx", v.toSqlBind())
+    else this.bindNull("$$idx",col.type)
   }
   return this
 }

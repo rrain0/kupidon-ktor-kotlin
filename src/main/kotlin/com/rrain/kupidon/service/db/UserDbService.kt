@@ -1,7 +1,7 @@
 package com.rrain.kupidon.service.db
 
 import com.rrain.kupidon.entity.app.Role
-import com.rrain.kupidon.entity.app.Sex
+import com.rrain.kupidon.entity.app.Gender
 import com.rrain.kupidon.entity.app.User
 import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.service.db.mappings.bindList
@@ -42,7 +42,7 @@ class UserDbService(val pool: ConnectionPool) {
     
     name = row[UserTname.tableJoinColNoQuotes(), String::class.java],
     birthDate = row[UserTbirthDate.tableJoinColNoQuotes(), LocalDate::class.java],
-    sex = row[UserTsex.tableJoinColNoQuotes(), String::class.java]?.let(Sex::valueOf),
+    gender = row[UserTgender.tableJoinColNoQuotes(), String::class.java]?.let(Gender::valueOf),
   )
   
   fun rowToCreatedUser(row: Row, rowMetadata: RowMetadata) = User(
@@ -58,7 +58,7 @@ class UserDbService(val pool: ConnectionPool) {
     
     name = row[UserTname.tableJoinColNoQuotes(), String::class.java],
     birthDate = row[UserTbirthDate.tableJoinColNoQuotes(), LocalDate::class.java],
-    sex = row[UserTsex.tableJoinColNoQuotes(), String::class.java]?.let(Sex::valueOf),
+    gender = row[UserTgender.tableJoinColNoQuotes(), String::class.java]?.let(Gender::valueOf),
   )
   
   
@@ -130,7 +130,7 @@ class UserDbService(val pool: ConnectionPool) {
           ${UserTupdated.name},
           
           ${UserTname.name},
-          ${UserTsex.name},
+          ${UserTgender.name},
           ${UserTbirthDate.name}
         ) values (
           $1,
@@ -150,7 +150,7 @@ class UserDbService(val pool: ConnectionPool) {
         .bind("$1",user.email!!)
         .bind("$2",user.pwd!!.let(PwdHashing::generateHash))
         .bind("$3",user.name!!)
-        .bind("$4",user.sex!!.name)
+        .bind("$4",user.gender!!.name)
         .bind("$5",user.birthDate!!)
         .execute()
         .awaitSingle()
@@ -176,6 +176,7 @@ class UserDbService(val pool: ConnectionPool) {
     return try {
       conn
         .createStatement(sql)
+        .apply { println("vs: $vs") }
         .bindList(vs)
         .bind("$$idIdx", UUID.fromString(id))
         .execute()

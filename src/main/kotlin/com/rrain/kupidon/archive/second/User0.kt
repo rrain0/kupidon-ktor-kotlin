@@ -1,7 +1,7 @@
 package com.rrain.kupidon.archive.second
 
 import com.rrain.kupidon.entity.app.Role
-import com.rrain.kupidon.entity.app.Sex
+import com.rrain.kupidon.entity.app.Gender
 import java.time.LocalDate
 import java.time.ZonedDateTime
 
@@ -36,7 +36,7 @@ data class User0(
   val lastName: String? = null, // фамилия
   // e.g. string representation "2023-06-29"
   val birthDate: LocalDate? = null,
-  val sex: Sex? = null, // пол: мужской / женский
+  val gender: Gender? = null, // пол: мужской / женский
 )
 /*
 run {

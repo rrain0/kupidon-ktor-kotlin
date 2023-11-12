@@ -56,8 +56,8 @@ fun Application.initDatabase(){
           
           "name" varchar(100) not null,
           "birthDate" date not null,
-          "sex" varchar(50) not null,
-          constraint sex_pattern check ("sex" in ('MALE','FEMALE'))
+          "gender" varchar(50) not null,
+          constraint gender_pattern check ("gender" in ('MALE','FEMALE'))
         );
       """.trimIndent()
       connection.createStatement(sql).execute().toMono().block()
@@ -72,7 +72,7 @@ fun Application.initDatabase(){
           "id",
           "email","emailVerified","pwd",
           "created","updated","enabled",
-          "name","lastName","birthDate","sex"
+          "name","lastName","birthDate","gender"
         ) values (
           uuid'${appConfig["database.users.admin.id"]}',
         
@@ -98,7 +98,7 @@ fun Application.initDatabase(){
           "id",
           "email","emailVerified","pwd",
           "created","updated","enabled",
-          "name","lastName","birthDate","sex"
+          "name","lastName","birthDate","gender"
         ) values (
           uuid'628671b8-aca9-40dd-90db-5a07d6b33025',
         

@@ -25,13 +25,13 @@ fun Application.configureDatabaseService(){
     PostgresqlConnectionConfiguration.builder()
       
       /*.codecRegistrar { connection, allocator, registry ->
-        registry.addFirst(object : Codec<Sex>{
+        registry.addFirst(object : Codec<Gender>{
           override fun canDecode(dataType: Int, format: Format, type: Class<*>): Boolean =
             dataType==PostgresqlObjectId.VARCHAR.objectId
           
-          override fun decode(buffer: ByteBuf?, dataType: Int, format: Format, type: Class<out Sex>): Sex? {
+          override fun decode(buffer: ByteBuf?, dataType: Int, format: Format, type: Class<out Gender>): Gender? {
             buffer ?: return null
-            return Sex.valueOf(ByteBufUtils.decode(buffer))
+            return Gender.valueOf(ByteBufUtils.decode(buffer))
           }
           
           override fun canEncodeNull(type: Class<*>): Boolean = false
@@ -44,11 +44,11 @@ fun Application.configureDatabaseService(){
             )
           }
           
-          override fun canEncode(value: Any): Boolean = value is Sex
+          override fun canEncode(value: Any): Boolean = value is Gender
           
           override fun encode(value: Any): Parameter {
             return Parameter(Format.FORMAT_TEXT, PostgresqlObjectId.VARCHAR.objectId) {
-              ByteBufUtils.encode(allocator, (value as Sex).name)
+              ByteBufUtils.encode(allocator, (value as Gender).name)
             }
           }
           

@@ -17,10 +17,10 @@ suspend inline fun ApplicationCall.respondNoUser() = this.respond(
 )
 
 // Некорректный формат тела запроса
-suspend inline fun ApplicationCall.respondInvalidInputBody() = this.respond(
+suspend inline fun ApplicationCall.respondInvalidInputBody(msg: String? = null) = this.respond(
   HttpStatusCode.BadRequest,
   object {
     val code = RequestError.INVALID_INPUT_BODY.name
-    val msg = RequestError.INVALID_INPUT_BODY.msg
+    val msg = msg ?: RequestError.INVALID_INPUT_BODY.msg
   }
 )

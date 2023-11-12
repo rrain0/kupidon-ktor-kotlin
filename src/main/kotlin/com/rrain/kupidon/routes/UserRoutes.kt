@@ -1,7 +1,7 @@
 package com.rrain.kupidon.routes
 
 import com.auth0.jwt.exceptions.*
-import com.rrain.kupidon.entity.app.Sex
+import com.rrain.kupidon.entity.app.Gender
 import com.rrain.kupidon.entity.app.User
 import com.rrain.kupidon.routes.util.RequestError
 import com.rrain.kupidon.service.DatabaseService.userServ
@@ -10,10 +10,11 @@ import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.db.table.UserTbirthDate
 import com.rrain.kupidon.service.db.table.UserTemailVerified
 import com.rrain.kupidon.service.db.table.UserTname
+import com.rrain.kupidon.service.db.table.UserTgender
+import com.rrain.kupidon.service.table.Column
 import com.rrain.kupidon.util.extension.respondInvalidInputBody
 import com.rrain.kupidon.util.extension.respondNoUser
 import com.rrain.kupidon.util.extension.use
-import com.rrain.kupidon.util.toLocalDate
 import com.rrain.kupidon.util.toZonedDateTime
 import com.rrain.kupidon.util.zonedDateTimePattern
 import com.rrain.kupidon.util.zonedNow
@@ -33,7 +34,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactor.awaitSingle
 import org.apache.commons.mail.EmailException
 import org.intellij.lang.annotations.Language
-import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
@@ -69,6 +69,7 @@ fun Application.configureUserRoutes(){
     
     
     
+    
     get(UserRoutes.getById) {
       var user = try { userServ.getById(call.parameters["id"]!!) }
       catch (ex: R2dbcBadGrammarException){
@@ -83,11 +84,12 @@ fun Application.configureUserRoutes(){
     
     
     
+    
     data class UserCreateReq(
       val email: String,
       val pwd: String,
       val name: String,
-      val sex: Sex,
+      val gender: Gender,
       val birthDate: ZonedDateTime
     )
     post(UserRoutes.create) {
@@ -133,7 +135,7 @@ fun Application.configureUserRoutes(){
         email = userToCreate.email,
         pwd = userToCreate.pwd,
         name = userToCreate.name,
-        sex = userToCreate.sex,
+        gender = userToCreate.gender,
         birthDate = userToCreate.birthDate.toLocalDate(),
       )
       
@@ -207,61 +209,66 @@ fun Application.configureUserRoutes(){
           return@put call.respondInvalidInputBody()
         }
         
+        val fieldToCol = mutableMapOf<String,Column>()
         
-        val unknownProperties = dataAsMap.keys - setOf("name","birthDate")
-        if (unknownProperties.isNotEmpty()){
-          return@put call.respond(HttpStatusCode.BadRequest, object {
-            val code = RequestError.INVALID_INPUT_BODY.name
-            val msg = "Unknown properties: $unknownProperties"
-          })
-        }
-        
-        
-        if ("name" in dataAsMap) {
-          val value = dataAsMap["name"]
-          if (value !is String)
-            return@put call.respond(HttpStatusCode.BadRequest, object {
-              val code = RequestError.INVALID_INPUT_BODY.name
-              val msg = "Invalid 'name' type"
-            })
-          if (value.isEmpty())
-            return@put call.respond(HttpStatusCode.BadRequest, object {
-              val code = RequestError.INVALID_INPUT_BODY.name
-              val msg = "Name must not be empty"
-            })
-        }
-        
-        
-        if ("birthDate" in dataAsMap){
-          val value = dataAsMap["birthDate"]
-          try {
-            if (value !is String) throw RuntimeException()
-            val birthDate = value.toZonedDateTime()
-            val nowWithUserZone = zonedNow()
-              .withZoneSameInstant(birthDate.zone)
-              .withHour(0)
-              .withMinute(0)
-              .withSecond(0)
-              .withNano(0)
-            if (ChronoUnit.YEARS.between(birthDate, nowWithUserZone)<18){
-              return@put call.respond(HttpStatusCode.BadRequest, object {
-                val code = RequestError.INVALID_INPUT_BODY.name
-                val msg = "You must be at least 18 years old"
-              })
+        dataAsMap.forEach { (k,v) -> when(k){
+          
+          "name" -> {
+            try {
+              if (v !is String) throw RuntimeException()
+              if (v.isEmpty()) throw RuntimeException()
+            } catch (ex: Exception){
+              return@put call.respondInvalidInputBody(
+                "Name must be string and must not be empty"
+              )
             }
-            dataAsMap["birthDate"] = birthDate.toLocalDate()
-          } catch (ex: Exception){
-            return@put call.respond(HttpStatusCode.BadRequest, object {
-              val code = RequestError.INVALID_INPUT_BODY.name
-              val msg =
-                """'birthDate' must be string "$zonedDateTimePattern", for example "2005-11-10T00:00:00.000+08:00""""
-            })
+            fieldToCol[k] = UserTname
           }
           
-        }
-        
-        
-        
+          "birthDate" -> {
+            try {
+              if (v !is String) throw RuntimeException()
+              val birthDate = v.toZonedDateTime()
+              val nowWithUserZone = zonedNow()
+                .withZoneSameInstant(birthDate.zone)
+                .withHour(0)
+                .withMinute(0)
+                .withSecond(0)
+                .withNano(0)
+              if (ChronoUnit.YEARS.between(birthDate, nowWithUserZone)<18){
+                return@put call.respondInvalidInputBody(
+                  "You must be at least 18 years old"
+                )
+              }
+              dataAsMap["birthDate"] = birthDate.toLocalDate()
+            } catch (ex: Exception){
+              return@put call.respondInvalidInputBody(
+                "'birthDate' must be string '$zonedDateTimePattern'" +
+                  ", for example '2005-11-10T00:00:00.000+08:00'"
+              )
+            }
+            fieldToCol[k] = UserTbirthDate
+          }
+          
+          "gender" -> {
+            try {
+              if (v !is String) throw RuntimeException()
+              val gender = Gender.valueOf(v)
+              dataAsMap["gender"] = gender
+            } catch (ex: Exception){
+              return@put call.respondInvalidInputBody(
+                "Gender must be string of 'MALE' | 'FEMALE'"
+              )
+            }
+            fieldToCol[k] = UserTgender
+          }
+          
+          else -> {
+            return@put call.respondInvalidInputBody(
+              "Unknown property '$k'"
+            )
+          }
+        }}
         
         
         val conn = userServ.pool.create().awaitSingle()
@@ -273,11 +280,9 @@ fun Application.configureUserRoutes(){
           
           userServ.update(
             userId,
-            dataAsMap.mapKeys { (k,_) -> when(k){
-              "name" -> UserTname
-              "birthDate" -> UserTbirthDate
-              else -> TODO("Implement update of other columns")
-            } }
+            dataAsMap.entries.associateTo(mutableMapOf()) { (k,v) ->
+              fieldToCol[k]!! to v
+            }
           )
         }
         
@@ -288,6 +293,8 @@ fun Application.configureUserRoutes(){
         })
       }
     }
+    
+    
     
     
     
