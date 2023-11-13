@@ -7,10 +7,7 @@ import com.rrain.kupidon.routes.util.RequestError
 import com.rrain.kupidon.service.DatabaseService.userServ
 import com.rrain.kupidon.service.EmailService
 import com.rrain.kupidon.service.JwtService
-import com.rrain.kupidon.service.db.table.UserTbirthDate
-import com.rrain.kupidon.service.db.table.UserTemailVerified
-import com.rrain.kupidon.service.db.table.UserTname
-import com.rrain.kupidon.service.db.table.UserTgender
+import com.rrain.kupidon.service.db.table.*
 import com.rrain.kupidon.service.table.Column
 import com.rrain.kupidon.util.extension.respondInvalidInputBody
 import com.rrain.kupidon.util.extension.respondNoUser
@@ -209,7 +206,7 @@ fun Application.configureUserRoutes(){
           return@put call.respondInvalidInputBody()
         }
         
-        val fieldToCol = mutableMapOf<String,Column>()
+        val colToValue = mutableMapOf<Column,Any?>()
         
         dataAsMap.forEach { (k,v) -> when(k){
           
@@ -217,12 +214,12 @@ fun Application.configureUserRoutes(){
             try {
               if (v !is String) throw RuntimeException()
               if (v.isEmpty()) throw RuntimeException()
+              colToValue[UserTname] = v
             } catch (ex: Exception){
               return@put call.respondInvalidInputBody(
                 "Name must be string and must not be empty"
               )
             }
-            fieldToCol[k] = UserTname
           }
           
           "birthDate" -> {
@@ -240,27 +237,37 @@ fun Application.configureUserRoutes(){
                   "You must be at least 18 years old"
                 )
               }
-              dataAsMap["birthDate"] = birthDate.toLocalDate()
+              colToValue[UserTbirthDate] = birthDate.toLocalDate()
             } catch (ex: Exception){
               return@put call.respondInvalidInputBody(
                 "'birthDate' must be string '$zonedDateTimePattern'" +
                   ", for example '2005-11-10T00:00:00.000+08:00'"
               )
             }
-            fieldToCol[k] = UserTbirthDate
           }
           
           "gender" -> {
             try {
               if (v !is String) throw RuntimeException()
               val gender = Gender.valueOf(v)
-              dataAsMap["gender"] = gender
+              colToValue[UserTgender] = gender
             } catch (ex: Exception){
               return@put call.respondInvalidInputBody(
                 "Gender must be string of 'MALE' | 'FEMALE'"
               )
             }
-            fieldToCol[k] = UserTgender
+          }
+          
+          "aboutMe" -> {
+            try {
+              if (v !is String) throw RuntimeException()
+              if (v.length>2000) throw RuntimeException()
+              colToValue[UserTaboutMe] = v
+            } catch (ex: Exception){
+              return@put call.respondInvalidInputBody(
+                "'About me' must be string and must have max 2000 chars"
+              )
+            }
           }
           
           else -> {
@@ -278,12 +285,7 @@ fun Application.configureUserRoutes(){
           
           user ?: return@put call.respondNoUser()
           
-          userServ.update(
-            userId,
-            dataAsMap.entries.associateTo(mutableMapOf()) { (k,v) ->
-              fieldToCol[k]!! to v
-            }
-          )
+          userServ.update(userId, colToValue)
         }
         
         

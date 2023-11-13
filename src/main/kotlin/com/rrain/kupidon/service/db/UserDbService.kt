@@ -43,6 +43,7 @@ class UserDbService(val pool: ConnectionPool) {
     name = row[UserTname.tableJoinColNoQuotes(), String::class.java],
     birthDate = row[UserTbirthDate.tableJoinColNoQuotes(), LocalDate::class.java],
     gender = row[UserTgender.tableJoinColNoQuotes(), String::class.java]?.let(Gender::valueOf),
+    aboutMe = row[UserTaboutMe.tableJoinColNoQuotes(), String::class.java],
   )
   
   fun rowToCreatedUser(row: Row, rowMetadata: RowMetadata) = User(
@@ -59,6 +60,7 @@ class UserDbService(val pool: ConnectionPool) {
     name = row[UserTname.tableJoinColNoQuotes(), String::class.java],
     birthDate = row[UserTbirthDate.tableJoinColNoQuotes(), LocalDate::class.java],
     gender = row[UserTgender.tableJoinColNoQuotes(), String::class.java]?.let(Gender::valueOf),
+    aboutMe = row[UserTaboutMe.tableJoinColNoQuotes(), String::class.java],
   )
   
   

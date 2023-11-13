@@ -17,7 +17,7 @@ fun Application.initDatabase(){
   try {
     // create Role table
     run {
-      @Language("sql") val sql = """
+      val sql = """
         create table if not exists "Role" (
           "id" uuid default gen_random_uuid() primary key,
           "role" varchar(50) not null unique,
@@ -29,7 +29,7 @@ fun Application.initDatabase(){
     
     // fill Role table
     run {
-      @Language("sql") val sql = """
+      val sql = """
         insert into "Role" values (
           uuid'1bb41bb5-d396-4cd0-86a4-2e0354eb28b9',
           'ADMIN'
@@ -41,7 +41,7 @@ fun Application.initDatabase(){
     
     // create User table
     run {
-      @Language("sql") val sql = """
+      val sql = """
         create table if not exists "User" (
           "id" uuid default gen_random_uuid() primary key,
           
@@ -57,7 +57,8 @@ fun Application.initDatabase(){
           "name" varchar(100) not null,
           "birthDate" date not null,
           "gender" varchar(50) not null,
-          constraint gender_pattern check ("gender" in ('MALE','FEMALE'))
+          constraint gender_pattern check ("gender" in ('MALE','FEMALE')),
+          "aboutMe" varchar(2000) not null default ''
         );
       """.trimIndent()
       connection.createStatement(sql).execute().toMono().block()
@@ -67,7 +68,7 @@ fun Application.initDatabase(){
     run {
       // val now = zonedNow()
       // timestamptz '${now.format(timestamptzFormat)}'
-      @Language("sql") val sql = """
+      val sql = """
         insert into "User" (
           "id",
           "email","emailVerified","pwd",
@@ -93,7 +94,7 @@ fun Application.initDatabase(){
     run {
       val now = zonedNow()
       // timestamptz '${now.format(timestamptzFormat)}'
-      @Language("sql") val sql = """
+      val sql = """
         insert into "User" (
           "id",
           "email","emailVerified","pwd",
@@ -117,7 +118,7 @@ fun Application.initDatabase(){
     
     // create UserRole table
     run {
-      @Language("sql") val sql = """
+      val sql = """
         create table if not exists "UserRole" (
           "userId" uuid not null references "User"("id"),
           "roleId" uuid not null references "Role"("id"),
@@ -129,7 +130,7 @@ fun Application.initDatabase(){
     
     // fill UserRole table
     run {
-      @Language("sql") val sql = """
+      val sql = """
         insert into "UserRole" values (
           uuid'${appConfig["database.users.admin.id"]}',
           uuid'1bb41bb5-d396-4cd0-86a4-2e0354eb28b9'

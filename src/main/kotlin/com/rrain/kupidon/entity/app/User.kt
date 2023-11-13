@@ -28,6 +28,8 @@ data class User(
   // e.g. string representation "2023-06-29"
   val birthDate: LocalDate? = null,
   val gender: Gender? = null, // пол: мужской / женский
+  
+  val aboutMe: String? = null,
 )
 
 
