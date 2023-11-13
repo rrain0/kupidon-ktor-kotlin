@@ -3,10 +3,18 @@ package com.rrain.kupidon.service.table
 
 
 
-abstract class Table {
-  lateinit var dbName: String
-  lateinit var name: String
-  var cols: List<Column> = listOf()
+data class Table(
+  val dbName: String,
+  val name: String,
+) {
+  lateinit var cols: List<Column>
+  
+  fun setColumns(cols: List<Column>){
+    this.cols = cols
+    this.cols.forEach{
+      it.table = this
+    }
+  }
   
   fun allColNames() = cols
     .map { it.dbName }

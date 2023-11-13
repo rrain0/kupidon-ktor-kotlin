@@ -5,28 +5,30 @@ import com.rrain.kupidon.service.table.Table
 import java.util.*
 
 
-object RoleT : Table() {
-  init {
-    dbName = """"Role""""
-    cols = listOf(
-      RoleTid,
-      RoleTrole,
-    )
-  }
+
+
+
+val RoleTid = Column(
+  dbName = """"id"""",
+  name = "id",
+  type = UUID::class.java,
+)
+val RoleTrole = Column(
+  dbName = """"role"""",
+  name = "role",
+  type = String::class.java,
+)
+
+
+
+val RoleT = Table(
+  dbName = """"Role"""",
+  name = "Role",
+).apply {
+  setColumns(listOf(
+    RoleTid,
+    RoleTrole,
+  ))
 }
 
 
-object RoleTid : Column() {
-  init {
-    dbName = """"id""""
-    table = RoleT
-    type = UUID::class.java
-  }
-}
-object RoleTrole : Column() {
-  init {
-    dbName = """"role""""
-    table = RoleT
-    type = String::class.java
-  }
-}

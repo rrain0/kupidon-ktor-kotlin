@@ -7,11 +7,69 @@ import java.time.ZonedDateTime
 import java.util.*
 
 
-object UserT : Table() {
-  init {
-    dbName = """"User""""
-    name = "User"
-    cols = listOf(
+
+val UserTid = Column(
+  dbName = """"id"""",
+  name = "id",
+  type = UUID::class.java,
+)
+val UserTemail = Column(
+  dbName = """"email"""",
+  name = "email",
+  type = String::class.java,
+)
+val UserTemailVerified = Column(
+  dbName = """"emailVerified"""",
+  name = "emailVerified",
+  type = Boolean::class.javaObjectType,
+)
+val UserTpwd = Column(
+  dbName = """"pwd"""",
+  name = "pwd",
+  type = String::class.java,
+)
+val UserTcreated = Column(
+  dbName = """"created"""",
+  name = "created",
+  type = ZonedDateTime::class.java,
+)
+val UserTupdated = Column(
+  dbName = """"updated"""",
+  name = "updated",
+  type = ZonedDateTime::class.java,
+)
+val UserTenabled = Column(
+  dbName = """"enabled"""",
+  name = "enabled",
+  type = Boolean::class.javaObjectType,
+)
+val UserTname = Column(
+  dbName = """"name"""",
+  name = "name",
+  type = String::class.java,
+)
+val UserTbirthDate = Column(
+  dbName = """"birthDate"""",
+  name = "birthDate",
+  type = LocalDate::class.java,
+)
+val UserTgender = Column(
+  dbName = """"gender"""",
+  name = "gender",
+  type = String::class.java,
+)
+val UserTaboutMe = Column(
+  dbName = """"aboutMe"""",
+  name = "aboutMe",
+  type = String::class.java,
+)
+
+
+val UserT = Table(
+  dbName = """"User"""",
+  name = "User",
+).apply {
+    setColumns(listOf(
       UserTid,
       UserTemail,
       UserTemailVerified,
@@ -23,87 +81,7 @@ object UserT : Table() {
       UserTbirthDate,
       UserTgender,
       UserTaboutMe,
-    )
-  }
-}
-
-
-object UserTid : Column() {
-  init {
-    dbName = """"id""""
-    table = UserT
-    type = UUID::class.java
-  }
-}
-object UserTemail : Column() {
-  init {
-    dbName = """"email""""
-    table = UserT
-    type = String::class.java
-  }
-}
-object UserTemailVerified : Column() {
-  init {
-    dbName = """"emailVerified""""
-    table = UserT
-    type = Boolean::class.javaObjectType
-  }
-}
-object UserTpwd : Column() {
-  init {
-    dbName = """"pwd""""
-    table = UserT
-    type = String::class.java
-  }
-}
-object UserTcreated : Column() {
-  init {
-    dbName = """"created""""
-    table = UserT
-    type = ZonedDateTime::class.java
-  }
-}
-object UserTupdated : Column() {
-  init {
-    dbName = """"updated""""
-    table = UserT
-    type = ZonedDateTime::class.java
-  }
-}
-object UserTenabled : Column() {
-  init {
-    dbName = """"enabled""""
-    table = UserT
-    type = Boolean::class.javaObjectType
-  }
-}
-object UserTname : Column() {
-  init {
-    dbName = """"name""""
-    table = UserT
-    type = String::class.java
-  }
-}
-object UserTbirthDate : Column() {
-  init {
-    dbName = """"birthDate""""
-    table = UserT
-    type = LocalDate::class.java
-  }
-}
-object UserTgender : Column() {
-  init {
-    dbName = """"gender""""
-    table = UserT
-    type = String::class.java
-  }
-}
-object UserTaboutMe : Column() {
-  init {
-    dbName = """"aboutMe""""
-    table = UserT
-    type = String::class.java
-  }
+    ))
 }
 
 

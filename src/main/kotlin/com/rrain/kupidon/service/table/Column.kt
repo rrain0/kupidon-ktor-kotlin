@@ -3,11 +3,12 @@ package com.rrain.kupidon.service.table
 import org.intellij.lang.annotations.Language
 
 
-abstract class Column {
-  lateinit var dbName: String
+data class Column(
+  val dbName: String,
+  val name: String,
+  val type: Class<*>
+) {
   lateinit var table: Table
-  lateinit var type: Class<*>
-  
   
   
   // "User"."id"
