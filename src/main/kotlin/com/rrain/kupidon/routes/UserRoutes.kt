@@ -9,6 +9,7 @@ import com.rrain.kupidon.service.EmailService
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.db.table.*
 import com.rrain.kupidon.service.table.Column
+import com.rrain.kupidon.util.extension.respondBadRequest
 import com.rrain.kupidon.util.extension.respondInvalidInputBody
 import com.rrain.kupidon.util.extension.respondNoUser
 import com.rrain.kupidon.util.extension.use
@@ -97,22 +98,32 @@ fun Application.configureUserRoutes(){
       }
       
       if (!userToCreate.email.matches(Regex("^.+@.+$"))){
-        return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = RequestError.INVALID_INPUT_BODY.name
-          val msg = "Invalid email format"
-        })
+        return@post call.respondInvalidInputBody(
+          "Invalid email format"
+        )
       }
+      if (userToCreate.email.length>100)
+        return@post call.respondInvalidInputBody(
+          "Email max length is 100 chars"
+        )
       if (userToCreate.pwd.length<6){
-        return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = RequestError.INVALID_INPUT_BODY.name
-          val msg = "Password must be at least 6 chars length"
-        })
+        return@post call.respondInvalidInputBody(
+          "Password must be at least 6 chars length"
+        )
       }
+      if (userToCreate.pwd.length>200)
+        return@post call.respondInvalidInputBody(
+          "Password max length is 200 chars"
+        )
       if (userToCreate.name.isEmpty()){
-        return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = RequestError.INVALID_INPUT_BODY.name
-          val msg = "Name must not be empty"
-        })
+        return@post call.respondInvalidInputBody(
+          "Name must not be empty"
+        )
+      }
+      if (userToCreate.name.length>100){
+        return@post call.respondInvalidInputBody(
+          "Name max length is 100"
+        )
       }
       val nowWithUserZone = zonedNow()
         .withZoneSameInstant(userToCreate.birthDate.zone)
@@ -121,10 +132,9 @@ fun Application.configureUserRoutes(){
         .withSecond(0)
         .withNano(0)
       if (ChronoUnit.YEARS.between(userToCreate.birthDate, nowWithUserZone)<18){
-        return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = RequestError.INVALID_INPUT_BODY.name
-          val msg = "You must be at least 18 years old"
-        })
+        return@post call.respondInvalidInputBody(
+          "You must be at least 18 years old"
+        )
       }
       
       
@@ -141,10 +151,10 @@ fun Application.configureUserRoutes(){
         if (ex is PostgresqlException){
           ex.errorDetails.constraintName.let { cons ->
             if (cons.isPresent && cons.get() == "User_email_key"){
-              return@post call.respond(HttpStatusCode.BadRequest, object {
-                val code = "DUPLICATE_EMAIL"
-                val msg = "User with such email already exists"
-              })
+              return@post call.respondBadRequest(
+                code = "DUPLICATE_EMAIL",
+                msg = "User with such email already exists",
+              )
             }
           }
         }
@@ -214,10 +224,11 @@ fun Application.configureUserRoutes(){
             try {
               if (v !is String) throw RuntimeException()
               if (v.isEmpty()) throw RuntimeException()
+              if (v.length>100) throw RuntimeException()
               colToValue[UserTname] = v
             } catch (ex: Exception){
               return@put call.respondInvalidInputBody(
-                "Name must be string and must not be empty"
+                "Name must be string and must not be empty and name max length is 100"
               )
             }
           }

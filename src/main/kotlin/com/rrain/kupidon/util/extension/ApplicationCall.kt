@@ -7,6 +7,17 @@ import io.ktor.server.response.*
 
 
 
+suspend inline fun ApplicationCall.respondBadRequest
+(code: String, msg: String)
+= this.respond(
+  HttpStatusCode.BadRequest,
+  object {
+    val code = code
+    val msg = msg
+  }
+)
+
+
 // Пользователь не найден
 suspend inline fun ApplicationCall.respondNoUser() = this.respond(
   HttpStatusCode.BadRequest,
