@@ -71,9 +71,9 @@ class UserDbService(val pool: ConnectionPool) {
       select
         ${UserT.allColsAs()},
         ${RoleT.allColsAggArrNoNulls()}
-      from ${UserT.name}
-      left join ${UserRoleT.name} on ${UserTid.tableDotCol()} = ${UserRoleTuserId.tableDotCol()}
-      left join ${RoleT.name} on ${RoleTid.tableDotCol()} = ${UserRoleTroleId.tableDotCol()}
+      from ${UserT.dbName}
+      left join ${UserRoleT.dbName} on ${UserTid.tableDotCol()} = ${UserRoleTuserId.tableDotCol()}
+      left join ${RoleT.dbName} on ${RoleTid.tableDotCol()} = ${UserRoleTroleId.tableDotCol()}
 	    where ${UserTid.tableDotCol()} = $1
 	    group by ${UserTid.tableDotCol()}
     """.trimIndent()
@@ -99,9 +99,9 @@ class UserDbService(val pool: ConnectionPool) {
       select
         ${UserT.allColsAs()},
         ${RoleT.allColsAggArrNoNulls()}
-      from ${UserT.name}
-      left join ${UserRoleT.name} on ${UserTid.tableDotCol()} = ${UserRoleTuserId.tableDotCol()}
-      left join ${RoleT.name} on ${RoleTid.tableDotCol()} = ${UserRoleTroleId.tableDotCol()}
+      from ${UserT.dbName}
+      left join ${UserRoleT.dbName} on ${UserTid.tableDotCol()} = ${UserRoleTuserId.tableDotCol()}
+      left join ${RoleT.dbName} on ${RoleTid.tableDotCol()} = ${UserRoleTroleId.tableDotCol()}
 	    where ${UserTemail.tableDotCol()} = $1
 	    group by ${UserTid.tableDotCol()}
     """.trimIndent()
@@ -124,16 +124,16 @@ class UserDbService(val pool: ConnectionPool) {
   suspend fun create(user: User, connection: Connection? = null): User {
     val conn = connection ?: pool.create().awaitSingle()
       @Language("sql") val sql = """
-        insert into ${UserT.name} (
-          ${UserTemail.name},
-          ${UserTpwd.name},
+        insert into ${UserT.dbName} (
+          ${UserTemail.dbName},
+          ${UserTpwd.dbName},
           
-          ${UserTcreated.name},
-          ${UserTupdated.name},
+          ${UserTcreated.dbName},
+          ${UserTupdated.dbName},
           
-          ${UserTname.name},
-          ${UserTgender.name},
-          ${UserTbirthDate.name}
+          ${UserTname.dbName},
+          ${UserTgender.dbName},
+          ${UserTbirthDate.dbName}
         ) values (
           $1,
           $2,
@@ -170,7 +170,7 @@ class UserDbService(val pool: ConnectionPool) {
     val vs = values.toList()
     val idIdx = vs.size+1
     @Language("sql") val sql = """
-        update ${UserT.name} set
+        update ${UserT.dbName} set
         ${vs.toSqlBind()}
         where ${UserTid.tableDotCol()} = $$idIdx
         returning ${UserT.allColsAs()}

@@ -7,7 +7,7 @@ import java.util.*
 
 object UserRoleT : Table() {
   init {
-    name = """"UserRole""""
+    dbName = """"UserRole""""
     cols = listOf(
       UserRoleTuserId,
       UserRoleTroleId,
@@ -18,14 +18,14 @@ object UserRoleT : Table() {
 
 object UserRoleTuserId : Column() {
   init {
-    name = """"userId""""
+    dbName = """"userId""""
     table = UserRoleT
     type = UUID::class.java
   }
 }
 object UserRoleTroleId : Column() {
   init {
-    name = """"roleId""""
+    dbName = """"roleId""""
     table = UserRoleT
     type = UUID::class.java
   }

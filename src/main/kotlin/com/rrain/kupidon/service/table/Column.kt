@@ -4,7 +4,7 @@ import org.intellij.lang.annotations.Language
 
 
 abstract class Column {
-  lateinit var name: String
+  lateinit var dbName: String
   lateinit var table: Table
   lateinit var type: Class<*>
   
@@ -12,15 +12,15 @@ abstract class Column {
   
   // "User"."id"
   @Language("sql")
-  fun tableDotCol() = """${table.name}.${name}"""
+  fun tableDotCol() = """${table.dbName}.${dbName}"""
   
   // "User.id"
   @Language("sql")
-  fun tableJoinCol() = """${table.name.dropLast(1)}.${name.drop(1)}"""
+  fun tableJoinCol() = """${table.dbName.dropLast(1)}.${dbName.drop(1)}"""
   
   // User.id
   @Language("sql")
-  fun tableJoinColNoQuotes() = """${table.name.drop(1).dropLast(1)}.${name.drop(1).dropLast(1)}"""
+  fun tableJoinColNoQuotes() = """${table.dbName.drop(1).dropLast(1)}.${dbName.drop(1).dropLast(1)}"""
   
   // User.idArr
   @Language("sql")

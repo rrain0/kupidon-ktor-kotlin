@@ -9,7 +9,8 @@ import java.util.*
 
 object UserT : Table() {
   init {
-    name = """"User""""
+    dbName = """"User""""
+    name = "User"
     cols = listOf(
       UserTid,
       UserTemail,
@@ -29,77 +30,77 @@ object UserT : Table() {
 
 object UserTid : Column() {
   init {
-    name = """"id""""
+    dbName = """"id""""
     table = UserT
     type = UUID::class.java
   }
 }
 object UserTemail : Column() {
   init {
-    name = """"email""""
+    dbName = """"email""""
     table = UserT
     type = String::class.java
   }
 }
 object UserTemailVerified : Column() {
   init {
-    name = """"emailVerified""""
+    dbName = """"emailVerified""""
     table = UserT
     type = Boolean::class.javaObjectType
   }
 }
 object UserTpwd : Column() {
   init {
-    name = """"pwd""""
+    dbName = """"pwd""""
     table = UserT
     type = String::class.java
   }
 }
 object UserTcreated : Column() {
   init {
-    name = """"created""""
+    dbName = """"created""""
     table = UserT
     type = ZonedDateTime::class.java
   }
 }
 object UserTupdated : Column() {
   init {
-    name = """"updated""""
+    dbName = """"updated""""
     table = UserT
     type = ZonedDateTime::class.java
   }
 }
 object UserTenabled : Column() {
   init {
-    name = """"enabled""""
+    dbName = """"enabled""""
     table = UserT
     type = Boolean::class.javaObjectType
   }
 }
 object UserTname : Column() {
   init {
-    name = """"name""""
+    dbName = """"name""""
     table = UserT
     type = String::class.java
   }
 }
 object UserTbirthDate : Column() {
   init {
-    name = """"birthDate""""
+    dbName = """"birthDate""""
     table = UserT
     type = LocalDate::class.java
   }
 }
 object UserTgender : Column() {
   init {
-    name = """"gender""""
+    dbName = """"gender""""
     table = UserT
     type = String::class.java
   }
 }
 object UserTaboutMe : Column() {
   init {
-    name = """"aboutMe""""
+    dbName = """"aboutMe""""
     table = UserT
     type = String::class.java
   }

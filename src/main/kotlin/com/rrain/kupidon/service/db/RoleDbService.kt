@@ -11,7 +11,6 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingle
 import org.intellij.lang.annotations.Language
-import org.jetbrains.exposed.sql.*
 import reactor.kotlin.core.publisher.toFlux
 
 
@@ -20,7 +19,7 @@ class RoleDbService(val pool: ConnectionPool) {
   suspend fun exists(role: String, connection: Connection? = null): Boolean {
     val conn = connection ?: pool.create().awaitSingle()
     @Language("sql") val sql = """
-      select count(1) from ${RoleT.name} where ${RoleTrole.name} = $1
+      select count(1) from ${RoleT.dbName} where ${RoleTrole.dbName} = $1
     """.trimIndent()
     return try {
       conn
@@ -43,7 +42,7 @@ class RoleDbService(val pool: ConnectionPool) {
   suspend fun getAll(connection: Connection? = null): Flow<Role> {
     val conn = connection ?: pool.create().awaitSingle()
     @Language("sql") val sql = """
-      select ${RoleT.allColsAs()} from ${RoleT.name}
+      select ${RoleT.allColsAs()} from ${RoleT.dbName}
     """.trimIndent()
     return try {
       conn

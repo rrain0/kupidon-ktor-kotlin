@@ -49,7 +49,7 @@ fun Any.toSqlBind(): Any {
 
 fun Map<Column,Any?>.toSql(): String {
   return this
-    .map { (k,v) -> "${k.name}=${v.toSqlLiteral()}" }
+    .map { (k,v) -> "${k.dbName}=${v.toSqlLiteral()}" }
     .joinToString(",\n")
 }
 
@@ -64,7 +64,7 @@ fun List<Pair<Column,*>>.toSqlBind(startIndex: Int = 0): String {
   return this
     .mapIndexed { i,(k,_) ->
       val idx = startIndex + i + 1
-      "${k.name}=$$idx"
+      "${k.dbName}=$$idx"
     }
     .joinToString(",\n")
 }
