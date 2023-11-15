@@ -79,7 +79,7 @@ fun Application.initDatabase(){
         
           '${appConfig["database.users.admin.email"]}',
           true,
-          '${PwdHashing.generateHash(appConfig["database.users.admin.pwd"])}',
+          '${appConfig["database.users.admin.pwd"].let(PwdHashing::generateHash)}',
           
           timestamptz'2023-06-02T18:19:07.186+08:00',
           timestamptz'2023-06-02T18:19:07.186+08:00',
@@ -103,7 +103,7 @@ fun Application.initDatabase(){
         ) values (
           uuid'628671b8-aca9-40dd-90db-5a07d6b33025',
         
-          'usual_user@test.test',true,'${PwdHashing.generateHash("usual")}',
+          'usual_user@test.test',true,'${"usual".let(PwdHashing::generateHash)}',
           
           timestamptz'2023-06-04T15:21:18.094+08:00',
           timestamptz'2023-06-04T15:21:18.094+08:00',

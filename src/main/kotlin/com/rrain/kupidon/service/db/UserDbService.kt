@@ -150,7 +150,7 @@ class UserDbService(val pool: ConnectionPool) {
       conn
         .createStatement(sql)
         .bind("$1",user.email!!)
-        .bind("$2",user.pwd!!.let(PwdHashing::generateHash))
+        .bind("$2",user.pwd!!)
         .bind("$3",user.name!!)
         .bind("$4",user.gender!!.name)
         .bind("$5",user.birthDate!!)

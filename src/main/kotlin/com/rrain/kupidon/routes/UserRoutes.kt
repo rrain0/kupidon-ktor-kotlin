@@ -7,6 +7,7 @@ import com.rrain.kupidon.routes.util.RequestError
 import com.rrain.kupidon.service.DatabaseService.userServ
 import com.rrain.kupidon.service.EmailService
 import com.rrain.kupidon.service.JwtService
+import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.service.db.table.*
 import com.rrain.kupidon.service.table.Column
 import com.rrain.kupidon.util.extension.respondBadRequest
@@ -53,6 +54,8 @@ fun Application.configureUserRoutes(){
     
     
     
+    
+    
     authenticate {
       get(UserRoutes.current) {
         val principal = call.principal<JWTPrincipal>()!!
@@ -60,7 +63,7 @@ fun Application.configureUserRoutes(){
         val user = userServ.getById(userId)
         user ?: return@get call.respondNoUser()
         call.respond(object {
-          val user = user.copy(pwd=null)
+          val user = user.toMapToSend()
         })
       }
     }
@@ -68,17 +71,26 @@ fun Application.configureUserRoutes(){
     
     
     
+    
+    
     get(UserRoutes.getById) {
-      var user = try { userServ.getById(call.parameters["id"]!!) }
-      catch (ex: R2dbcBadGrammarException){
+      val user = try { userServ.getById(call.parameters["id"]!!) }
+      catch (ex: Exception){
         null
       }
       
-      user = user?.copy(pwd=null)
-      call.respond(object {
-        val user = user
+      user ?: return@get call.respond(
+        HttpStatusCode.BadRequest,
+        object{ val user = null }
+      )
+      
+      
+      return@get call.respond(object {
+        val user = user.toMapToSend()
       })
     }
+    
+    
     
     
     
@@ -106,6 +118,7 @@ fun Application.configureUserRoutes(){
         return@post call.respondInvalidInputBody(
           "Email max length is 100 chars"
         )
+      
       if (userToCreate.pwd.length<6){
         return@post call.respondInvalidInputBody(
           "Password must be at least 6 chars length"
@@ -115,6 +128,7 @@ fun Application.configureUserRoutes(){
         return@post call.respondInvalidInputBody(
           "Password max length is 200 chars"
         )
+      
       if (userToCreate.name.isEmpty()){
         return@post call.respondInvalidInputBody(
           "Name must not be empty"
@@ -125,6 +139,7 @@ fun Application.configureUserRoutes(){
           "Name max length is 100"
         )
       }
+      
       val nowWithUserZone = zonedNow()
         .withZoneSameInstant(userToCreate.birthDate.zone)
         .withHour(0)
@@ -140,13 +155,13 @@ fun Application.configureUserRoutes(){
       
       val tryUser = User(
         email = userToCreate.email,
-        pwd = userToCreate.pwd,
+        pwd = userToCreate.pwd.let(PwdHashing::generateHash),
         name = userToCreate.name,
         gender = userToCreate.gender,
         birthDate = userToCreate.birthDate.toLocalDate(),
       )
       
-      var user = try { userServ.create(tryUser) }
+      val user = try { userServ.create(tryUser) }
       catch (ex: R2dbcDataIntegrityViolationException){
         if (ex is PostgresqlException){
           ex.errorDetails.constraintName.let { cons ->
@@ -191,10 +206,9 @@ fun Application.configureUserRoutes(){
       call.response.cookies.append(
         JwtService.generateRefreshTokenCookie(refreshToken,domain)
       )
-      user = user.copy(pwd=null)
       call.respond(object {
         val accessToken = accessToken
-        val user = user
+        val user = user.toMapToSend()
       })
     }
     
@@ -281,6 +295,18 @@ fun Application.configureUserRoutes(){
             }
           }
           
+          "pwd" -> {
+            try{
+              if (v !is String) throw RuntimeException()
+              if (v.length<6 || v.length>200) throw RuntimeException()
+              colToValue[UserTpwd] = v.let(PwdHashing::generateHash)
+            } catch (ex: Exception) {
+              return@put call.respondInvalidInputBody(
+                "Password must be string and its length must be from 6 to 200 chars"
+              )
+            }
+          }
+          
           else -> {
             return@put call.respondInvalidInputBody(
               "Unknown property '$k'"
@@ -291,7 +317,7 @@ fun Application.configureUserRoutes(){
         
         val conn = userServ.pool.create().awaitSingle()
         conn.transactionIsolationLevel = IsolationLevel.SERIALIZABLE
-        var user = conn.use {
+        val user = conn.use {
           val user = userServ.getById(userId)
           
           user ?: return@put call.respondNoUser()
@@ -300,9 +326,8 @@ fun Application.configureUserRoutes(){
         }
         
         
-        user = user.copy(pwd=null)
         call.respond(object {
-          val user = user
+          val user = user.toMapToSend()
         })
       }
     }

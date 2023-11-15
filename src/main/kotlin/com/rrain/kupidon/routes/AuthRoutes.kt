@@ -46,7 +46,7 @@ fun Application.configureAuthRoutes(){
       val pwd = loginRequest.pwd
       
       
-      var user = userServ.getByEmail(login)
+      val user = userServ.getByEmail(login)
       user ?: return@post call.respond(HttpStatusCode.BadRequest, object {
         val code = "NO_USER"
         val msg = "There is no user with such login-password"
@@ -71,10 +71,9 @@ fun Application.configureAuthRoutes(){
       call.response.cookies.append(
         JwtService.generateRefreshTokenCookie(refreshToken,domain)
       )
-      user = user.copy(pwd=null)
       call.respond(object {
         val accessToken = accessToken
-        val user = user
+        val user = user.toMapToSend()
       })
     }
     

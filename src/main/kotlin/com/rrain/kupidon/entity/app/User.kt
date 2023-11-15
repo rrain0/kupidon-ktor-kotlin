@@ -30,6 +30,22 @@ data class User(
   val gender: Gender? = null, // пол: мужской / женский
   
   val aboutMe: String? = null,
-)
+){
+  
+  fun toMapToSend(): MutableMap<String,Any?> {
+    return mutableMapOf(
+      "id" to id,
+      "email" to email,
+      "emailVerified" to emailVerified,
+      "roles" to roles,
+      "created" to created,
+      "updated" to updated,
+      "name" to name,
+      "birthDate" to birthDate,
+      "gender" to gender,
+      "aboutMe" to aboutMe,
+    )
+  }
+}
 
 
