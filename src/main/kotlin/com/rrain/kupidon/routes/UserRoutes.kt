@@ -161,20 +161,20 @@ fun Application.configureUserRoutes(){
         birthDate = userToCreate.birthDate.toLocalDate(),
       )
       
-      val user = try { userServ.create(tryUser) }
-      catch (ex: R2dbcDataIntegrityViolationException){
-        if (ex is PostgresqlException){
-          ex.errorDetails.constraintName.let { cons ->
-            if (cons.isPresent && cons.get() == "User_email_key"){
-              return@post call.respondBadRequest(
-                code = "DUPLICATE_EMAIL",
-                msg = "User with such email already exists",
-              )
-            }
-          }
-        }
-        throw ex
+      
+      val conn = userServ.pool.create().awaitSingle()
+      conn.transactionIsolationLevel = IsolationLevel.SERIALIZABLE
+      val user = conn.use {
+        val userByEmail = userServ.getByEmail(tryUser.email!!, conn)
+        
+        if (userByEmail!=null) return@post call.respondBadRequest(
+          code = "DUPLICATE_EMAIL",
+          msg = "User with such email already exists",
+        )
+        
+        userServ.create(tryUser, conn)
       }
+      
       
       val id = user.id!!
       val verificationToken = JwtService.generateVerificationAccessToken(id, user.email!!)
@@ -231,6 +231,7 @@ fun Application.configureUserRoutes(){
         }
         
         val colToValue = mutableMapOf<Column,Any?>()
+        lateinit var currentPwd: String
         
         dataAsMap.forEach { (k,v) -> when(k){
           
@@ -295,6 +296,18 @@ fun Application.configureUserRoutes(){
             }
           }
           
+          "currentPwd" -> {
+            try{
+              if (v !is String) throw RuntimeException()
+              if (v.length<1 || v.length>200) throw RuntimeException()
+              currentPwd = v.let(PwdHashing::generateHash)
+            } catch (ex: Exception) {
+              return@put call.respondInvalidInputBody(
+                "Current password must be string and its length must be from 1 to 200 chars"
+              )
+            }
+          }
+          
           "pwd" -> {
             try{
               if (v !is String) throw RuntimeException()
@@ -318,11 +331,18 @@ fun Application.configureUserRoutes(){
         val conn = userServ.pool.create().awaitSingle()
         conn.transactionIsolationLevel = IsolationLevel.SERIALIZABLE
         val user = conn.use {
-          val user = userServ.getById(userId)
+          val user = userServ.getById(userId, conn)
           
           user ?: return@put call.respondNoUser()
           
-          userServ.update(userId, colToValue)
+          if (user.pwd!=currentPwd) {
+            return@put call.respondBadRequest(
+              "INVALID_PWD",
+              "Invalid current password"
+            )
+          }
+          
+          userServ.update(userId, colToValue, conn)
         }
         
         
@@ -418,9 +438,8 @@ fun Application.configureUserRoutes(){
       
       
       val conn = userServ.pool.create().awaitSingle()
-      try {
-        conn.transactionIsolationLevel = IsolationLevel.SERIALIZABLE
-        conn.beginTransaction()
+      conn.transactionIsolationLevel = IsolationLevel.SERIALIZABLE
+      conn.use {
         val user = userServ.getById(decodedJwt.subject, conn)
         // пользователь не найден
         if (user==null){
@@ -448,11 +467,9 @@ fun Application.configureUserRoutes(){
         }
         userServ.update(
           decodedJwt.subject,
-          mapOf(UserTemailVerified to true)
+          mapOf(UserTemailVerified to true),
+          conn
         )
-        conn.commitTransaction()
-      } finally {
-        conn.close()
       }
       
       return@get call.respondText(

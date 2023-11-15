@@ -5,6 +5,7 @@ import com.rrain.kupidon.service.DatabaseService
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.service.TokenError
+import com.rrain.kupidon.util.extension.respondBadRequest
 import com.rrain.kupidon.util.extension.respondInvalidInputBody
 import com.rrain.kupidon.util.extension.respondNoUser
 import io.ktor.http.*
@@ -47,16 +48,13 @@ fun Application.configureAuthRoutes(){
       
       
       val user = userServ.getByEmail(login)
-      user ?: return@post call.respond(HttpStatusCode.BadRequest, object {
-        val code = "NO_USER"
-        val msg = "There is no user with such login-password"
-      })
       
-      if (!PwdHashing.checkPwd(pwd, user.pwd!!))
-        return@post call.respond(HttpStatusCode.BadRequest, object {
-          val code = "NO_USER"
-          val msg = "There is no user with such login-password"
-        })
+      
+      if (user==null || !PwdHashing.checkPwd(pwd, user.pwd!!))
+        return@post call.respondBadRequest(
+          code = "NO_USER",
+          msg = "There is no user with such login-password",
+        )
       
       val id = user.id!!
       val roles = user.roles
@@ -83,12 +81,9 @@ fun Application.configureAuthRoutes(){
       
       val refreshToken = call.request.cookies[JwtService.refreshTokenCookieName]
       
-      refreshToken ?: return@get call.respond(
-        HttpStatusCode.BadRequest,
-        object {
-          val code = "NO_REFRESH_TOKEN_COOKIE"
-          val msg = "No refresh token cookie"
-        }
+      refreshToken ?: return@get call.respondBadRequest(
+        code = "NO_REFRESH_TOKEN_COOKIE",
+        msg = "No refresh token cookie",
       )
       
       val verifier = JwtService.refreshTokenVerifier
