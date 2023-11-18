@@ -1,7 +1,7 @@
 package com.rrain.kupidon.service.db.table
 
-import com.rrain.kupidon.service.table.Column
-import com.rrain.kupidon.service.table.Table
+import com.rrain.kupidon.service.db.`table-interface`.Column
+import com.rrain.kupidon.service.db.`table-interface`.Table
 import java.util.*
 
 

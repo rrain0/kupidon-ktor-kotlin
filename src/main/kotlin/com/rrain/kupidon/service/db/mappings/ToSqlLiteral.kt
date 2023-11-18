@@ -1,7 +1,7 @@
 package com.rrain.kupidon.service.db.mappings
 
 import com.rrain.kupidon.entity.app.Role
-import com.rrain.kupidon.service.table.Column
+import com.rrain.kupidon.service.db.`table-interface`.Column
 import com.rrain.kupidon.util.*
 import io.r2dbc.spi.Statement
 import java.time.LocalDate

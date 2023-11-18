@@ -1,6 +1,6 @@
 package com.rrain.kupidon.routes
 
-import com.rrain.kupidon.service.DatabaseService
+import com.rrain.kupidon.service.db.DatabaseService
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*

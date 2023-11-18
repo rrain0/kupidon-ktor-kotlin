@@ -6,7 +6,7 @@ import io.ktor.server.routing.*
 
 
 object PwaManifestRoute {
-  val manifest = "/manifest.json"
+  const val manifest = "/manifest.json"
 }
 
 
@@ -36,7 +36,8 @@ fun Application.configurePwaManifestRoute(){
       //  Sec-Fetch-User = [?1]
       //  Accept-Language = [ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7]
       //}
-      println("call.parameters ${call.parameters}")
+      
+      //println("call.parameters ${call.parameters}")
       
       
       val manifest = mutableMapOf(

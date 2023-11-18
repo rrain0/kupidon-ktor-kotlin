@@ -1,4 +1,4 @@
-package com.rrain.kupidon.service.table
+package com.rrain.kupidon.service.db.`table-interface`
 
 
 

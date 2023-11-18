@@ -9,7 +9,7 @@ import com.rrain.kupidon.routes.test.configureAuthorizationTestRoutes
 import com.rrain.kupidon.routes.test.configureHttpTestRoutes
 import com.rrain.kupidon.routes.test.configureJsonSerializationTestRoutes
 import com.rrain.kupidon.routes.test.configureSendEmailTestRoutes
-import com.rrain.kupidon.service.configureDatabaseService
+import com.rrain.kupidon.service.db.configureDatabaseService
 import com.rrain.kupidon.service.configureEmailService
 import com.rrain.kupidon.service.configureJwtService
 import com.rrain.kupidon.service.configurePwdHashing

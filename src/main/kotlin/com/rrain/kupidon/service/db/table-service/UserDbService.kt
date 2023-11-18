@@ -1,13 +1,12 @@
-package com.rrain.kupidon.service.db
+package com.rrain.kupidon.service.db.`table-service`
 
 import com.rrain.kupidon.entity.app.Role
 import com.rrain.kupidon.entity.app.Gender
 import com.rrain.kupidon.entity.app.User
-import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.service.db.mappings.bindList
 import com.rrain.kupidon.service.db.mappings.toSqlBind
 import com.rrain.kupidon.service.db.table.*
-import com.rrain.kupidon.service.table.Column
+import com.rrain.kupidon.service.db.`table-interface`.Column
 import com.rrain.kupidon.util.cast
 import io.r2dbc.pool.ConnectionPool
 import io.r2dbc.spi.Connection

@@ -1,7 +1,7 @@
 package com.rrain.kupidon.routes
 
 import com.auth0.jwt.exceptions.*
-import com.rrain.kupidon.service.DatabaseService
+import com.rrain.kupidon.service.db.DatabaseService
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.service.TokenError

@@ -1,6 +1,4 @@
-package com.rrain.kupidon.service.table
-
-import org.intellij.lang.annotations.Language
+package com.rrain.kupidon.service.db.`table-interface`
 
 
 data class Column(

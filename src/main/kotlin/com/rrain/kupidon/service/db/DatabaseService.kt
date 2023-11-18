@@ -1,7 +1,7 @@
-package com.rrain.kupidon.service
+package com.rrain.kupidon.service.db
 
-import com.rrain.kupidon.service.db.RoleDbService
-import com.rrain.kupidon.service.db.UserDbService
+import com.rrain.kupidon.service.db.`table-service`.RoleDbService
+import com.rrain.kupidon.service.db.`table-service`.UserDbService
 import com.rrain.kupidon.util.extension.get
 import io.ktor.server.application.*
 import io.r2dbc.pool.ConnectionPool
@@ -123,7 +123,7 @@ object DatabaseService {
   lateinit var userServ: UserDbService
   
   fun setConnectionPool(pool: ConnectionPool){
-    this.pool = pool
+    DatabaseService.pool = pool
     roleServ = RoleDbService(pool)
     userServ = UserDbService(pool)
   }

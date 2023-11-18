@@ -1,4 +1,4 @@
-package com.rrain.kupidon.service.db
+package com.rrain.kupidon.service.db.`table-service`
 
 import com.rrain.kupidon.entity.app.Role
 import com.rrain.kupidon.service.db.table.RoleT

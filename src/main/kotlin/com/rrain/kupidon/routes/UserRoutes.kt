@@ -3,13 +3,12 @@ package com.rrain.kupidon.routes
 import com.auth0.jwt.exceptions.*
 import com.rrain.kupidon.entity.app.Gender
 import com.rrain.kupidon.entity.app.User
-import com.rrain.kupidon.routes.util.RequestError
-import com.rrain.kupidon.service.DatabaseService.userServ
+import com.rrain.kupidon.service.db.DatabaseService.userServ
 import com.rrain.kupidon.service.EmailService
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.service.db.table.*
-import com.rrain.kupidon.service.table.Column
+import com.rrain.kupidon.service.db.`table-interface`.Column
 import com.rrain.kupidon.util.extension.respondBadRequest
 import com.rrain.kupidon.util.extension.respondInvalidInputBody
 import com.rrain.kupidon.util.extension.respondNoUser
@@ -25,10 +24,7 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.r2dbc.postgresql.api.PostgresqlException
 import io.r2dbc.spi.IsolationLevel
-import io.r2dbc.spi.R2dbcBadGrammarException
-import io.r2dbc.spi.R2dbcDataIntegrityViolationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactor.awaitSingle
 import org.apache.commons.mail.EmailException
@@ -178,6 +174,7 @@ fun Application.configureUserRoutes(){
       
       val id = user.id!!
       val verificationToken = JwtService.generateVerificationAccessToken(id, user.email!!)
+      val lang = call.parameters["lang"]
       
       launch {
         try {
