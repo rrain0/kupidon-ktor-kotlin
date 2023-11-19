@@ -28,58 +28,44 @@ object EmailService {
   lateinit var fromPwd: String
   
   
+  // https://commons.apache.org/proper/commons-email/userguide.html
+  
+  
   fun sendEmail(emailMessage: EmailMessage){
-    val email = SimpleEmail()
-    email.hostName = "smtp.yandex.ru"
-    email.setSmtpPort(465)
-    email.setAuthenticator(DefaultAuthenticator(fromEmail, fromPwd))
-    email.isSSLOnConnect = true
-    email.setFrom(fromEmail)
-    email.addTo(emailMessage.to)
-    email.subject = emailMessage.subject
-    email.setMsg(emailMessage.body)
-    email.send()
+    SimpleEmail().run {
+      hostName = "smtp.yandex.ru"
+      setSmtpPort(465)
+      setAuthenticator(DefaultAuthenticator(fromEmail, fromPwd))
+      isSSLOnConnect = true
+      setFrom(fromEmail)
+      addTo(emailMessage.to)
+      subject = emailMessage.title
+      setMsg(emailMessage.content)
+      send()
+    }
   }
   
   
-  // https://commons.apache.org/proper/commons-email/userguide.html
-  fun sendVerificationEmail(user: User, verificationUrl: String) {
-    // todo Ссылка действительна 1 сутки, иначе войдите в приложение и запросите новую или смените почту.
-    
-    @Language("html") val html = """
-      <html lang="ru">
-      <head>
-        <meta charset="utf-8">
-        <title>Верификация почты в приложении Купидон</title>
-      </head>
-      <body>
-        <p>${user.name}, добро пожаловать в приложение Купидон!</p>
-        <p>Для того, чтобы подтвердить свой адрес электронной почты, просто перейдите по ссылке:</p>
-        <p><a href="$verificationUrl">$verificationUrl</a></p>
-        <p>Ссылка действительна 1 сутки.</p>
-      </body>
-      </html>
-    """.trimIndent()
-    
+  fun sendHtmlEmail(emailMessage: EmailMessage){
     HtmlEmail().run {
       hostName = "smtp.yandex.ru"
       setSmtpPort(465)
       setAuthenticator(DefaultAuthenticator(fromEmail, fromPwd))
       isSSLOnConnect = true
-      setFrom(fromEmail, "Купидон")
-      addTo(user.email!!)
-      subject = "Купидон - верификация"
+      setFrom(fromEmail, emailMessage.fromName)
+      addTo(emailMessage.to)
+      subject = emailMessage.title
       setCharset(StandardCharsets.UTF_8.name())
-      setHtmlMsg(html)
+      setHtmlMsg(emailMessage.content)
       send()
     }
-    
   }
   
 }
 
 data class EmailMessage(
+  val fromName: String, // Отображаемое имя рядом с почтой отправителя
   val to: String, // получатель
-  val subject: String, // тема письма
-  val body: String, // тело письма
+  val title: String, // тема письма
+  val content: String, // тело письма
 )

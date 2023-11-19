@@ -3,30 +3,37 @@ package com.rrain.kupidon.service.lang
 
 
 
-object LangService {
-  
-  
-  val AppLangs = listOf("en-US","ru-RU")
-  
-  
-  fun <T : UiValue>List<T>.prepareUiValues(langs: List<String>): List<T> {
-    return this
-      .sortedWith { a,b ->
-        if (a.value==b.value){
-          val langIdxA = langs.indexOf(a.lang)
-            .let { if (it==-1) langs.size else it }
-          val langIdxB = langs.indexOf(b.lang)
-            .let { if (it==-1) langs.size else it }
-          langIdxA - langIdxB
-        }
-        0
-      }
-      .distinctBy { it.value }
-  }
-  
-  
-}
 
+enum class AppLang(
+  val value: String,
+) {
+  enUS("en-US"),
+  ruRU("ru-RU"),
+  ;
+  
+  companion object {
+    fun getByValueOrDefault(value: String?): AppLang {
+      return AppLang.entries.find { it.value==value } ?: DefaultLang
+    }
+  }
+}
+val DefaultLang = AppLang.enUS
+
+
+fun <T : UiValue>List<T>.prepareUiValues(langs: List<String>): List<T> {
+  return this
+    .sortedWith { a,b ->
+      if (a.value==b.value){
+        val langIdxA = langs.indexOf(a.lang)
+          .let { if (it==-1) langs.size else it }
+        val langIdxB = langs.indexOf(b.lang)
+          .let { if (it==-1) langs.size else it }
+        langIdxA - langIdxB
+      }
+      else 0
+    }
+    .distinctBy { it.value }
+}
 
 abstract class UiValue {
   abstract val value: String

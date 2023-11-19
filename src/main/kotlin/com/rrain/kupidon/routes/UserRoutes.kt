@@ -3,12 +3,19 @@ package com.rrain.kupidon.routes
 import com.auth0.jwt.exceptions.*
 import com.rrain.kupidon.entity.app.Gender
 import com.rrain.kupidon.entity.app.User
+import com.rrain.kupidon.service.EmailMessage
 import com.rrain.kupidon.service.db.DatabaseService.userServ
 import com.rrain.kupidon.service.EmailService
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.service.db.table.*
 import com.rrain.kupidon.service.db.`table-interface`.Column
+import com.rrain.kupidon.service.lang.AppLang
+import com.rrain.kupidon.service.lang.DefaultLang
+import com.rrain.kupidon.service.lang.prepareUiValues
+import com.rrain.kupidon.service.lang.`ui-value`.AppUiText
+import com.rrain.kupidon.service.lang.`ui-value`.EmailInitialVerificationParams
+import com.rrain.kupidon.service.lang.`ui-value`.EmailInitialVerificationUiText
 import com.rrain.kupidon.util.extension.respondBadRequest
 import com.rrain.kupidon.util.extension.respondInvalidInputBody
 import com.rrain.kupidon.util.extension.respondNoUser
@@ -174,16 +181,30 @@ fun Application.configureUserRoutes(){
       
       val id = user.id!!
       val verificationToken = JwtService.generateVerificationAccessToken(id, user.email!!)
-      val lang = call.parameters["lang"]
       
+      val lang = AppLang.getByValueOrDefault(call.parameters["lang"])
+      val langs = listOf(lang.value)
+      
+      val appName = AppUiText.appName.prepareUiValues(langs)[0].text
+      val emailTitle = EmailInitialVerificationUiText.emailTitle.prepareUiValues(langs)[0].text
+      val emailContent = EmailInitialVerificationUiText.emailContent.prepareUiValues(langs)[0].text(
+        EmailInitialVerificationParams(
+          userName = user.name!!,
+          verificationUrl = call.request.origin.run {
+            "$scheme://$serverHost:$serverPort${UserRoutes.verifyEmail}?${UserRoutes.verifyTokenParamName}=$verificationToken"
+          },
+        )
+      )
+      
+      // todo Ссылка действительна 1 сутки, иначе войдите в приложение и запросите новую или смените почту.
       launch {
         try {
-          EmailService.sendVerificationEmail(
-            user,
-            call.request.origin.run {
-              "$scheme://$serverHost:$serverPort${UserRoutes.verifyEmail}?${UserRoutes.verifyTokenParamName}=$verificationToken"
-            }
-          )
+          EmailService.sendHtmlEmail(EmailMessage(
+            fromName = appName,
+            to = user.email!!,
+            title = emailTitle,
+            content = emailContent,
+          ))
         } catch (ex: EmailException) {
           // Ошибка отправки
           // todo validate if email was sent successfully

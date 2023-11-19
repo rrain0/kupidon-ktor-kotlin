@@ -16,9 +16,10 @@ fun Application.configureSendEmailTestRoutes(){
     data class EmailRequest(val email: String?)
     get("/test/send-email"){
       EmailService.sendEmail(EmailMessage(
-        call.receive<EmailRequest>().email!!,
-        "Test Email",
-        "test email"
+        fromName = "Kupidon",
+        to = call.receive<EmailRequest>().email!!,
+        title = "Test Email",
+        content = "test email",
       ))
       call.respond(HttpStatusCode.OK)
     }
