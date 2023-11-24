@@ -77,12 +77,12 @@ fun Application.configureMongoTestRoutes(){
     
     
     get("/test/mongo/get-all-transaction"){
-      MongoDbService.client.useTransaction {
+      MongoDbService.client.useTransaction { session ->
         val movieColl = MongoDbService.db("test").coll<Movie>("movies")
         
         
         movieColl.updateMany(
-          it,
+          session,
           Filters.empty(),
           Updates.set(Movie::title.name, "film")
         )
@@ -90,7 +90,7 @@ fun Application.configureMongoTestRoutes(){
         delay(5000)
         
         movieColl.updateMany(
-          it,
+          session,
           Filters.empty(),
           Updates.set(Movie::title.name, "movie")
         )
@@ -98,7 +98,7 @@ fun Application.configureMongoTestRoutes(){
         delay(5000)
         
         
-        val movies = movieColl.find(it).toList()
+        val movies = movieColl.find(session).toList()
         call.respond(movies)
       }
     }

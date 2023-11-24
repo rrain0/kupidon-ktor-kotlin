@@ -127,7 +127,7 @@ fun Application.configureUserRouteCreate() {
         val userByEmail = m.db.coll<UserMongo>("users")
           .find(session, Filters.eq(UserMongo::email.name, tryUser.email))
           .toList()
-          .let { if (it.isEmpty()) null else it.first() }
+          .firstOrNull()
         
         if (userByEmail!=null) return@post call.respondBadRequest(
           code = "DUPLICATE_EMAIL",
@@ -136,8 +136,9 @@ fun Application.configureUserRouteCreate() {
         
         m.db.coll<UserMongo>("users")
           .insertOne(session, tryUser)
+        
         m.db.coll<UserMongo>("users")
-          .find(Filters.eq(UserMongo::id.name, tryUser.id))
+          .find(session,Filters.eq(UserMongo::id.name, tryUser.id))
           .toList()
           .first()
       }

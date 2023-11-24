@@ -168,7 +168,11 @@ fun Application.configureUserRouteUpdate() {
           m.db.coll<UserMongo>("users")
             .updateOne(session,
               Filters.eq(UserMongo::id.name, userIdUuid),
-              userToUpdate.map { (k,v)->Updates.set(k,v) }.let { Updates.combine(it) }
+              userToUpdate
+                .map { (k,v)->Updates.set(k,v) }
+                .toMutableList()
+                .apply { add(Updates.currentDate(UserMongo::updated.name)) }
+                .let { Updates.combine(it) }
             )
           
           m.db.coll<UserMongo>("users")
