@@ -4,6 +4,7 @@ val kotlinCoroutinesVer: String by project
 val logbackVer: String by project
 val exposedVer : String by project
 val h2Ver : String by project
+val mongoKotlinCoroutineVer : String by project
 val r2dbcPostgresqlVer : String by project
 val r2dbcPoolVer : String by project
 val postgresqlVer : String by project
@@ -43,6 +44,7 @@ dependencies {
   implementation("io.ktor:ktor-server-core-jvm:$ktorVer")
   implementation("io.ktor:ktor-server-websockets-jvm:$ktorVer")
   
+  
   //implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
   //implementation("io.ktor:ktor-serialization-gson:$ktor_version")
   implementation("io.ktor:ktor-serialization-jackson:$ktorVer")
@@ -71,6 +73,10 @@ dependencies {
   
   implementation("com.h2database:h2:$h2Ver")
   // --------end
+  
+  
+  // Kotlin coroutine MongoDB driver
+  implementation("org.mongodb:mongodb-driver-kotlin-coroutine:$mongoKotlinCoroutineVer")
   
   
   // R2DBC with PostgreSQL & Kotlin

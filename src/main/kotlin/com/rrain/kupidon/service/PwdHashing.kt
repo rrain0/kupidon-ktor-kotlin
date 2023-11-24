@@ -29,10 +29,10 @@ fun Application.configurePwdHashing(){
   
   PwdHashing.run {
     pwdHashingInfo = PwdHashingInfo(
-      algorithm = appConfig["database.user-pwd-hashing.algorithm"],
-      secret = appConfig["database.user-pwd-hashing.secret"],
-      iterations = appConfig["database.user-pwd-hashing.iterations"].toInt(),
-      hashLen = appConfig["database.user-pwd-hashing.hash-len"].toInt(),
+      algorithm = appConfig["db.user-pwd-hashing.algorithm"],
+      secret = appConfig["db.user-pwd-hashing.secret"],
+      iterations = appConfig["db.user-pwd-hashing.iterations"].toInt(),
+      hashLen = appConfig["db.user-pwd-hashing.hash-len"].toInt(),
     )
   }
 }

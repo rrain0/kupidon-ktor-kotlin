@@ -5,7 +5,7 @@ import io.ktor.client.statement.*
 import io.ktor.server.testing.*
 import kotlin.test.*
 import io.ktor.http.*
-import com.rrain.kupidon.routes.configureRouting
+import com.rrain.kupidon.route.configureRouting
 
 class ApplicationTest {
     @Test

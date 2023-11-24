@@ -4,7 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.rrain.kupidon.entity.app.Role
-import com.rrain.kupidon.routes.AuthRoutes
+import com.rrain.kupidon.route.route.auth.AuthRoutes
 import com.rrain.kupidon.util.extension.get
 import com.rrain.kupidon.util.zonedNow
 import io.ktor.http.*
@@ -50,25 +50,27 @@ enum class AccessTokenType {
   EMAIL_VERIFICATION,
 }
 
+
+
 object JwtService {
   
-  val refreshTokenCookieName = "refreshToken"
-  val accessTokenRolesClaimName = "roles"
+  const val refreshTokenCookieName = "refreshToken"
+  const val accessTokenRolesClaimName = "roles"
   
   lateinit var accessTokenSecret: String
-  var accessTokenLifetime: Duration = Duration.parse("5m") // 5 minutes expiration
+  var accessTokenLifetime: Duration = Duration.parse("3m") // 3 minutes expiration
   var emailVerifyAccessTokenLifetime: Duration = Duration.parse("1d") // 1 day expiration
   
   lateinit var refreshTokenSecret: String
   var refreshTokenLifetime: Duration = Duration.parse("30d") // 30 days expiration
   
-  val algorithmName = "HS256"
+  const val algorithmName = "HS256"
   
   fun generateAccessToken(id: String, roles: Set<Role>): String {
     val secret = accessTokenSecret
     val lifetime = accessTokenLifetime
     
-    val accessToken =  JWT.create()
+    val accessToken = JWT.create()
       .withExpiresAt(zonedNow().plus(lifetime.toJavaDuration()).toInstant())
       .withSubject(id) // determines user
       //.withAudience(accessJwt.audience)

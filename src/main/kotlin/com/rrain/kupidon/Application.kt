@@ -1,19 +1,15 @@
 package com.rrain.kupidon
 
 import io.ktor.server.application.*
-import com.rrain.kupidon.plugins.*
-import com.rrain.kupidon.plugins.configureJsonSerialization
-import com.rrain.kupidon.routes.*
-import com.rrain.kupidon.routes.util.configureExceptionHandling
-import com.rrain.kupidon.routes.test.configureAuthorizationTestRoutes
-import com.rrain.kupidon.routes.test.configureHttpTestRoutes
-import com.rrain.kupidon.routes.test.configureJsonSerializationTestRoutes
-import com.rrain.kupidon.routes.test.configureSendEmailTestRoutes
-import com.rrain.kupidon.service.db.configureDatabaseService
+import com.rrain.kupidon.plugin.*
+import com.rrain.kupidon.plugin.configureJsonSerialization
+import com.rrain.kupidon.route.*
+import com.rrain.kupidon.route.util.configureExceptionHandling
+import com.rrain.kupidon.service.db.ARCHIVE.postgres.configurePostgresDbService
 import com.rrain.kupidon.service.configureEmailService
 import com.rrain.kupidon.service.configureJwtService
 import com.rrain.kupidon.service.configurePwdHashing
-import com.rrain.kupidon.service.db.init.initDatabase
+import com.rrain.kupidon.service.db.mongo.configureMongoDbService
 
 
 fun main(args: Array<String>): Unit =
@@ -29,8 +25,8 @@ fun Application.module() {
   configurePwdHashing()
   configureEmailService()
   
-  configureDatabaseService()
-  initDatabase()
+  configurePostgresDbService()
+  configureMongoDbService()
   
   configureAdministration()
   configureSockets()
@@ -39,16 +35,7 @@ fun Application.module() {
   configureJwtAuthentication()
   configureRoleBasedAuthorization()
   
-  configureRouting()
   configureExceptionHandling()
-  configureJsonSerializationTestRoutes()
-  configureHttpTestRoutes()
-  configureAuthorizationTestRoutes()
-  configureSendEmailTestRoutes()
-  configureMainRoutes()
-  configurePwaManifestRoute()
-  configureAuthRoutes()
-  configureRoleRoutes()
-  configureUserRoutes()
+  configureRouting()
   
 }
