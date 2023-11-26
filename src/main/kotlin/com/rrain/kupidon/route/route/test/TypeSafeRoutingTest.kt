@@ -13,7 +13,7 @@ import io.ktor.server.routing.put
 
 fun Application.typeSafeRoutingTest() {
   
-  // Plugin for use typed routes (Resources)
+  // Plugin for using of Typed Routes (Resources)
   // It is already installed in Routing.kt.
   //install(Resources)
   
@@ -64,7 +64,7 @@ fun Application.typeSafeRoutingTest() {
 
 
 @Resource("/articles")
-class Articles(val sort: String? = "new") {
+private class Articles(val sort: String? = "new") {
   
   @Resource("new")
   class New(val parent: Articles = Articles())

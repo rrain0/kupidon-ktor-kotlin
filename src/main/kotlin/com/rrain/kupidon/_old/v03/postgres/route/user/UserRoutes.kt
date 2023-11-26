@@ -197,7 +197,7 @@ fun Application.configureUserRoutes(){
         )
       )
       
-      // todo Ссылка действительна 1 сутки, иначе войдите в приложение и запросите новую или смените почту.
+      // доделать что Ссылка действительна 1 сутки, иначе войдите в приложение и запросите новую или смените почту.
       launch {
         try {
           EmailService.sendHtmlEmail(EmailMessage(
@@ -208,7 +208,7 @@ fun Application.configureUserRoutes(){
           ))
         } catch (ex: EmailException) {
           // Ошибка отправки
-          // todo validate if email was sent successfully
+          // сделать позже validate if email was sent successfully
           ex.printStackTrace()
         }
       }
@@ -376,7 +376,7 @@ fun Application.configureUserRoutes(){
     
     
     
-    // todo Language
+    // сделать позже Language
     get(UserRoutes.verifyEmail) {
       val verificationToken = call.request.queryParameters[UserRoutes.verifyTokenParamName]
       

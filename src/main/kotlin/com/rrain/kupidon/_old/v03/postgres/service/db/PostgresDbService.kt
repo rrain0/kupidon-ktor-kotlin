@@ -109,7 +109,7 @@ fun Application.configurePostgresDbService(){
     .maxSize(20)
     .build()
   
-  // TODO close pool when application is stopping
+  
   val pool = ConnectionPool(dbConnectionPoolConfig)
   PostgresDbService.setConnectionPool(pool)
   

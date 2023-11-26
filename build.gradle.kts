@@ -1,6 +1,6 @@
 val kotlinVer: String by project
 val ktorVer: String by project
-val kotlinCoroutinesVer: String by project
+val kotlinCoroutinesReactorVer: String by project
 val logbackVer: String by project
 val exposedVer : String by project
 val h2Ver : String by project
@@ -15,7 +15,7 @@ val jacksonVer : String by project
 
 
 plugins {
-  val kotlinV = "1.9.20"
+  val kotlinV = "1.9.21"
   val ktorV = "2.3.6"
   
   kotlin("jvm") version kotlinV
@@ -62,29 +62,12 @@ dependencies {
   
   
   
-  // -------remove
-  implementation("org.jetbrains.exposed:exposed-core:$exposedVer")
-  implementation("org.jetbrains.exposed:exposed-dao:$exposedVer")
-  implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVer")
-  // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed-java-time
-  implementation("org.jetbrains.exposed:exposed-java-time:$exposedVer")
-  implementation("org.postgresql:postgresql:$postgresqlVer")
-  implementation("com.zaxxer:HikariCP:$hikariVer")
-  
-  implementation("com.h2database:h2:$h2Ver")
-  // --------end
   
   
   // Kotlin coroutine MongoDB driver
   implementation("org.mongodb:mongodb-driver-kotlin-coroutine:$mongoKotlinCoroutineVer")
   
   
-  // R2DBC with PostgreSQL & Kotlin
-  implementation("io.r2dbc:r2dbc-postgresql:$r2dbcPostgresqlVer")
-  implementation("io.r2dbc:r2dbc-pool:$r2dbcPoolVer")
-  //implementation("org.postgresql:r2dbc-postgresql:1.0.1.RELEASE") // драйвер от команды спринга, работа с DatabaseClient вместо пула соединений
-  implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:$kotlinReactorExtensionsVer")
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:$kotlinCoroutinesVer")
   
   
   // for using of x-forwarded (and forwarded) headers of proxy server
@@ -109,4 +92,31 @@ dependencies {
   
   // mail sending
   implementation("org.apache.commons:commons-email:1.5")
+  
+  
+  
+  
+  
+  
+  // -------old
+  // Postgres Exposed
+  implementation("org.jetbrains.exposed:exposed-core:$exposedVer")
+  implementation("org.jetbrains.exposed:exposed-dao:$exposedVer")
+  implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVer")
+  // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed-java-time
+  implementation("org.jetbrains.exposed:exposed-java-time:$exposedVer")
+  implementation("org.postgresql:postgresql:$postgresqlVer")
+  implementation("com.zaxxer:HikariCP:$hikariVer")
+  
+  // h2 database
+  implementation("com.h2database:h2:$h2Ver")
+  
+  // R2DBC with PostgreSQL & Kotlin
+  implementation("io.r2dbc:r2dbc-postgresql:$r2dbcPostgresqlVer")
+  implementation("io.r2dbc:r2dbc-pool:$r2dbcPoolVer")
+  //implementation("org.postgresql:r2dbc-postgresql:1.0.1.RELEASE") // драйвер от команды спринга, работа с DatabaseClient вместо пула соединений
+  implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:$kotlinReactorExtensionsVer")
+  // binds r2dbc reactor & kotlin coroutines, allows to use Flux & Mono
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:$kotlinCoroutinesReactorVer")
+  // --------old end
 }

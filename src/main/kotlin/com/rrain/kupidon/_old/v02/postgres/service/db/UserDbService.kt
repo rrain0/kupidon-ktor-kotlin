@@ -33,7 +33,7 @@ class UserDbService(private val database: Database) {
 
   
   
-  // todo if wrong uuid string postgres throws error
+  // if wrong uuid string postgres throws error
   fun getById(id: String): User0? = transaction(database) {
     val data = mutableListOf<User0>()
     exec("""

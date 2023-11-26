@@ -7,6 +7,9 @@ import kotlin.test.*
 import io.ktor.http.*
 import com.rrain.kupidon.route.configureRouting
 
+
+
+// todo explore
 class ApplicationTest {
     @Test
     fun testRoot() = testApplication {

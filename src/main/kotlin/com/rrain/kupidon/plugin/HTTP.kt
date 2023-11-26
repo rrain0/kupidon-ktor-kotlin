@@ -11,6 +11,8 @@ import io.ktor.server.plugins.forwardedheaders.*
 
 fun Application.configureHTTP() {
   
+  
+  
   // todo explore
   install(PartialContent) {
     // Maximum number of ranges that will be accepted from an HTTP request.
@@ -53,8 +55,10 @@ fun Application.configureHTTP() {
   }
   
   
+  
   // use proxy server forwarded headers
   install(XForwardedHeaders)
+  
   
   
   // todo explore
