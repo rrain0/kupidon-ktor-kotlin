@@ -17,7 +17,6 @@ import com.rrain.kupidon._old.v03.postgres.service.db.table.*
 import com.rrain.kupidon.service.lang.AppLang
 import com.rrain.kupidon.service.lang.prepareUiValues
 import com.rrain.kupidon.service.lang.`ui-value`.AppUiText
-import com.rrain.kupidon.service.lang.`ui-value`.EmailInitialVerificationParams
 import com.rrain.kupidon.service.lang.`ui-value`.EmailInitialVerificationUiText
 import com.rrain.kupidon._old.v03.postgres.service.db.use
 import com.rrain.kupidon.util.toZonedDateTime
@@ -189,7 +188,7 @@ fun Application.configureUserRoutes(){
       val appName = AppUiText.appName.prepareUiValues(langs)[0].text
       val emailTitle = EmailInitialVerificationUiText.emailTitle.prepareUiValues(langs)[0].text
       val emailContent = EmailInitialVerificationUiText.emailContent.prepareUiValues(langs)[0].text(
-        EmailInitialVerificationParams(
+        EmailInitialVerificationUiText.EmailContentParams(
           userName = user.name!!,
           verificationUrl = call.request.origin.run {
             "$scheme://$serverHost:$serverPort${UserRoutes.verifyEmail}?${UserRoutes.verifyTokenParamName}=$verificationToken"

@@ -9,7 +9,6 @@ import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.service.lang.AppLang
 import com.rrain.kupidon.service.lang.prepareUiValues
 import com.rrain.kupidon.service.lang.`ui-value`.AppUiText
-import com.rrain.kupidon.service.lang.`ui-value`.EmailInitialVerificationParams
 import com.rrain.kupidon.service.lang.`ui-value`.EmailInitialVerificationUiText
 import com.rrain.kupidon.route.util.respondBadRequest
 import com.rrain.kupidon.route.util.respondInvalidInputBody
@@ -154,7 +153,7 @@ fun Application.configureUserRouteCreate() {
       val appName = AppUiText.appName.prepareUiValues(langs)[0].text
       val emailTitle = EmailInitialVerificationUiText.emailTitle.prepareUiValues(langs)[0].text
       val emailContent = EmailInitialVerificationUiText.emailContent.prepareUiValues(langs)[0].text(
-        EmailInitialVerificationParams(
+        EmailInitialVerificationUiText.EmailContentParams(
           userName = user.name,
           verificationUrl = call.request.origin.run {
             val url = "$scheme://$serverHost:$serverPort${UserRoutes.emailInitialVerification}"
@@ -165,7 +164,7 @@ fun Application.configureUserRouteCreate() {
       )
       
       // TODO Ссылка действительна 1 сутки, иначе войдите в приложение и запросите новую или смените почту.
-      launch {
+      /*launch {
         try {
           EmailService.sendHtmlEmail(
             EmailMessage(
@@ -180,7 +179,7 @@ fun Application.configureUserRouteCreate() {
           // TODO validate if email was sent successfully
           ex.printStackTrace()
         }
-      }
+      }*/
       
       val roles = user.roles
       

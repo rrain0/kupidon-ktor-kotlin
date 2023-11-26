@@ -25,11 +25,15 @@ object EmailInitialVerificationUiText {
     ),
   )
   
+  data class EmailContentParams(
+    val userName: String,
+    val verificationUrl: String,
+  )
   val emailContent = listOf(
     UiTemplateText(
       value = "EmailInitialVerificationEmailContent",
       lang = AppLang.enUS.value,
-      text = { params: EmailInitialVerificationParams ->
+      text = { params: EmailContentParams ->
         @Language("html") val html = """
           <html lang="${AppLang.enUS.value}">
           <head>
@@ -51,7 +55,7 @@ object EmailInitialVerificationUiText {
     UiTemplateText(
       value = "EmailInitialVerificationEmailContent",
       lang = AppLang.ruRU.value,
-      text = { params: EmailInitialVerificationParams ->
+      text = { params: EmailContentParams ->
         @Language("html") val html = """
           <html lang="${AppLang.ruRU.value}">
           <head>
@@ -75,8 +79,8 @@ object EmailInitialVerificationUiText {
 }
 
 
-data class EmailInitialVerificationParams(
+/*data class EmailInitialVerificationParams(
   val userName: String,
   val verificationUrl: String,
-)
+)*/
 
