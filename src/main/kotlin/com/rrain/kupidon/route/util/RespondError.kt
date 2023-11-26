@@ -17,20 +17,29 @@ suspend inline fun ApplicationCall.respondBadRequest
 )
 
 
+
+suspend inline fun ApplicationCall.respondBadRequest
+(body: Any)
+= this.respond(
+  HttpStatusCode.BadRequest,
+  body
+)
+
+
+
+
+
 // Пользователь не найден
 suspend inline fun ApplicationCall.respondNoUser() = this.respond(
   HttpStatusCode.BadRequest,
-  object {
-    val code = RespErrorCode.NO_USER.name
-    val msg = RespErrorCode.NO_USER.msg
-  }
+  ErrNoUserById,
 )
 
 // Некорректный формат тела запроса
 suspend inline fun ApplicationCall.respondInvalidInputBody(msg: String? = null) = this.respond(
   HttpStatusCode.BadRequest,
   object {
-    val code = RespErrorCode.INVALID_INPUT_BODY.name
-    val msg = msg ?: RespErrorCode.INVALID_INPUT_BODY.msg
+    val code = ErrInvalidInputBody.code
+    val msg = msg ?: ErrInvalidInputBody.msg
   }
 )

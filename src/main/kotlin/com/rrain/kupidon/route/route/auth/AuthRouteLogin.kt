@@ -1,8 +1,6 @@
 package com.rrain.kupidon.route.route.auth
 
-import com.auth0.jwt.exceptions.*
 import com.mongodb.client.model.Filters
-import com.rrain.kupidon.entity.app.Role
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.route.util.respondBadRequest
@@ -17,7 +15,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.toList
-import org.bson.Document
+
 
 
 fun Application.configureAuthRouteLogin(){

@@ -3,7 +3,7 @@ package com.rrain.kupidon.plugin
 import com.rrain.kupidon.entity.app.Role
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.util.cast
-import com.rrain.kupidon.util.extension.logger
+import com.rrain.kupidon.util.logger
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -53,11 +53,6 @@ fun Application.configureRoleBasedAuthorization(){
 
 
 
-/*class AuthorizationException(
-  val insufficientRoles: Set<Role>
-) : RuntimeException(
-  "User must have at least one of these roles: ${insufficientRoles.joinToString()}"
-)*/
 
 
 class RoleBasedAuthorization(config: Configuration) {
@@ -95,8 +90,6 @@ class RoleBasedAuthorization(config: Configuration) {
           val needAnyOfRoles = anyOfRoles
           val msg = msg
         })
-        /*throw AuthorizationException(anyOfRoles)
-          .also { logger.warn("Authorization failed for ${call.request.path()}. ${it.message}") }*/
       }
     }
   }

@@ -1,6 +1,6 @@
 package com.rrain.kupidon.service
 
-import com.rrain.kupidon.util.extension.get
+import com.rrain.kupidon.util.get
 import io.ktor.server.application.*
 import java.security.spec.KeySpec
 import javax.crypto.SecretKey
@@ -8,6 +8,7 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+
 
 
 fun main() {
@@ -24,6 +25,7 @@ fun main() {
 }
 
 
+
 fun Application.configurePwdHashing(){
   val appConfig = environment.config
   
@@ -36,6 +38,7 @@ fun Application.configurePwdHashing(){
     )
   }
 }
+
 
 
 object PwdHashing {

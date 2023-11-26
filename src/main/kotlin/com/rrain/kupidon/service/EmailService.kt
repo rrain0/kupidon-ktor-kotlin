@@ -1,6 +1,6 @@
 package com.rrain.kupidon.service
 
-import com.rrain.kupidon.util.extension.get
+import com.rrain.kupidon.util.get
 import io.ktor.server.application.*
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.HtmlEmail

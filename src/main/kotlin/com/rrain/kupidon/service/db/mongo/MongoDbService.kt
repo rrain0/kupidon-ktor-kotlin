@@ -4,11 +4,10 @@ import com.mongodb.*
 import com.mongodb.kotlin.client.coroutine.ClientSession
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
-import com.rrain.kupidon.util.extension.get
+import com.rrain.kupidon.util.get
 import com.rrain.kupidon.util.toTimestamp
 import com.rrain.kupidon.util.toZonedDateTime
 import io.ktor.server.application.*
-import io.r2dbc.spi.Connection
 import org.bson.BsonReader
 import org.bson.BsonWriter
 import org.bson.UuidRepresentation
@@ -16,9 +15,8 @@ import org.bson.codecs.Codec
 import org.bson.codecs.DecoderContext
 import org.bson.codecs.EncoderContext
 import org.bson.codecs.configuration.CodecRegistries
-import java.time.Instant
-import java.time.ZoneId
 import java.time.ZonedDateTime
+
 
 
 fun Application.configureMongoDbService(){

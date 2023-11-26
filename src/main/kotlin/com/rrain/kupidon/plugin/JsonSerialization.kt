@@ -1,6 +1,8 @@
 package com.rrain.kupidon.plugin
 
 //import io.ktor.serialization.kotlinx.json.*
+//import com.google.gson.*
+//import io.ktor.serialization.gson.*
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
@@ -12,12 +14,10 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.*
-//import com.google.gson.*
 import com.rrain.kupidon.util.localDateFormat
 import com.rrain.kupidon.util.toLocalDate
 import com.rrain.kupidon.util.toZonedDateTime
 import com.rrain.kupidon.util.zonedDateTimeFormatter
-//import io.ktor.serialization.gson.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.application.*
@@ -26,9 +26,12 @@ import java.time.LocalDate
 import java.time.ZonedDateTime
 
 
+
 // plugin to serialize response objects as json
 // and to deserialize request json to objects
 fun Application.configureJsonSerialization() {
+  
+  
   
   install(ContentNegotiation) {
     
@@ -156,5 +159,7 @@ fun Application.configureJsonSerialization() {
     
     
   }
+  
+  
   
 }

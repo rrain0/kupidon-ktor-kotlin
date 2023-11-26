@@ -5,10 +5,9 @@ import com.auth0.jwt.exceptions.JWTDecodeException
 import com.auth0.jwt.exceptions.JWTVerificationException
 import com.auth0.jwt.exceptions.SignatureVerificationException
 import com.auth0.jwt.exceptions.TokenExpiredException
+import com.rrain.kupidon.service.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import com.rrain.kupidon.service.JwtService
-import com.rrain.kupidon.service.TokenError
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -16,17 +15,22 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
 
-enum class AuthErrorCode(val msg: String) {
-  NO_AUTHORIZATION_HEADER("""No "Authorization" header is present"""),
-  AUTHORIZATION_HEADER_WRONG_FORMAT(""""Authorization" header must start with "Bearer """"),
-  EMPTY_TOKEN(""""Authorization" header must contain non-empty access-token "Bearer <access-token>""""),
+
+
+
+object ErrNoAuthHeader {
+  val code = "NO_AUTHORIZATION_HEADER"
+  val msg = """No "Authorization" header is present"""
+}
+object ErrAuthHeaderWrongFormat {
+  val code = "AUTHORIZATION_HEADER_WRONG_FORMAT"
+  val msg = """"Authorization" header must start with "Bearer """"
+}
+object ErrEmptyToken {
+  val code = "EMPTY_TOKEN"
+  val msg = """"Authorization" header must contain non-empty access-token "Bearer <access-token>""""
 }
 
-/*class AuthenticationException(
-  val code: String? = null,
-  msg: String,
-  cause: Throwable? = null,
-) : RuntimeException(msg, cause)*/
 
 
 fun Application.configureJwtAuthentication() {
@@ -37,71 +41,46 @@ fun Application.configureJwtAuthentication() {
       
       authenticate { auth -> runBlocking(Dispatchers.IO){
         val authHeader = auth.call.request.headers["Authorization"]
-        if (authHeader==null){
-          auth.call.respond(HttpStatusCode.Unauthorized, object {
-            val code = AuthErrorCode.NO_AUTHORIZATION_HEADER.name
-            val msg = AuthErrorCode.NO_AUTHORIZATION_HEADER.msg
-          })
-          return@runBlocking
-        }
-        if (!authHeader.startsWith("Bearer ")){
-          auth.call.respond(HttpStatusCode.Unauthorized, object {
-            val code = AuthErrorCode.AUTHORIZATION_HEADER_WRONG_FORMAT.name
-            val msg = AuthErrorCode.AUTHORIZATION_HEADER_WRONG_FORMAT.msg
-          })
-          return@runBlocking
-        }
+        if (authHeader==null)
+          return@runBlocking auth.call
+            .respond(HttpStatusCode.Unauthorized, ErrNoAuthHeader)
+        if (!authHeader.startsWith("Bearer "))
+          return@runBlocking auth.call
+          .respond(HttpStatusCode.Unauthorized, ErrAuthHeaderWrongFormat)
+          
+        
         val accessToken = authHeader.substring("Bearer ".length)
-        if (accessToken.isEmpty()){
-          auth.call.respond(HttpStatusCode.Unauthorized, object {
-            val code = AuthErrorCode.EMPTY_TOKEN.name
-            val msg = AuthErrorCode.EMPTY_TOKEN.msg
-          })
-          return@runBlocking
-        }
+        if (accessToken.isEmpty())
+          return@runBlocking auth.call
+            .respond(HttpStatusCode.Unauthorized, ErrEmptyToken)
         
         val verifier = JwtService.accessTokenVerifier
         val decodedJwt = try { verifier.verify(accessToken) }
         // Token was encoded by wrong algorithm. Required HMAC256.
         catch (ex: AlgorithmMismatchException){
-          auth.call.respond(HttpStatusCode.Unauthorized, object {
-            val code = TokenError.TOKEN_ALGORITHM_MISMATCH.name
-            val msg = TokenError.TOKEN_ALGORITHM_MISMATCH.msg
-          })
-          return@runBlocking
+          return@runBlocking auth.call
+            .respond(HttpStatusCode.Unauthorized, ErrTokenAlgorithmMismatch)
         }
         // Damaged Token - Токен повреждён и не может быть декодирован
         catch (ex: JWTDecodeException){
-          auth.call.respond(HttpStatusCode.Unauthorized, object {
-            val code = TokenError.TOKEN_DAMAGED.name
-            val msg = TokenError.TOKEN_DAMAGED.msg
-          })
-          return@runBlocking
+          return@runBlocking auth.call
+            .respond(HttpStatusCode.Unauthorized, ErrTokenDamaged)
         }
         // Modified Token - Токен умышленно модифицирован (подделан)
         catch (ex: SignatureVerificationException){
-          auth.call.respond(HttpStatusCode.Unauthorized, object {
-            val code = TokenError.TOKEN_MODIFIED.name
-            val msg = TokenError.TOKEN_MODIFIED.msg
-          })
-          return@runBlocking
+          return@runBlocking auth.call
+            .respond(HttpStatusCode.Unauthorized, ErrTokenModified)
         }
         // Token has expired
         catch (ex: TokenExpiredException){
-          auth.call.respond(HttpStatusCode.Unauthorized, object {
-            val code = TokenError.TOKEN_EXPIRED.name
-            val msg = TokenError.TOKEN_EXPIRED.msg
-          })
-          return@runBlocking
+          return@runBlocking auth.call
+            .respond(HttpStatusCode.Unauthorized, ErrTokenExpired)
         }
         // Common Verification Exception
         catch (ex: JWTVerificationException) {
           ex.printStackTrace()
-          auth.call.respond(HttpStatusCode.Unauthorized, object {
-            val code = TokenError.UNKNOWN_VERIFICATION_ERROR.name
-            val msg = TokenError.UNKNOWN_VERIFICATION_ERROR.msg
-          })
-          return@runBlocking
+          return@runBlocking auth.call
+            .respond(HttpStatusCode.Unauthorized, ErrTokenUnknownVerificationError)
         }
         
         auth.principal(JWTPrincipal(decodedJwt))
@@ -109,6 +88,8 @@ fun Application.configureJwtAuthentication() {
       
       
     }
+    
+    
     
     
     

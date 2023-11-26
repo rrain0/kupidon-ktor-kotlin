@@ -5,7 +5,7 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.rrain.kupidon.entity.app.Role
 import com.rrain.kupidon.route.route.auth.AuthRoutes
-import com.rrain.kupidon.util.extension.get
+import com.rrain.kupidon.util.get
 import com.rrain.kupidon.util.zonedNow
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -33,16 +33,42 @@ fun Application.configureJwtService(){
 
 
 
-enum class TokenError(val msg: String) {
-  TOKEN_ALGORITHM_MISMATCH("Token was encoded by wrong algorithm, required ${JwtService.algorithmName}"),
-  TOKEN_DAMAGED("Token is damaged - failed to decode JSON token data"),
-  TOKEN_MODIFIED("Token was modified"), // or Token was tampered
-  TOKEN_EXPIRED("Token has expired"),
-  TOKEN_LACKS_OF_CLAIM("Token lacks some required claims"),
-  TOKEN_CLAIM_VALUE_IS_INCORRECT("Token has incorrect claim value"),
-  
-  UNKNOWN_VERIFICATION_ERROR("Unknown Token Verification Exception"),
+
+// Token was encoded by wrong algorithm. Required HMAC256.
+object ErrTokenAlgorithmMismatch {
+  val code = "TOKEN_ALGORITHM_MISMATCH"
+  val msg = "Token was encoded by wrong algorithm, required ${JwtService.algorithmName}"
 }
+// Damaged Token - Токен повреждён и не может быть декодирован
+object ErrTokenDamaged {
+  val code = "TOKEN_DAMAGED"
+  val msg = "Token is damaged - failed to decode JSON token data"
+}
+// Modified Token - Токен умышленно модифицирован (подделан)
+object ErrTokenModified {
+  val code = "TOKEN_MODIFIED"
+  val msg = "Token was modified"
+}
+// Token has expired
+object ErrTokenExpired {
+  val code = "TOKEN_EXPIRED"
+  val msg = "Token has expired"
+}
+object ErrTokenLacksOfClaim {
+  val code = "TOKEN_LACKS_OF_CLAIM"
+  val msg = "Token lacks some required claims"
+}
+object ErrTokenClaimValueIsIncorrect {
+  val code = "TOKEN_CLAIM_VALUE_IS_INCORRECT"
+  val msg = "Token has incorrect claim value"
+}
+// Common Token Verification Exception
+object ErrTokenUnknownVerificationError {
+  val code = "UNKNOWN_VERIFICATION_ERROR"
+  val msg = "Unknown Token Verification Exception"
+}
+
+
 
 
 

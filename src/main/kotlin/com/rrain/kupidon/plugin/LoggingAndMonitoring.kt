@@ -8,11 +8,14 @@ import io.ktor.server.request.*
 import org.slf4j.event.Level
 
 
+
 fun Application.configureLoggingAndMonitoring(){
+  
   
   // already configured in resources/logback.xml
   //val loggerContext = LoggerFactory.getILoggerFactory() as LoggerContext
   //loggerContext.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME).level = ch.qos.logback.classic.Level.DEBUG
+  
   
   install(CallLogging) {
     level = Level.INFO
