@@ -1,11 +1,14 @@
 package com.rrain.kupidon.route.route.user
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
 import com.rrain.kupidon.entity.app.Gender
+import com.rrain.kupidon.plugin.JacksonObjectMapper
 import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.route.util.respondBadRequest
-import com.rrain.kupidon.route.util.respondInvalidInputBody
+import com.rrain.kupidon.route.util.respondInvalidBody
 import com.rrain.kupidon.route.util.respondNoUser
 import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
@@ -38,115 +41,160 @@ fun Application.configureUserRouteUpdate() {
     
     
     
-    
+    data class Photo(
+      val id: String?,
+      val data: String?,
+    )
     authenticate {
       put(UserRoutes.update) {
         val userId = call.principal<JWTPrincipal>()!!.subject!!
         val userIdUuid = userId.toUuid()
         
-        val receivedData = try {
-          call.receive<MutableMap<String, Any?>>()
-        }
-        catch (ex: Exception) {
-          return@put call.respondInvalidInputBody()
+        val data =
+        try { call.receive<JsonNode>() }
+        catch (ex: Exception){
+          return@put call.respondInvalidBody()
         }
         
-        val userToUpdate = mutableMapOf<String,Any?>()
-        var currentPwd: String? = null
-        
-        receivedData.forEach { (k,v) -> when(k){
-          
-          "name" -> {
-            try {
-              if (v !is String) throw RuntimeException()
-              if (v.isEmpty()) throw RuntimeException()
-              if (v.length>100) throw RuntimeException()
-              userToUpdate[UserMongo::name.name] = v
-            } catch (ex: Exception){
-              return@put call.respondInvalidInputBody(
-                "Name must be string and must not be empty and name max length is 100"
-              )
-            }
-          }
-          
-          "birthDate" -> {
-            try {
-              if (v !is String) throw RuntimeException()
-              val birthDate = v.toZonedDateTime()
-              val nowWithUserZone = zonedNow()
-                .withZoneSameInstant(birthDate.zone)
-                .withHour(0)
-                .withMinute(0)
-                .withSecond(0)
-                .withNano(0)
-              if (ChronoUnit.YEARS.between(birthDate, nowWithUserZone)<18){
-                return@put call.respondInvalidInputBody(
-                  "You must be at least 18 years old"
+        val acceptedProps = listOf(
+          "name", "birthDate", "gender", "aboutMe",
+          "currentPwd", "pwd", "photos",
+        )
+        var dataToUpdate = data.fields().asSequence().toList()
+          .associateTo(mutableMapOf<String,Any?>()) { (k,v) -> when(k){
+            "name" -> {
+              try {
+                if (!v.isTextual) throw RuntimeException()
+                val name = v.asText()
+                if (name.isEmpty()) throw RuntimeException()
+                if (name.length>100) throw RuntimeException()
+                "name" to name
+              }
+              catch (ex: Exception){
+                return@put call.respondInvalidBody(
+                  "Name must be string and must not be empty and name max length is 100"
                 )
               }
-              userToUpdate[UserMongo::birthDate.name] = birthDate.toLocalDate()
-            } catch (ex: Exception){
-              return@put call.respondInvalidInputBody(
-                "'birthDate' must be string '$zonedDateTimePattern'" +
-                  ", for example '2005-11-10T00:00:00.000+08:00'"
+            }
+            
+            "birthDate" -> {
+              try {
+                if (!v.isTextual) throw RuntimeException()
+                val birthDate = v.asText().toZonedDateTime()
+                val nowWithUserZone = zonedNow()
+                  .withZoneSameInstant(birthDate.zone)
+                  .withHour(0)
+                  .withMinute(0)
+                  .withSecond(0)
+                  .withNano(0)
+                if (ChronoUnit.YEARS.between(birthDate, nowWithUserZone)<18){
+                  return@put call.respondInvalidBody(
+                    "You must be at least 18 years old"
+                  )
+                }
+                "birthDate" to birthDate.toLocalDate()
+              }
+              catch (ex: Exception){
+                return@put call.respondInvalidBody(
+                  "'birthDate' must be string '$zonedDateTimePattern'" +
+                    ", for example '2005-11-10T00:00:00.000+08:00'"
+                )
+              }
+            }
+            
+            "gender" -> {
+              try {
+                val gender = JacksonObjectMapper.treeToValue<Gender>(v)
+                "gender" to gender
+              }
+              catch (ex: Exception){
+                return@put call.respondInvalidBody(
+                  "Gender must be string of ${Gender.entries}"
+                )
+              }
+            }
+            
+            "aboutMe" -> {
+              try {
+                if (!v.isTextual) throw RuntimeException()
+                val aboutMe = v.asText()
+                if (aboutMe.length>2000) throw RuntimeException()
+                "aboutMe" to aboutMe
+              }
+              catch (ex: Exception){
+                return@put call.respondInvalidBody(
+                  "'About me' must be string and must have max 2000 chars"
+                )
+              }
+            }
+            
+            "currentPwd" -> {
+              try {
+                if (!v.isTextual) throw RuntimeException()
+                var currentPwd = v.asText()
+                if (currentPwd.length<1 || currentPwd.length>200) throw RuntimeException()
+                currentPwd = currentPwd.let(PwdHashing::generateHash)
+                "currentPwd" to currentPwd
+              }
+              catch (ex: Exception) {
+                return@put call.respondInvalidBody(
+                  "Current password must be string and its length must be from 1 to 200 chars"
+                )
+              }
+            }
+            
+            "pwd" -> {
+              try {
+                if (!v.isTextual) throw RuntimeException()
+                var pwd = v.asText()
+                if (pwd.length<6 || pwd.length>200) throw RuntimeException()
+                pwd = pwd.let(PwdHashing::generateHash)
+                "pwd" to pwd
+              }
+              catch (ex: Exception) {
+                return@put call.respondInvalidBody(
+                  "Password must be string and its length must be from 6 to 200 chars"
+                )
+              }
+            }
+            
+            "photos" -> {
+              try {
+                val photos = JacksonObjectMapper.treeToValue<List<Photo?>>(v)
+                
+                //println("photos: $photos")
+                //println("photos[1]?.id==null: ${photos[1]?.id==null}")
+                // todo convert data url to ByteArray
+                // todo name, mimeType, check size
+                // todo if it has id (only id) so it is from server otherwise it is new photo
+                "photos" to photos
+              }
+              catch (ex: Exception) {
+                return@put call.respondInvalidBody(
+                  "Invalid photos format"
+                )
+              }
+            }
+            
+            else -> {
+              return@put call.respondInvalidBody(
+                "Unknown property '$k'"
               )
             }
-          }
-          
-          "gender" -> {
-            try {
-              if (v !is String) throw RuntimeException()
-              val gender = Gender.valueOf(v)
-              userToUpdate[UserMongo::gender.name] = gender
-            } catch (ex: Exception){
-              return@put call.respondInvalidInputBody(
-                "Gender must be string of 'MALE' | 'FEMALE'"
-              )
-            }
-          }
-          
-          "aboutMe" -> {
-            try {
-              if (v !is String) throw RuntimeException()
-              if (v.length>2000) throw RuntimeException()
-              userToUpdate[UserMongo::aboutMe.name] = v
-            } catch (ex: Exception){
-              return@put call.respondInvalidInputBody(
-                "'About me' must be string and must have max 2000 chars"
-              )
-            }
-          }
-          
-          "currentPwd" -> {
-            try{
-              if (v !is String) throw RuntimeException()
-              if (v.length<1 || v.length>200) throw RuntimeException()
-              currentPwd = v.let(PwdHashing::generateHash)
-            } catch (ex: Exception) {
-              return@put call.respondInvalidInputBody(
-                "Current password must be string and its length must be from 1 to 200 chars"
-              )
-            }
-          }
-          
-          "pwd" -> {
-            try{
-              if (v !is String) throw RuntimeException()
-              if (v.length<6 || v.length>200) throw RuntimeException()
-              userToUpdate[UserMongo::pwd.name] = v.let(PwdHashing::generateHash)
-            } catch (ex: Exception) {
-              return@put call.respondInvalidInputBody(
-                "Password must be string and its length must be from 6 to 200 chars"
-              )
-            }
-          }
-          
-          else -> {
-            return@put call.respondInvalidInputBody(
-              "Unknown property '$k'"
-            )
-          }
-        }}
+          } }
+        
+        
+        
+        
+        
+        var currentPwd: String? = null
+        if ("currentPwd" in dataToUpdate) currentPwd = dataToUpdate["currentPwd"] as String
+        dataToUpdate.remove("currentPwd")
+        dataToUpdate.remove("photos")
+        val userToUpdate: MutableMap<String,Any?> = dataToUpdate
+        
+        
+        
         
         
         val m = mongo()
@@ -182,7 +230,7 @@ fun Application.configureUserRouteUpdate() {
         
         
         call.respond(object {
-          val user = user.toMapToSend()
+          val user = user.convertToSend(call.request)
         })
       }
     }

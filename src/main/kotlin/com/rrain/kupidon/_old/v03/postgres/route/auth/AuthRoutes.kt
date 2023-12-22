@@ -3,7 +3,7 @@ package com.rrain.kupidon._old.v03.postgres.route.auth
 import com.auth0.jwt.exceptions.*
 import com.rrain.kupidon._old.v03.postgres.service.db.PostgresDbService
 import com.rrain.kupidon.route.util.respondBadRequest
-import com.rrain.kupidon.route.util.respondInvalidInputBody
+import com.rrain.kupidon.route.util.respondInvalidBody
 import com.rrain.kupidon.route.util.respondNoUser
 import com.rrain.kupidon.service.*
 import io.ktor.server.application.*
@@ -38,7 +38,7 @@ fun Application.configureAuthRoutes(){
       val loginRequest = try {
         call.receive<LoginRequest>()
       } catch (ex: Exception){
-        return@post call.respondInvalidInputBody()
+        return@post call.respondInvalidBody()
       }
       val login = loginRequest.login
       val pwd = loginRequest.pwd

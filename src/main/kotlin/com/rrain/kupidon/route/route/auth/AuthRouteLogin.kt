@@ -4,7 +4,7 @@ import com.mongodb.client.model.Filters
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.route.util.respondBadRequest
-import com.rrain.kupidon.route.util.respondInvalidInputBody
+import com.rrain.kupidon.route.util.respondInvalidBody
 import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
@@ -34,10 +34,10 @@ fun Application.configureAuthRouteLogin(){
       val pwd: String
     )
     post(AuthRoutes.login) {
-      val login = try {
-        call.receive<LoginRequest>()
-      } catch (ex: Exception){
-        return@post call.respondInvalidInputBody()
+      val login =
+      try { call.receive<LoginRequest>() }
+      catch (ex: Exception){
+        return@post call.respondInvalidBody()
       }
       
       val user = mongo().db.coll<UserMongo>("users")
@@ -65,7 +65,7 @@ fun Application.configureAuthRouteLogin(){
       )
       call.respond(object {
         val accessToken = accessToken
-        val user = user.toMapToSend()
+        val user = user.convertToSend(call.request)
       })
     }
     

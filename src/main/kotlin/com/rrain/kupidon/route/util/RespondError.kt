@@ -36,10 +36,19 @@ suspend inline fun ApplicationCall.respondNoUser() = this.respond(
 )
 
 // Некорректный формат тела запроса
-suspend inline fun ApplicationCall.respondInvalidInputBody(msg: String? = null) = this.respond(
+suspend inline fun ApplicationCall.respondInvalidBody(msg: String? = null) = this.respond(
   HttpStatusCode.BadRequest,
   object {
-    val code = ErrInvalidInputBody.code
-    val msg = msg ?: ErrInvalidInputBody.msg
+    val code = ErrInvalidBody.code
+    val msg = msg ?: ErrInvalidBody.msg
+  }
+)
+
+// Некорректный формат параметров запроса
+suspend inline fun ApplicationCall.respondInvalidParams(msg: String? = null) = this.respond(
+  HttpStatusCode.BadRequest,
+  object {
+    val code = ErrInvalidParams.code
+    val msg = msg ?: ErrInvalidParams.msg
   }
 )

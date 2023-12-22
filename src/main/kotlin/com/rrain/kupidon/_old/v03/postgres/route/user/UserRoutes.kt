@@ -5,7 +5,7 @@ import com.auth0.jwt.exceptions.*
 import com.rrain.kupidon.entity.app.Gender
 import com.rrain.kupidon._old.v03.postgres.entity.User
 import com.rrain.kupidon.route.util.respondBadRequest
-import com.rrain.kupidon.route.util.respondInvalidInputBody
+import com.rrain.kupidon.route.util.respondInvalidBody
 import com.rrain.kupidon.route.util.respondNoUser
 import com.rrain.kupidon.service.EmailMessage
 import com.rrain.kupidon.service.EmailService
@@ -109,36 +109,36 @@ fun Application.configureUserRoutes(){
       val userToCreate = try {
         call.receive<UserCreateReq>()
       } catch (ex: Exception){
-        return@post call.respondInvalidInputBody()
+        return@post call.respondInvalidBody()
       }
       
       if (!userToCreate.email.matches(Regex("^.+@.+$"))){
-        return@post call.respondInvalidInputBody(
+        return@post call.respondInvalidBody(
           "Invalid email format"
         )
       }
       if (userToCreate.email.length>100)
-        return@post call.respondInvalidInputBody(
+        return@post call.respondInvalidBody(
           "Email max length is 100 chars"
         )
       
       if (userToCreate.pwd.length<6){
-        return@post call.respondInvalidInputBody(
+        return@post call.respondInvalidBody(
           "Password must be at least 6 chars length"
         )
       }
       if (userToCreate.pwd.length>200)
-        return@post call.respondInvalidInputBody(
+        return@post call.respondInvalidBody(
           "Password max length is 200 chars"
         )
       
       if (userToCreate.name.isEmpty()){
-        return@post call.respondInvalidInputBody(
+        return@post call.respondInvalidBody(
           "Name must not be empty"
         )
       }
       if (userToCreate.name.length>100){
-        return@post call.respondInvalidInputBody(
+        return@post call.respondInvalidBody(
           "Name max length is 100"
         )
       }
@@ -150,7 +150,7 @@ fun Application.configureUserRoutes(){
         .withSecond(0)
         .withNano(0)
       if (ChronoUnit.YEARS.between(userToCreate.birthDate, nowWithUserZone)<18){
-        return@post call.respondInvalidInputBody(
+        return@post call.respondInvalidBody(
           "You must be at least 18 years old"
         )
       }
@@ -245,7 +245,7 @@ fun Application.configureUserRoutes(){
         val dataAsMap = try {
           call.receive<MutableMap<String, Any?>>()
         } catch (ex: Exception) {
-          return@put call.respondInvalidInputBody()
+          return@put call.respondInvalidBody()
         }
         
         val colToValue = mutableMapOf<Column,Any?>()
@@ -260,7 +260,7 @@ fun Application.configureUserRoutes(){
               if (v.length>100) throw RuntimeException()
               colToValue[UserTname] = v
             } catch (ex: Exception){
-              return@put call.respondInvalidInputBody(
+              return@put call.respondInvalidBody(
                 "Name must be string and must not be empty and name max length is 100"
               )
             }
@@ -277,13 +277,13 @@ fun Application.configureUserRoutes(){
                 .withSecond(0)
                 .withNano(0)
               if (ChronoUnit.YEARS.between(birthDate, nowWithUserZone)<18){
-                return@put call.respondInvalidInputBody(
+                return@put call.respondInvalidBody(
                   "You must be at least 18 years old"
                 )
               }
               colToValue[UserTbirthDate] = birthDate.toLocalDate()
             } catch (ex: Exception){
-              return@put call.respondInvalidInputBody(
+              return@put call.respondInvalidBody(
                 "'birthDate' must be string '$zonedDateTimePattern'" +
                   ", for example '2005-11-10T00:00:00.000+08:00'"
               )
@@ -296,7 +296,7 @@ fun Application.configureUserRoutes(){
               val gender = Gender.valueOf(v)
               colToValue[UserTgender] = gender
             } catch (ex: Exception){
-              return@put call.respondInvalidInputBody(
+              return@put call.respondInvalidBody(
                 "Gender must be string of 'MALE' | 'FEMALE'"
               )
             }
@@ -308,7 +308,7 @@ fun Application.configureUserRoutes(){
               if (v.length>2000) throw RuntimeException()
               colToValue[UserTaboutMe] = v
             } catch (ex: Exception){
-              return@put call.respondInvalidInputBody(
+              return@put call.respondInvalidBody(
                 "'About me' must be string and must have max 2000 chars"
               )
             }
@@ -320,7 +320,7 @@ fun Application.configureUserRoutes(){
               if (v.length<1 || v.length>200) throw RuntimeException()
               currentPwd = v.let(PwdHashing::generateHash)
             } catch (ex: Exception) {
-              return@put call.respondInvalidInputBody(
+              return@put call.respondInvalidBody(
                 "Current password must be string and its length must be from 1 to 200 chars"
               )
             }
@@ -332,14 +332,14 @@ fun Application.configureUserRoutes(){
               if (v.length<6 || v.length>200) throw RuntimeException()
               colToValue[UserTpwd] = v.let(PwdHashing::generateHash)
             } catch (ex: Exception) {
-              return@put call.respondInvalidInputBody(
+              return@put call.respondInvalidBody(
                 "Password must be string and its length must be from 6 to 200 chars"
               )
             }
           }
           
           else -> {
-            return@put call.respondInvalidInputBody(
+            return@put call.respondInvalidBody(
               "Unknown property '$k'"
             )
           }

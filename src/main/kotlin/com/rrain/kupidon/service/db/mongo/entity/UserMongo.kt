@@ -2,6 +2,9 @@ package com.rrain.kupidon.service.db.mongo.entity
 
 import com.rrain.kupidon.entity.app.Gender
 import com.rrain.kupidon.entity.app.Role
+import com.rrain.kupidon.route.route.user.UserRoutes
+import io.ktor.server.plugins.*
+import io.ktor.server.request.*
 import org.bson.Document
 import java.time.LocalDate
 import java.time.ZonedDateTime
@@ -34,11 +37,12 @@ data class UserMongo(
   // пол: 'MALE' / 'FEMALE'
   val gender: Gender,
   val aboutMe: String,
+  val photos: List<UserProfilePhotoMetadataMongo?>,
   
   val transactions: Document?,
 ){
   
-  fun toMapToSend(): MutableMap<String,Any?> {
+  fun convertToSend(request: ApplicationRequest): MutableMap<String,Any?> {
     return mutableMapOf(
       "id" to id,
       "roles" to roles,
@@ -50,6 +54,25 @@ data class UserMongo(
       "birthDate" to birthDate,
       "gender" to gender,
       "aboutMe" to aboutMe,
+      "photos" to photos.map {
+        it?.let {
+          object {
+            val id = it.id
+            val name = it.name
+            val mimeType = it.mimeType
+            var url = run {
+              val host = request.origin.serverHost
+              val port = request.origin.serverPort
+              val path = UserRoutes.getProfilePhoto
+              val userIdParam = UserRoutes.getProfilePhotoParamUserId
+              val photoIdParam = UserRoutes.getProfilePhotoParamPhotoId
+              val userId = this@UserMongo.id
+              val photoId = it.id
+              "https://$host:$port/$path?$userIdParam=$userId&$photoIdParam=$photoId"
+            }
+          }
+        }
+      },
       "transactions" to transactions,
     )
   }

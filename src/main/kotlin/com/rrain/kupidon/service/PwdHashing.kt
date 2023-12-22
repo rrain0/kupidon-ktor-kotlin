@@ -12,16 +12,19 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 
 
 fun main() {
+  
+  // PRIVATE CONFIG
   val pwdHashingInfo = PwdHashingInfo(
-    algorithm = "PBKDF2WithHmacSHA512",
-    secret = "xGNw2g+wXCHg+YGyIB+72A==",
-    iterations = 120000,
-    hashLen = 256,
+    algorithm = "",
+    secret = "",
+    iterations = 0,
+    hashLen = 0,
   )
   PwdHashing.pwdHashingInfo = pwdHashingInfo
-  repeat(20){
+  /*repeat(20){
     println(PwdHashing.generateHash("somepassword"))
-  }
+  }*/
+  println(PwdHashing.generateHash("test"))
 }
 
 

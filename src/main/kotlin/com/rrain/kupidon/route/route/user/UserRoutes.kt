@@ -25,6 +25,10 @@ object UserRoutes {
   const val emailInitialVerification = "$base/verify/initial-email"
   const val getById = "$base/get-by-id/{id}"
   
+  const val getProfilePhoto = "$base/profile-photo"
+  const val getProfilePhotoParamUserId = "userId"
+  const val getProfilePhotoParamPhotoId = "photoId"
+  
   const val verifyTokenParamName = "verification-token"
 }
 
@@ -34,6 +38,9 @@ fun Application.configureUserRoutes(){
   configureUserRouteCreate()
   configureUserRouteUpdate()
   configureUserRouteEmailInitialVerify()
+  configureUserRouteProfilePhoto()
+  configureUserRoutesCurrent()
+  
   
   
   fun mongo() = MongoDbService.client
@@ -41,27 +48,6 @@ fun Application.configureUserRoutes(){
   
   
   routing {
-    
-    
-    
-    
-    
-    authenticate {
-      get(UserRoutes.current) {
-        val principal = call.principal<JWTPrincipal>()!!
-        val userId = principal.subject!!
-        val userById = mongo().db.coll<UserMongo>("users")
-          .find(Filters.eq(UserMongo::id.name, userId.toUuid()))
-          .toList().firstOrNull()
-        userById ?: return@get call.respondNoUser()
-        call.respond(object {
-          val user = userById.toMapToSend()
-        })
-      }
-    }
-    
-    
-    
     
     
     
@@ -78,7 +64,7 @@ fun Application.configureUserRoutes(){
       
       
       return@get call.respond(object {
-        val user = userById.toMapToSend()
+        val user = userById.convertToSend(call.request)
       })
     }
     

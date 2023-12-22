@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
@@ -27,6 +28,11 @@ import java.time.ZonedDateTime
 
 
 
+
+lateinit var JacksonObjectMapper: ObjectMapper
+
+
+
 // plugin to serialize response objects as json
 // and to deserialize request json to objects
 fun Application.configureJsonSerialization() {
@@ -37,13 +43,15 @@ fun Application.configureJsonSerialization() {
     
     // install Jackson serialization
     jackson {
+      JacksonObjectMapper = this
+      
       configure(SerializationFeature.INDENT_OUTPUT, true)
       /*setDefaultPrettyPrinter(DefaultPrettyPrinter().apply {
         indentArraysWith(DefaultPrettyPrinter.FixedSpaceIndenter.instance)
         indentObjectsWith(DefaultIndenter("  ", "\n"))
       })*/
       
-      configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+      configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
       
       // support java.time.* types
       registerModule(JavaTimeModule())
@@ -103,6 +111,7 @@ fun Application.configureJsonSerialization() {
         .configure(KotlinFeature.StrictNullChecks, true)
         .build()
       )
+      
     }
     
     

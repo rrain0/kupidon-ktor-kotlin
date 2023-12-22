@@ -1,5 +1,8 @@
 package com.rrain.kupidon.route.route.test
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.treeToValue
+import com.rrain.kupidon.plugin.JacksonObjectMapper
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -17,6 +20,7 @@ fun Application.configureJsonSerializationTestRoutes() {
         2 to "two",
         "three" to 3,
         "yes" to true,
+        "nothing" to listOf(1,Unit),
         false to "no",
         "array" to arrayOf("first", 2, false),
         "object" to object { val id = "kjldshnv"; val prop = false },
@@ -92,6 +96,45 @@ fun Application.configureJsonSerializationTestRoutes() {
       println("objectByMap $objectByMap")
       // Если в мапе не все свойства, то Jackson отправит кусок JSON как ответ и не завершит его.
       call.respond(objectByMap)
+    }
+    
+    
+    
+    
+    data class NameCode(
+      val name: String,
+      val code: String,
+    )
+    post("/test/json/dynamic-object"){
+      val rootObj = call.receive<JsonNode>()
+      
+      println("intProp asString: ${rootObj["intProp"].asText()}") // 5
+      println("intProp asDouble: ${rootObj["intProp"].asDouble()}") // 5.0
+      println("intProp asInt: ${rootObj["intProp"].asInt()}") // 5
+      println("intProp asBoolean: ${rootObj["intProp"].asBoolean()}") // true
+      
+      println("intProp isString: ${rootObj["intProp"].isTextual}") // false
+      println("intProp isDouble: ${rootObj["intProp"].isDouble}") // false
+      println("intProp isShort: ${rootObj["intProp"].isShort}") // false
+      println("intProp isInt: ${rootObj["intProp"].isInt}") // true
+      println("intProp isLong: ${rootObj["intProp"].isLong}") // false
+      println("intProp isBigInteger: ${rootObj["intProp"].isBigInteger}") // false
+      
+      println("nonExistentProp: ${rootObj["nonExistentProp"]}") // null
+      
+      var dynamicArray: List<NameCode> = listOf()
+      if (rootObj.has("dynamicArray") &&
+        rootObj["dynamicArray"].isArray
+      ){
+        dynamicArray = rootObj["dynamicArray"]
+          .filter { it.has("name") && it.has("code") }
+          .map { JacksonObjectMapper.treeToValue<NameCode>(it) }
+        
+      }
+      
+      println("dynamic rootObj: $rootObj")
+      println("nameCodes: $dynamicArray")
+      call.respond(dynamicArray)
     }
     
     

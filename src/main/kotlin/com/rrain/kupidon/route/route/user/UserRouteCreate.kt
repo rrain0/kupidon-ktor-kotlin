@@ -2,8 +2,6 @@ package com.rrain.kupidon.route.route.user
 
 import com.mongodb.client.model.Filters
 import com.rrain.kupidon.entity.app.Gender
-import com.rrain.kupidon.service.EmailMessage
-import com.rrain.kupidon.service.EmailService
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.service.lang.AppLang
@@ -11,7 +9,7 @@ import com.rrain.kupidon.service.lang.prepareUiValues
 import com.rrain.kupidon.service.lang.`ui-value`.AppUiText
 import com.rrain.kupidon.service.lang.`ui-value`.EmailInitialVerificationUiText
 import com.rrain.kupidon.route.util.respondBadRequest
-import com.rrain.kupidon.route.util.respondInvalidInputBody
+import com.rrain.kupidon.route.util.respondInvalidBody
 import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
@@ -25,8 +23,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.launch
-import org.apache.commons.mail.EmailException
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -57,37 +53,37 @@ fun Application.configureUserRouteCreate() {
         call.receive<UserCreateReq>()
       }
       catch (ex: Exception){
-        return@post call.respondInvalidInputBody()
+        return@post call.respondInvalidBody()
       }
       
       
       if (!userToCreate.email.matches(emailPattern)){
-        return@post call.respondInvalidInputBody(
+        return@post call.respondInvalidBody(
           "Invalid email format"
         )
       }
       if (userToCreate.email.length>100)
-        return@post call.respondInvalidInputBody(
+        return@post call.respondInvalidBody(
           "Email max length is 100 chars"
         )
       
       if (userToCreate.pwd.length<6){
-        return@post call.respondInvalidInputBody(
+        return@post call.respondInvalidBody(
           "Password must be at least 6 chars length"
         )
       }
       if (userToCreate.pwd.length>200)
-        return@post call.respondInvalidInputBody(
+        return@post call.respondInvalidBody(
           "Password max length is 200 chars"
         )
       
       if (userToCreate.name.isEmpty()){
-        return@post call.respondInvalidInputBody(
+        return@post call.respondInvalidBody(
           "Name must not be empty"
         )
       }
       if (userToCreate.name.length>100){
-        return@post call.respondInvalidInputBody(
+        return@post call.respondInvalidBody(
           "Name max length is 100"
         )
       }
@@ -99,7 +95,7 @@ fun Application.configureUserRouteCreate() {
         .withSecond(0)
         .withNano(0)
       if (ChronoUnit.YEARS.between(userToCreate.birthDate, nowWithUserZone)<18){
-        return@post call.respondInvalidInputBody(
+        return@post call.respondInvalidBody(
           "You must be at least 18 years old"
         )
       }
@@ -117,6 +113,7 @@ fun Application.configureUserRouteCreate() {
         birthDate = userToCreate.birthDate.toLocalDate(),
         gender = userToCreate.gender,
         aboutMe = "",
+        photos = (0..5).map { null },
         transactions = null,
       )
       
@@ -195,7 +192,7 @@ fun Application.configureUserRouteCreate() {
       )
       call.respond(object {
         val accessToken = accessToken
-        val user = user.toMapToSend()
+        val user = user.convertToSend(call.request)
       })
     }
     

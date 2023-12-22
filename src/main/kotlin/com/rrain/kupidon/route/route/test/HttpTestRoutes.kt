@@ -27,21 +27,9 @@ fun Application.configureHttpTestRoutes(){
       
       // this info automatically uses forwarded http headers (Forwarded / X-Forwarded-...)
       val info = mapOf(
-        // get information about the proxy request
-        // proxy nginx -> this server
-        "local" to "ktor server <- proxy nginx",
-        
-        "localHostLocal" to call.request.local.localHost, // "127.0.0.1"
-        "localHostServer" to call.request.local.serverHost, // "localhost"
-        "localHostRemote" to call.request.local.remoteHost, // "127.0.0.1"
-        
-        "localPortLocal" to call.request.local.localPort, // 40040
-        "localPortServer" to call.request.local.serverPort, // 40040
-        "localPortRemote" to call.request.local.remotePort, // 52860
-        
         // get information about the original request
         // client -> proxy nginx
-        "origin" to "proxy nginx <- client",
+        "origin" to "client -> proxy nginx",
         
         "originHostLocal" to call.request.origin.localHost, // "127.0.0.1" "[0:0:0:0:0:0:0:1]"
         "originHostServer" to call.request.origin.serverHost, // "kupidon.ddns.net"
@@ -53,6 +41,20 @@ fun Application.configureHttpTestRoutes(){
         
         "originSchemeProtocol" to call.request.origin.scheme, // "https"
         "originUriPath" to call.request.origin.uri, // "/test/http/proxy-info"
+        
+        
+        
+        // get information about the proxy request
+        // proxy nginx -> ktor server
+        "local" to "proxy nginx -> ktor server",
+        
+        "localHostLocal" to call.request.local.localHost, // "127.0.0.1"
+        "localHostServer" to call.request.local.serverHost, // "localhost"
+        "localHostRemote" to call.request.local.remoteHost, // "127.0.0.1"
+        
+        "localPortLocal" to call.request.local.localPort, // 40040
+        "localPortServer" to call.request.local.serverPort, // 40040
+        "localPortRemote" to call.request.local.remotePort, // 52860
       )
       
       println("Test HTTP proxy info: $info")
