@@ -43,15 +43,17 @@ fun Application.configureUserRouteProfilePhoto() {
         "'photoId' param must be present and must be string"
       )
       
+      val userUuid = userId.toUuid()
+      // TODO чекнуть выкачивает ли оно фото или только его метаданные
       val photo = mongo().db.coll<UserMongo>("users")
         .aggregate<UserProfilePhotoMongo>(listOf(
-          Aggregates.match(Filters.eq(UserMongo::id.name,userId.toUuid())),
+          Aggregates.match(Filters.eq(UserMongo::id.name,userUuid)),
           Aggregates.unwind("$${UserMongo::photos.name}"),
           Aggregates.match(Filters.eq(
             "${UserMongo::photos.name}.${UserProfilePhotoMongo::id.name}",
             photoId.toUuid()
           )),
-          Aggregates.replaceRoot("$${UserMongo::photos.name}")
+          Aggregates.replaceRoot("$${UserMongo::photos.name}"),
         ))
         .firstOrNull()
       

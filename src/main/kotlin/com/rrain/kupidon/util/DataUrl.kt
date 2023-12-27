@@ -63,11 +63,12 @@ class DataUrl(dataUrl: String){
   />
   
   Small red dot:
-  <img alt="" src="data:image/png;base64,iVBORw0KGgoAAA
-    ANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4
-    //8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU
-    5ErkJggg==" style="width:36pt;height:36pt"
+  <img alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
+  style="width:36pt;height:36pt"
   />
+  
+  Rainbow circle webp:
+  data:image/webp;base64,UklGRqQBAABXRUJQVlA4WAoAAAAQAAAADwAADwAAQUxQSMcAAAABgKRt27Hlzq5FdDTr1yq4gYxRC2jcjDuwbdfItm3bjfxdeQ0RMQH6NdhsCtE/Xf1vRnd1i/M3j3QwSi+BfO8fKUfQccnPIknOnkeogY3m5rEPu9R7MMNN72nlksFJXZaCX6nioMMWV/QETPmZYHLqJVxKbhsFTCagvzVGijDGlsDsNwFc50RF1t1RxXuYsiuPMRbLTzqfGboakOzGeEvjFtTByahbUgE/d/thPVWSvPOB/VogzeuHZK+tGOSt16V/hphMwfoVAFZQOCC2AAAAcAMAnQEqEAAQAAIANCWwAnS3AETVewn5RhMyE/cLRAq84OQAAP7sJjZi2vltQVBtNESasiNNPNYI+PcqyMEU4i1/XVdYjQ4vQp/F40ttvfOzsGPdXqjTNaRZUQHdP3bDduNg0gtbNHTYFYCP/VOdNoX1/+ObtPOcjPnVjeNN/yOPz99Ks7xmS516zD7AO3/4y2OPif/oef1e3R0P4sXmRdv53iiSbRLc7R71eIXE78oaxJruAAA=
  
  A data URI consists of a 'scheme' and a 'path', with no authority part, query string, or fragment.
  The optional media type, the optional base64 indicator, and the data are all parts of the URI path.

@@ -1,7 +1,6 @@
 package com.rrain.kupidon.route.route.user
 
 import com.mongodb.client.model.Filters
-import com.rrain.kupidon.route.util.respondNoUser
 import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
@@ -9,8 +8,6 @@ import com.rrain.kupidon.service.db.mongo.entity.UserMongo
 import com.rrain.kupidon.util.toUuid
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.toList

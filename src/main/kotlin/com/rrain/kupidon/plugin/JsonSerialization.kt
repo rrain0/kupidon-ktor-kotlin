@@ -15,18 +15,14 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.*
-import com.rrain.kupidon.util.localDateFormat
-import com.rrain.kupidon.util.toLocalDate
-import com.rrain.kupidon.util.toZonedDateTime
-import com.rrain.kupidon.util.zonedDateTimeFormatter
+import com.rrain.kupidon.util.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.application.*
 import org.bson.types.ObjectId
 import java.time.LocalDate
 import java.time.ZonedDateTime
-
-
+import java.util.UUID
 
 
 lateinit var JacksonObjectMapper: ObjectMapper
@@ -101,6 +97,22 @@ fun Application.configureJsonSerialization() {
           ObjectId::class, object : StdDeserializer<ObjectId>(ObjectId::class.java) {
             override fun deserialize(p: JsonParser, ctxt: DeserializationContext): ObjectId {
               return p.valueAsString.let(::ObjectId)
+            }
+          }
+        )
+        
+        // java.util.UUID
+        .addSerializer(
+          UUID::class, object : StdSerializer<UUID>(UUID::class.java) {
+            override fun serialize(value: UUID, gen: JsonGenerator, provider: SerializerProvider) {
+              return gen.writeString(value.toString())
+            }
+          }
+        )
+        .addDeserializer(
+          UUID::class, object : StdDeserializer<UUID>(UUID::class.java) {
+            override fun deserialize(p: JsonParser, ctxt: DeserializationContext): UUID {
+              return p.valueAsString.toUuid()
             }
           }
         )

@@ -68,7 +68,7 @@ data class UserMongo(
               val photoIdParam = UserRoutes.getProfilePhotoParamPhotoId
               val userId = this@UserMongo.id
               val photoId = it.id
-              "https://$host:$port/$path?$userIdParam=$userId&$photoIdParam=$photoId"
+              "https://$host:$port$path?$userIdParam=$userId&$photoIdParam=$photoId"
             }
           }
         }

@@ -3,7 +3,7 @@ package com.rrain.kupidon.route.route.auth
 import com.auth0.jwt.exceptions.*
 import com.mongodb.client.model.Filters
 import com.rrain.kupidon.route.util.respondBadRequest
-import com.rrain.kupidon.route.util.respondNoUser
+import com.rrain.kupidon.route.util.respondNoUserById
 import com.rrain.kupidon.service.*
 import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
@@ -63,7 +63,7 @@ fun Application.configureAuthRouteRefresh(){
         .find(Filters.eq(UserMongo::id.name, id.toUuid()))
         .toList().firstOrNull()
       
-      user ?: return@get call.respondNoUser()
+      user ?: return@get call.respondNoUserById()
       
       val roles = user.roles
       val domain = call.request.origin.serverHost

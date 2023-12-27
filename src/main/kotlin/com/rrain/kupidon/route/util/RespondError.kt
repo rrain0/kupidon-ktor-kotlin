@@ -30,7 +30,7 @@ suspend inline fun ApplicationCall.respondBadRequest
 
 
 // Пользователь не найден
-suspend inline fun ApplicationCall.respondNoUser() = this.respond(
+suspend inline fun ApplicationCall.respondNoUserById() = this.respond(
   HttpStatusCode.BadRequest,
   ErrNoUserById,
 )
