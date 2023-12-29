@@ -1,17 +1,20 @@
 package com.rrain.kupidon.route.route.user
 
 import com.mongodb.client.model.Filters
+import com.rrain.kupidon.route.util.respondNoUserById
 import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.entity.UserMongo
+import com.rrain.kupidon.service.db.mongo.entity.UserProfilePhotoMongo
 import com.rrain.kupidon.util.toUuid
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
-
+import org.bson.Document
 
 
 object UserRoutes {
@@ -50,15 +53,18 @@ fun Application.configureUserRoutes(){
     
     get(UserRoutes.getById) {
       val userId = call.parameters["id"]!!
+      val userUuid = userId.toUuid()
+      
+      val nUserId = UserMongo::id.name
+      val nUserPhotos = UserMongo::photos.name
+      val nPhotoBinData = UserProfilePhotoMongo::binData.name
+      
       val userById = mongo().db.coll<UserMongo>("users")
-        .find(Filters.eq(UserMongo::id.name, userId.toUuid()))
-        .toList().firstOrNull()
+        .find(Filters.eq(nUserId, userUuid))
+        .projection(Document("$nUserPhotos.$nPhotoBinData", false))
+        .firstOrNull()
       
-      userById ?: return@get call.respond(
-        HttpStatusCode.BadRequest,
-        object{ val user = null }
-      )
-      
+      userById ?: return@get call.respondNoUserById()
       
       return@get call.respond(object {
         val user = userById.convertToSend(call.request)

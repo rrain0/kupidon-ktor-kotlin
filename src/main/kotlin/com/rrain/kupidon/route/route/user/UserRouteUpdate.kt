@@ -25,6 +25,8 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import org.bson.Document
 import org.bson.conversions.Bson
@@ -236,6 +238,9 @@ fun Application.configureUserRouteUpdate() {
             if (it.name.length > 256) return@put call.respondInvalidBody(
               "photos.add[$i].name max length must be 256 chars"
             )
+            println("name: ${it.name}")
+            println("index: ${it.index}")
+            println("dataUrl: ${it.dataUrl.substring(0,2000)}")
             val dataUrl =
               try { DataUrl(it.dataUrl) }
               catch (ex: Exception){
@@ -243,15 +248,21 @@ fun Application.configureUserRouteUpdate() {
                   "photos.add[$i].dataUrl has invalid format: ${ex.message}"
                 )
               }
-            if (dataUrl.mimeType!="image/webp") return@put call.respondInvalidBody(
-              "photos.add[$i].dataUrl must have 'image/webp' mime-type"
+            if (!dataUrl.mimeType.startsWith("image/")) return@put call.respondInvalidBody(
+              "photos.add[$i].dataUrl must have mime-type starting with 'image/', " +
+                "but yours is '${dataUrl.mimeType}'"
             )
+            /*if (dataUrl.mimeType!="image/webp") return@put call.respondInvalidBody(
+              "photos.add[$i].dataUrl must have 'image/webp' mime-type"
+            )*/
             if (!dataUrl.isBase64) return@put call.respondInvalidBody(
               "photos.add[$i].dataUrl data must be base64 encoded"
             )
             val dataBytes = Base64.decode(dataUrl.data)
+            println("size: ${dataBytes.size}")
             if (dataBytes.size > 0.4*1024*1024) return@put call.respondInvalidBody(
-              "photos.add[$i].dataUrl data max size must be 0.4MB"
+              "photos.add[$i].dataUrl data max size must be 0.4MB, " +
+                "but yours is ${dataBytes.size} bytes"
             )
             UserProfilePhotoMongo(
               id = UUID.randomUUID(),
@@ -302,7 +313,8 @@ fun Application.configureUserRouteUpdate() {
       val userUuid = userId.toUuid()
       val userById = m.db.coll<UserMongo>("users")
         .find(session, Filters.eq(nUserId, userUuid))
-        .toList().firstOrNull()
+        .projection(Document("$nUserPhotos.$nPhotoBinData", false))
+        .firstOrNull()
       
       if (userById==null) {
         session.abortTransaction()
@@ -383,7 +395,7 @@ fun Application.configureUserRouteUpdate() {
               Filters.eq(nUserId, userUuid),
               buildList {
                 add(Updates.set(
-                  "$nUserPhotos.\$[i].$nPhotoIndex",
+                  "$nUserPhotos.$[i].$nPhotoIndex",
                   it.index
                 ))
                 add(Updates.currentDate(nUserUpdated))
@@ -423,7 +435,8 @@ fun Application.configureUserRouteUpdate() {
       
       m.db.coll<UserMongo>("users")
         .find(session, Filters.eq(UserMongo::id.name, userUuid))
-        .toList().first()
+        .projection(Document("$nUserPhotos.$nPhotoBinData", false))
+        .first()
     }
     
     

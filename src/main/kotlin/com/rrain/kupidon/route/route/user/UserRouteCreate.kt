@@ -14,6 +14,7 @@ import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.entity.UserMongo
+import com.rrain.kupidon.service.db.mongo.entity.UserProfilePhotoMongo
 import com.rrain.kupidon.service.db.mongo.useTransaction
 import com.rrain.kupidon.util.emailPattern
 import com.rrain.kupidon.util.zonedNow
@@ -22,7 +23,10 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
+import org.bson.Document
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -120,9 +124,14 @@ fun Application.configureUserRouteCreate() {
       
       val m = mongo()
       val user = m.useTransaction { session ->
+        val nUserId = UserMongo::id.name
+        val nUserEmail = UserMongo::email.name
+        val nUserPhotos = UserMongo::photos.name
+        val nPhotoBinData = UserProfilePhotoMongo::binData.name
+        
         val userByEmail = m.db.coll<UserMongo>("users")
-          .find(session, Filters.eq(UserMongo::email.name, tryUser.email))
-          .toList()
+          .find(session, Filters.eq(nUserEmail, tryUser.email))
+          .projection(Document("$nUserPhotos.$nPhotoBinData", false))
           .firstOrNull()
         
         if (userByEmail!=null) return@post call.respondBadRequest(
@@ -134,8 +143,8 @@ fun Application.configureUserRouteCreate() {
           .insertOne(session, tryUser)
         
         m.db.coll<UserMongo>("users")
-          .find(session,Filters.eq(UserMongo::id.name, tryUser.id))
-          .toList()
+          .find(session, Filters.eq(nUserId, tryUser.id))
+          .projection(Document("$nUserPhotos.$nPhotoBinData", false))
           .first()
       }
       

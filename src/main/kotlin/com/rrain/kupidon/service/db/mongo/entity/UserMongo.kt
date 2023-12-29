@@ -3,6 +3,7 @@ package com.rrain.kupidon.service.db.mongo.entity
 import com.rrain.kupidon.entity.app.Gender
 import com.rrain.kupidon.entity.app.Role
 import com.rrain.kupidon.route.route.user.UserRoutes
+import io.ktor.http.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import org.bson.Document
@@ -58,6 +59,7 @@ data class UserMongo(
         it?.let {
           object {
             val id = it.id
+            val index = it.index
             val name = it.name
             val mimeType = it.mimeType
             var url = run {
@@ -68,7 +70,18 @@ data class UserMongo(
               val photoIdParam = UserRoutes.getProfilePhotoParamPhotoId
               val userId = this@UserMongo.id
               val photoId = it.id
-              "https://$host:$port$path?$userIdParam=$userId&$photoIdParam=$photoId"
+              URLBuilder(
+                protocol = URLProtocol.HTTPS,
+                host = host,
+                port = port,
+                //pathSegments = listOf(name),
+                parameters = Parameters.build {
+                  append(userIdParam, userId.toString())
+                  append(photoIdParam, photoId.toString())
+                }
+              )
+              .apply { path(path,name) }
+              .build().toString()
             }
           }
         }

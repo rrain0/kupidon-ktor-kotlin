@@ -9,13 +9,14 @@ import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.entity.UserMongo
+import com.rrain.kupidon.service.db.mongo.entity.UserProfilePhotoMongo
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.toList
-
+import org.bson.Document
 
 
 fun Application.configureAuthRouteLogin(){
@@ -35,13 +36,18 @@ fun Application.configureAuthRouteLogin(){
     )
     post(AuthRoutes.login) {
       val login =
-      try { call.receive<LoginRequest>() }
-      catch (ex: Exception){
-        return@post call.respondInvalidBody()
-      }
+        try { call.receive<LoginRequest>() }
+        catch (ex: Exception){
+          return@post call.respondInvalidBody()
+        }
+      
+      val nUserEmail = UserMongo::email.name
+      val nUserPhotos = UserMongo::photos.name
+      val nPhotoBinData = UserProfilePhotoMongo::binData.name
       
       val user = mongo().db.coll<UserMongo>("users")
-        .find(Filters.eq(UserMongo::email.name, login.login))
+        .find(Filters.eq(nUserEmail, login.login))
+        .projection(Document("$nUserPhotos.$nPhotoBinData", false))
         .toList().firstOrNull()
       
       if (user==null || !PwdHashing.checkPwd(login.pwd, user.pwd))

@@ -1,5 +1,6 @@
 package com.rrain.kupidon.route.route.user
 
+import com.mongodb.ExplainVerbosity
 import com.mongodb.client.model.Aggregates
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Projections
@@ -9,6 +10,7 @@ import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.entity.UserMongo
 import com.rrain.kupidon.service.db.mongo.entity.UserProfilePhotoMongo
+import com.rrain.kupidon.util.SinglePathSegment
 import com.rrain.kupidon.util.toUuid
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -16,7 +18,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.firstOrNull
 import org.bson.Document
-import java.io.File
 
 
 
@@ -32,9 +33,10 @@ fun Application.configureUserRouteProfilePhoto() {
     
     
     // https://dev.kupidon.rrain.ydns.eu:50040/api/user/profile-photo?userId=795415da-a2cb-435b-80ee-98af28b3f0d0&photoId=3f5d4807-1112-4cdb-9eab-40c6a4e26217
-    get(UserRoutes.getProfilePhoto) {
+    get(Regex("""${UserRoutes.getProfilePhoto}$SinglePathSegment""")) {
       val userId = call.parameters[UserRoutes.getProfilePhotoParamUserId]
       val photoId = call.parameters[UserRoutes.getProfilePhotoParamPhotoId]
+      
       
       userId ?: return@get call.respondInvalidParams(
         "'userId' param must be present and must be string"
@@ -44,16 +46,24 @@ fun Application.configureUserRouteProfilePhoto() {
       )
       
       val userUuid = userId.toUuid()
-      // TODO чекнуть выкачивает ли оно фото или только его метаданные
+      val photoUuid = photoId.toUuid()
+      
+      val nUserId = UserMongo::id.name
+      val nUserPhotos = UserMongo::photos.name
+      val nPhotosId = UserProfilePhotoMongo::id.name
+      val nPhotoBinData = UserProfilePhotoMongo::binData.name
+      
       val photo = mongo().db.coll<UserMongo>("users")
         .aggregate<UserProfilePhotoMongo>(listOf(
-          Aggregates.match(Filters.eq(UserMongo::id.name,userUuid)),
-          Aggregates.unwind("$${UserMongo::photos.name}"),
-          Aggregates.match(Filters.eq(
-            "${UserMongo::photos.name}.${UserProfilePhotoMongo::id.name}",
-            photoId.toUuid()
-          )),
-          Aggregates.replaceRoot("$${UserMongo::photos.name}"),
+          Aggregates.match(Document(nUserId, userUuid)),
+          /*Aggregates.match(Document(mapOf(
+            nUserId to userUuid,
+            "$nUserPhotos.$nPhotosId" to photoUuid,
+          ))),*/
+          Aggregates.unwind("$$nUserPhotos"),
+          Aggregates.match(Document("$nUserPhotos.$nPhotosId", photoUuid)),
+          Aggregates.replaceRoot("$$nUserPhotos"),
+          Aggregates.limit(1),
         ))
         .firstOrNull()
       
