@@ -38,7 +38,7 @@ data class UserMongo(
   // пол: 'MALE' / 'FEMALE'
   val gender: Gender,
   val aboutMe: String,
-  val photos: List<UserProfilePhotoMetadataMongo?>,
+  val photos: List<UserProfilePhotoMetadataMongo>,
   
   val transactions: Document?,
 ){
@@ -56,7 +56,7 @@ data class UserMongo(
       "gender" to gender,
       "aboutMe" to aboutMe,
       "photos" to photos.map {
-        it?.let {
+        it.let {
           object {
             val id = it.id
             val index = it.index

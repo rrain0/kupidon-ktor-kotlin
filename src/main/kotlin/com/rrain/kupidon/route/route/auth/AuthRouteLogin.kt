@@ -15,6 +15,7 @@ import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import org.bson.Document
 
@@ -41,14 +42,16 @@ fun Application.configureAuthRouteLogin(){
           return@post call.respondInvalidBody()
         }
       
+      val m = mongo()
       val nUserEmail = UserMongo::email.name
       val nUserPhotos = UserMongo::photos.name
       val nPhotoBinData = UserProfilePhotoMongo::binData.name
       
-      val user = mongo().db.coll<UserMongo>("users")
+      val user = m.db.coll<UserMongo>("users")
         .find(Filters.eq(nUserEmail, login.login))
         .projection(Document("$nUserPhotos.$nPhotoBinData", false))
-        .toList().firstOrNull()
+        .limit(1)
+        .firstOrNull()
       
       if (user==null || !PwdHashing.checkPwd(login.pwd, user.pwd))
         return@post call.respondBadRequest(

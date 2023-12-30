@@ -36,13 +36,15 @@ fun Application.configureUserRoutesCurrent(){
         val userId = principal.subject!!
         val userUuid = userId.toUuid()
         
+        val m = mongo()
         val nUserId = UserMongo::id.name
         val nUserPhotos = UserMongo::photos.name
         val nPhotoBinData = UserProfilePhotoMongo::binData.name
         
-        val userById = mongo().db.coll<UserMongo>("users")
+        val userById = m.db.coll<UserMongo>("users")
           .find(Filters.eq(nUserId, userUuid))
           .projection(Document("$nUserPhotos.$nPhotoBinData", false))
+          .limit(1)
           .firstOrNull()
         
         userById ?: return@get call.respondNoUserById()

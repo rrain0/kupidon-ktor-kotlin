@@ -117,7 +117,7 @@ fun Application.configureUserRouteCreate() {
         birthDate = userToCreate.birthDate.toLocalDate(),
         gender = userToCreate.gender,
         aboutMe = "",
-        photos = (0..5).map { null },
+        photos = listOf(),
         transactions = null,
       )
       
@@ -132,6 +132,7 @@ fun Application.configureUserRouteCreate() {
         val userByEmail = m.db.coll<UserMongo>("users")
           .find(session, Filters.eq(nUserEmail, tryUser.email))
           .projection(Document("$nUserPhotos.$nPhotoBinData", false))
+          .limit(1)
           .firstOrNull()
         
         if (userByEmail!=null) return@post call.respondBadRequest(
@@ -145,6 +146,7 @@ fun Application.configureUserRouteCreate() {
         m.db.coll<UserMongo>("users")
           .find(session, Filters.eq(nUserId, tryUser.id))
           .projection(Document("$nUserPhotos.$nPhotoBinData", false))
+          .limit(1)
           .first()
       }
       

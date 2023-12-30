@@ -48,12 +48,13 @@ fun Application.configureUserRouteProfilePhoto() {
       val userUuid = userId.toUuid()
       val photoUuid = photoId.toUuid()
       
+      val m = mongo()
       val nUserId = UserMongo::id.name
       val nUserPhotos = UserMongo::photos.name
       val nPhotosId = UserProfilePhotoMongo::id.name
       val nPhotoBinData = UserProfilePhotoMongo::binData.name
       
-      val photo = mongo().db.coll<UserMongo>("users")
+      val photo = m.db.coll<UserMongo>("users")
         .aggregate<UserProfilePhotoMongo>(listOf(
           Aggregates.match(Document(nUserId, userUuid)),
           /*Aggregates.match(Document(mapOf(

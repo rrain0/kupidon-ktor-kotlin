@@ -63,13 +63,15 @@ fun Application.configureAuthRouteRefresh(){
       val userId = decodedRefresh.subject
       val userUuid = userId.toUuid()
       
+      val m = mongo()
       val nUserId = UserMongo::id.name
       val nUserPhotos = UserMongo::photos.name
       val nPhotoBinData = UserProfilePhotoMongo::binData.name
       
-      val user = mongo().db.coll<UserMongo>("users")
+      val user = m.db.coll<UserMongo>("users")
         .find(Filters.eq(nUserId, userUuid))
         .projection(Document("$nUserPhotos.$nPhotoBinData", false))
+        .limit(1)
         .firstOrNull()
       
       user ?: return@get call.respondNoUserById()

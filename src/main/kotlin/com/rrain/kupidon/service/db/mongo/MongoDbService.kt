@@ -19,6 +19,7 @@ import java.time.ZonedDateTime
 
 
 
+
 fun Application.configureMongoDbService(){
   
   val appConfig = environment.config
@@ -97,6 +98,7 @@ val MongoClient.db get() = this.getDatabase(MongoDbService.dbName)
 fun MongoClient.db(dbName: String) = this.getDatabase(dbName)
 inline fun <reified T : Any> MongoDatabase.coll(collName: String)
   = this.getCollection<T>(collName)
+
 
 
 

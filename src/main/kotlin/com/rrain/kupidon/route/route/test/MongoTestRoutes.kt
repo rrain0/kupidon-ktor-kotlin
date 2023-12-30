@@ -1,7 +1,13 @@
 package com.rrain.kupidon.route.route.test
 
+import com.mongodb.client.model.Aggregates
+import com.mongodb.client.model.Field
 import com.mongodb.client.model.Filters
+import com.mongodb.client.model.UpdateOneModel
 import com.mongodb.client.model.Updates
+import com.mongodb.client.model.WriteModel
+import com.mongodb.internal.bulk.WriteRequest
+import com.mongodb.internal.bulk.WriteRequestWithIndex
 import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.useTransaction
@@ -13,8 +19,7 @@ import kotlinx.coroutines.flow.toList
 import org.bson.Document
 import org.bson.types.ObjectId
 import java.util.UUID
-
-
+import javax.print.Doc
 
 
 fun Application.configureMongoTestRoutes(){
@@ -100,6 +105,63 @@ fun Application.configureMongoTestRoutes(){
         
         val movies = movieColl.find(session).toList()
         call.respond(movies)
+      }
+    }
+    
+    
+    get("/test/mongo/indexes"){
+      data class Index(
+        val _id: ObjectId,
+        val index: Int,
+      )
+      val n_Id = Index::_id.name
+      val nIndex = Index::index.name
+      
+      
+      MongoDbService.client.useTransaction { session ->
+        val coll = MongoDbService.db("test").coll<Index>("indexes")
+        
+        val id1 = ObjectId("658f92c9fabdb93de50b6c36")
+        val id2 = ObjectId("658f92c9fabdb93de50b6c37")
+        coll.aggregate(session, listOf(
+          Aggregates.match(Document(n_Id, id1)),
+          Aggregates.limit(1),
+          Aggregates.set(Field(nIndex, 1)),
+          Aggregates.match(Document(n_Id, id2)),
+          Aggregates.limit(1),
+          Aggregates.set(Field(nIndex, 0)),
+        ))
+        
+        
+        /*
+        coll.bulkWrite(session,listOf(
+          UpdateOneModel<Index>(
+            Filters.eq(n_Id, ObjectId("658f92c9fabdb93de50b6c36")),
+            Updates.set(nIndex, 1)
+          ),
+          UpdateOneModel<Index>(
+            Filters.eq(n_Id, ObjectId("658f92c9fabdb93de50b6c37")),
+            Updates.set(nIndex, 0)
+          ),
+        ))
+        */
+        
+        /*coll.updateOne(session,
+          Filters.eq(n_Id, ObjectId("658f92c9fabdb93de50b6c36")),
+          Updates.set(nIndex, 1)
+        )*/
+        
+        //delay(5000)
+        
+        /*coll.updateOne(session,
+          Filters.eq(n_Id, ObjectId("658f92c9fabdb93de50b6c37")),
+          Updates.set(nIndex, 0)
+        )*/
+        
+        //delay(5000)
+        
+        val documents = coll.find(session).toList()
+        call.respond(documents)
       }
     }
     

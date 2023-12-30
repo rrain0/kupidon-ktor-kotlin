@@ -3,8 +3,10 @@ package com.rrain.kupidon.route.route.user
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.mongodb.client.model.Filters
+import com.mongodb.client.model.UpdateOneModel
 import com.mongodb.client.model.UpdateOptions
 import com.mongodb.client.model.Updates
+import com.mongodb.client.model.WriteModel
 import com.rrain.kupidon.entity.app.Gender
 import com.rrain.kupidon.plugin.JacksonObjectMapper
 import com.rrain.kupidon.service.PwdHashing
@@ -27,9 +29,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.toList
 import org.bson.Document
-import org.bson.conversions.Bson
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.io.encoding.Base64
@@ -305,8 +305,6 @@ fun Application.configureUserRouteUpdate() {
       
       val nPhotoId = UserProfilePhotoMetadataMongo::id.name
       val nPhotoIndex = UserProfilePhotoMetadataMongo::index.name
-      val nPhotoName = UserProfilePhotoMetadataMongo::name.name
-      val nPhotoMimeType = UserProfilePhotoMetadataMongo::mimeType.name
       val nPhotoBinData = UserProfilePhotoMongo::binData.name
       
       
@@ -314,6 +312,7 @@ fun Application.configureUserRouteUpdate() {
       val userById = m.db.coll<UserMongo>("users")
         .find(session, Filters.eq(nUserId, userUuid))
         .projection(Document("$nUserPhotos.$nPhotoBinData", false))
+        .limit(1)
         .firstOrNull()
       
       if (userById==null) {
@@ -322,13 +321,8 @@ fun Application.configureUserRouteUpdate() {
       }
       
       
-      /*m.db.coll<UserMongo>("users")
-        .updateOne(session,
-          Filters.eq(nUserId, userUuid),
-          Updates.set("id", "4f699e2d-a492-40de-a54f-ed05c42203a4".toUuid())
-        )
       
-      println("after duplication key:")*/
+      val writeList = mutableListOf<WriteModel<UserMongo>>()
       
       
       if (update.newPwdHashed!=null) {
@@ -339,35 +333,32 @@ fun Application.configureUserRouteUpdate() {
             "Invalid current password"
           )
         }
-        m.db.coll<UserMongo>("users")
-          .updateOne(session,
-            Filters.eq(nUserId, userUuid),
-            buildList {
-              add(Updates.set(nUserPwd, update.newPwdHashed))
-              add(Updates.currentDate(nUserUpdated))
-            }
-            .let(Updates::combine)
-          )
+        writeList += UpdateOneModel(
+          Filters.eq(nUserId, userUuid),
+          Updates.set(nUserPwd, update.newPwdHashed),
+        )
       }
       
       
       
-      m.db.coll<UserMongo>("users")
-        .updateOne(session,
-          Filters.eq(nUserId, userUuid),
-          buildList {
-            if (update::name.name in update.props)
-              add(Updates.set(nUserName, update.name))
-            if (update::birthDate.name in update.props)
-              add(Updates.set(nUserBirthDate, update.birthDate))
-            if (update::gender.name in update.props)
-              add(Updates.set(nUserGender, update.gender))
-            if (update::aboutMe.name in update.props)
-              add(Updates.set(nUserAboutMe, update.aboutMe))
-            add(Updates.currentDate(nUserUpdated))
-          }
-          .let(Updates::combine)
-        )
+      run {
+        val updates = buildList {
+          if (update::name.name in update.props)
+            add(Updates.set(nUserName, update.name))
+          if (update::birthDate.name in update.props)
+            add(Updates.set(nUserBirthDate, update.birthDate))
+          if (update::gender.name in update.props)
+            add(Updates.set(nUserGender, update.gender))
+          if (update::aboutMe.name in update.props)
+            add(Updates.set(nUserAboutMe, update.aboutMe))
+        }
+        if (updates.isNotEmpty()){
+          writeList += UpdateOneModel(
+            Filters.eq(nUserId, userUuid),
+            updates.let(Updates::combine)
+          )
+        }
+      }
       
       
       
@@ -375,37 +366,26 @@ fun Application.configureUserRouteUpdate() {
       if (update::photos.name in update.props) {
         
         // remove photos by id
-        m.db.coll<UserMongo>("users")
-          .updateOne(session,
-            Filters.eq(nUserId, userUuid),
-            buildList {
-              add(Updates.pull(
-                nUserPhotos,
-                Filters.`in`(nPhotoId, update.photos.remove)
-              ))
-              add(Updates.currentDate(nUserUpdated))
-            }
-            .let(Updates::combine)
+        writeList += UpdateOneModel(
+          Filters.eq(nUserId, userUuid),
+          Updates.pull(
+            nUserPhotos,
+            Filters.`in`(nPhotoId, update.photos.remove)
           )
+        )
         
         // replace photos by id & new index
         update.photos.replace.forEach {
-          m.db.coll<UserMongo>("users")
-            .updateOne(session,
-              Filters.eq(nUserId, userUuid),
-              buildList {
-                add(Updates.set(
-                  "$nUserPhotos.$[i].$nPhotoIndex",
-                  it.index
-                ))
-                add(Updates.currentDate(nUserUpdated))
-              }
-              .let(Updates::combine),
-              //.also { println("updates: $it") },
-              UpdateOptions().arrayFilters(listOf(
-                Document("i.$nPhotoId", it.id)
-              ))
-            )
+          writeList += UpdateOneModel(
+            Filters.eq(nUserId, userUuid),
+            Updates.set(
+              "$nUserPhotos.$[i].$nPhotoIndex",
+              it.index
+            ),
+            UpdateOptions().arrayFilters(listOf(
+              Document("i.$nPhotoId", it.id)
+            ))
+          )
         }
         val replaceJson = """
           db.users.updateOne(
@@ -417,11 +397,10 @@ fun Application.configureUserRouteUpdate() {
         
         
         // add new photos by new data & new index
-        m.db.coll<UserMongo>("users")
-          .updateOne(session,
-            Filters.eq(nUserId, userUuid),
-            Updates.pushEach(nUserPhotos, update.photos.add)
-          )
+        writeList += UpdateOneModel(
+          Filters.eq(nUserId, userUuid),
+          Updates.pushEach(nUserPhotos, update.photos.add)
+        )
         
         // check index uniqueness
         /*val indices = m.db.coll<UserMongo>("users")
@@ -431,12 +410,27 @@ fun Application.configureUserRouteUpdate() {
           )*/
       }
       
+      writeList += UpdateOneModel(
+        Filters.eq(nUserId, userUuid),
+        Updates.currentDate(nUserUpdated),
+      )
+      
+      m.db.coll<UserMongo>("users").bulkWrite(session,writeList)
       
       
-      m.db.coll<UserMongo>("users")
+      val updatedUser = m.db.coll<UserMongo>("users")
         .find(session, Filters.eq(UserMongo::id.name, userUuid))
         .projection(Document("$nUserPhotos.$nPhotoBinData", false))
         .first()
+      
+      if (updatedUser.photos.size != updatedUser.photos.map { it.index }.toSet().size){
+        session.abortTransaction()
+        return@put call.respondInvalidBody(
+          "Duplicate photo index"
+        )
+      }
+      
+      updatedUser
     }
     
     
