@@ -28,6 +28,7 @@ object UserRoutes {
   const val getById = "$base/get-by-id/{id}"
   
   const val getProfilePhoto = "$base/profile-photo"
+  const val postProfilePhoto = getProfilePhoto
   const val getProfilePhotoParamUserId = "userId"
   const val getProfilePhotoParamPhotoId = "photoId"
   

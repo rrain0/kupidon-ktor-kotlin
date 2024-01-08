@@ -70,6 +70,11 @@ data class UserMongo(
               val photoIdParam = UserRoutes.getProfilePhotoParamPhotoId
               val userId = this@UserMongo.id
               val photoId = it.id
+              val extension = Regex("""[^/]+/(?<ext>[^/]+)""")
+                .matchEntire(mimeType)
+                ?.let { it.groups["ext"]?.value }
+                ?.let { "."+it }
+                ?: ""
               URLBuilder(
                 protocol = URLProtocol.HTTPS,
                 host = host,
@@ -80,7 +85,7 @@ data class UserMongo(
                   append(photoIdParam, photoId.toString())
                 }
               )
-              .apply { path(path,name) }
+              .apply { path(path, "$name $id$extension") }
               .build().toString()
             }
           }

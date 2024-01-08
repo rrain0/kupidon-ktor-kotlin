@@ -52,6 +52,7 @@ fun Application.configureUserRouteUpdate() {
     val index: Int,
   )
   data class AddPhoto(
+    val id: UUID,
     val index: Int,
     val name: String,
     val dataUrl: String,
@@ -238,6 +239,7 @@ fun Application.configureUserRouteUpdate() {
             if (it.name.length > 256) return@put call.respondInvalidBody(
               "photos.add[$i].name max length must be 256 chars"
             )
+            println("id: ${it.id}")
             println("name: ${it.name}")
             println("index: ${it.index}")
             println("dataUrl: ${it.dataUrl.substring(0,2000)}")
@@ -265,7 +267,7 @@ fun Application.configureUserRouteUpdate() {
                 "but yours is ${dataBytes.size} bytes"
             )
             UserProfilePhotoMongo(
-              id = UUID.randomUUID(),
+              id = it.id,
               index = it.index,
               name = it.name,
               mimeType = dataUrl.mimeType,
