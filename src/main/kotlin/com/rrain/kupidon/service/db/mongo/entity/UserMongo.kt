@@ -2,9 +2,6 @@ package com.rrain.kupidon.service.db.mongo.entity
 
 import com.rrain.kupidon.entity.app.Gender
 import com.rrain.kupidon.entity.app.Role
-import com.rrain.kupidon.route.route.user.UserRoutes
-import io.ktor.http.*
-import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import org.bson.Document
 import java.time.LocalDate
@@ -55,42 +52,7 @@ data class UserMongo(
       "birthDate" to birthDate,
       "gender" to gender,
       "aboutMe" to aboutMe,
-      "photos" to photos.map {
-        it.let {
-          object {
-            val id = it.id
-            val index = it.index
-            val name = it.name
-            val mimeType = it.mimeType
-            var url = run {
-              val host = request.origin.serverHost
-              val port = request.origin.serverPort
-              val path = UserRoutes.getProfilePhoto
-              val userIdParam = UserRoutes.getProfilePhotoParamUserId
-              val photoIdParam = UserRoutes.getProfilePhotoParamPhotoId
-              val userId = this@UserMongo.id
-              val photoId = it.id
-              val extension = Regex("""[^/]+/(?<ext>[^/]+)""")
-                .matchEntire(mimeType)
-                ?.let { it.groups["ext"]?.value }
-                ?.let { "."+it }
-                ?: ""
-              URLBuilder(
-                protocol = URLProtocol.HTTPS,
-                host = host,
-                port = port,
-                //pathSegments = listOf(name),
-                parameters = Parameters.build {
-                  append(userIdParam, userId.toString())
-                  append(photoIdParam, photoId.toString())
-                }
-              )
-              .apply { path(path, "$name $id$extension") }
-              .build().toString()
-            }
-          }
-        }
-      },
+      "photos" to photos.map { it.convertToSend(id, request) },
       "transactions" to transactions,
     )
   }

@@ -8,12 +8,10 @@ import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.entity.UserMongo
 import com.rrain.kupidon.service.db.mongo.entity.UserProfilePhotoMongo
 import com.rrain.kupidon.util.toUuid
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.toList
 import org.bson.Document
 
 
@@ -41,7 +39,8 @@ fun Application.configureUserRoutes(){
   configureUserRouteCreate()
   configureUserRouteUpdate()
   configureUserRouteEmailInitialVerify()
-  configureUserRouteProfilePhoto()
+  configureUserRouteProfilePhotoGet()
+  configureUserRouteProfilePhotoAdd()
   configureUserRoutesCurrent()
   
   

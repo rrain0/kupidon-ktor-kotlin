@@ -40,7 +40,6 @@ import java.util.UUID
 
 
 
-@OptIn(ExperimentalEncodingApi::class)
 fun Application.configureUserRouteUpdate() {
   
   fun mongo() = MongoDbService.client
@@ -51,23 +50,15 @@ fun Application.configureUserRouteUpdate() {
     val id: UUID,
     val index: Int,
   )
-  data class AddPhoto(
-    val id: UUID,
-    val index: Int,
-    val name: String,
-    val dataUrl: String,
-  )
   data class PhotosUpdations (
     val remove: List<UUID>,
     val replace: List<ReplacePhoto>,
-    val add: List<AddPhoto>,
   )
   
   
   data class PreparedPhotosUpdations(
     val remove: List<UUID>,
     val replace: List<ReplacePhoto>,
-    val add: List<UserProfilePhotoMongo>,
   )
   
   
@@ -232,53 +223,11 @@ fun Application.configureUserRouteUpdate() {
               "photos.replace[$i].index must be in range ${0..5}"
             )
           }
-          val preparedAdd = photosUpdations.add.mapIndexed { i,it ->
-            if (it.index !in 0..5) return@put call.respondInvalidBody(
-              "photos.add[$i].index must be in range ${0..5}"
-            )
-            if (it.name.length > 256) return@put call.respondInvalidBody(
-              "photos.add[$i].name max length must be 256 chars"
-            )
-            println("id: ${it.id}")
-            println("name: ${it.name}")
-            println("index: ${it.index}")
-            println("dataUrl: ${it.dataUrl.substring(0,2000)}")
-            val dataUrl =
-              try { DataUrl(it.dataUrl) }
-              catch (ex: Exception){
-                return@put call.respondInvalidBody(
-                  "photos.add[$i].dataUrl has invalid format: ${ex.message}"
-                )
-              }
-            if (!dataUrl.mimeType.startsWith("image/")) return@put call.respondInvalidBody(
-              "photos.add[$i].dataUrl must have mime-type starting with 'image/', " +
-                "but yours is '${dataUrl.mimeType}'"
-            )
-            /*if (dataUrl.mimeType!="image/webp") return@put call.respondInvalidBody(
-              "photos.add[$i].dataUrl must have 'image/webp' mime-type"
-            )*/
-            if (!dataUrl.isBase64) return@put call.respondInvalidBody(
-              "photos.add[$i].dataUrl data must be base64 encoded"
-            )
-            val dataBytes = Base64.decode(dataUrl.data)
-            println("size: ${dataBytes.size}")
-            if (dataBytes.size > 0.4*1024*1024) return@put call.respondInvalidBody(
-              "photos.add[$i].dataUrl data max size must be 0.4MB, " +
-                "but yours is ${dataBytes.size} bytes"
-            )
-            UserProfilePhotoMongo(
-              id = it.id,
-              index = it.index,
-              name = it.name,
-              mimeType = dataUrl.mimeType,
-              binData = dataBytes,
-            )
-          }
+          
           
           update.photos = PreparedPhotosUpdations(
             remove = photosUpdations.remove,
             replace = photosUpdations.replace,
-            add = preparedAdd,
           )
         }
         
@@ -364,7 +313,6 @@ fun Application.configureUserRouteUpdate() {
       
       
       
-      // todo database is not checking distinction of 'index' field
       if (update::photos.name in update.props) {
         
         // remove photos by id
@@ -397,20 +345,8 @@ fun Application.configureUserRouteUpdate() {
           )
         """.trimIndent()
         
-        
-        // add new photos by new data & new index
-        writeList += UpdateOneModel(
-          Filters.eq(nUserId, userUuid),
-          Updates.pushEach(nUserPhotos, update.photos.add)
-        )
-        
-        // check index uniqueness
-        /*val indices = m.db.coll<UserMongo>("users")
-          .find(session,
-            Filters.eq(nUserId, userUuid),
-            
-          )*/
       }
+      
       
       writeList += UpdateOneModel(
         Filters.eq(nUserId, userUuid),
@@ -425,6 +361,7 @@ fun Application.configureUserRouteUpdate() {
         .projection(Document("$nUserPhotos.$nPhotoBinData", false))
         .first()
       
+      // check photo indices uniqueness
       if (updatedUser.photos.size != updatedUser.photos.map { it.index }.toSet().size){
         session.abortTransaction()
         return@put call.respondInvalidBody(

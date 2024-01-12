@@ -126,6 +126,6 @@ suspend inline fun <T> MongoClient.useTransaction
     it.startTransaction(transactionOpts)
     val result = block(session)
     it.commitTransaction()
-    return@use result
+    result
   }
 }
