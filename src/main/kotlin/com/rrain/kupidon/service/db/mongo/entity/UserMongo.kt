@@ -45,7 +45,7 @@ data class UserMongo(
       "id" to id,
       "roles" to roles,
       "email" to email,
-      //"emailVerified" to true, // TODO
+      //"emailVerified" to true, // todo
       "created" to created,
       "updated" to updated,
       "name" to name,

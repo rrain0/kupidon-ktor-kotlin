@@ -5,6 +5,7 @@ import io.ktor.server.routing.*
 
 
 
+
 fun Application.configureUserRouteEmailInitialVerify() {
   
   
@@ -13,7 +14,7 @@ fun Application.configureUserRouteEmailInitialVerify() {
     
     
     /*
-    // TODO Language
+    // todo Language
     get(UserRoutes.emailInitialVerification) {
       val verificationToken = call.request.queryParameters[UserRoutes.verifyTokenParamName]
       

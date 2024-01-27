@@ -178,7 +178,13 @@ fun Application.configureUserRouteProfilePhotoAdd() {
             "Duplicate photo index"
           )
         }
-        if (userById.photos.size>=6){
+        if (userById.photos.any { it.id==photo.id }){
+          session.abortTransaction()
+          return@post call.respondInvalidBody(
+            "Duplicate photo id in single user"
+          )
+        }
+        if (userById.photos.size>=5){
           session.abortTransaction()
           return@post call.respondInvalidBody(
             "Maximum photos count is 6"

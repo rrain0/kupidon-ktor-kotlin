@@ -171,7 +171,7 @@ fun Application.configureUserRouteCreate() {
         )
       )
       
-      // TODO Ссылка действительна 1 сутки, иначе войдите в приложение и запросите новую или смените почту.
+      // todo Ссылка действительна 1 сутки, иначе войдите в приложение и запросите новую или смените почту.
       /*launch {
         try {
           EmailService.sendHtmlEmail(
@@ -184,7 +184,7 @@ fun Application.configureUserRouteCreate() {
           )
         } catch (ex: EmailException) {
           // Ошибка отправки
-          // TODO validate if email was sent successfully
+          // todo validate if email was sent successfully
           ex.printStackTrace()
         }
       }*/
