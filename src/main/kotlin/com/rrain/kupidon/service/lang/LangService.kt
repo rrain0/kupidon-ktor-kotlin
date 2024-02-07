@@ -4,20 +4,20 @@ package com.rrain.kupidon.service.lang
 
 
 
-enum class AppLang(
+enum class AppLangEnum(
   val value: String,
 ) {
-  enUS("en-US"),
-  ruRU("ru-RU"),
+  eng("en-US"),
+  rus("ru-RU"),
   ;
   
   companion object {
-    fun getByValueOrDefault(value: String?): AppLang {
-      return AppLang.entries.find { it.value==value } ?: DefaultLang
+    fun getByValueOrDefault(value: String?): AppLangEnum {
+      return AppLangEnum.entries.find { it.value==value } ?: DefaultAppLang
     }
   }
 }
-val DefaultLang = AppLang.enUS
+val DefaultAppLang = AppLangEnum.eng
 
 
 fun <T : UiValue>List<T>.prepareUiValues(langs: List<String>): List<T> {
@@ -48,7 +48,7 @@ data class UiText(
   override val text: String,
 ) : UiValue()
 
-data class UiTemplateText<T : Function<String>>(
+data class UiTemplate<T : Function<String>>(
   override val value: String,
   override val lang: String,
   override val text: T,
@@ -56,6 +56,7 @@ data class UiTemplateText<T : Function<String>>(
 
 
 
+val UndefinedUiText = UiText("undefined", DefaultAppLang.value, "undefined")
 
 
 
@@ -76,7 +77,7 @@ private fun example(){
     lang = "ru-RU",
     text = "fdsf",
   )
-  val uiTemplate = UiTemplateText(
+  val uiTemplate = UiTemplate(
     value = "kjdfl",
     lang = "ru-RU",
     text = someTxt,

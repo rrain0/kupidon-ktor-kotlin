@@ -1,7 +1,7 @@
 package com.rrain.kupidon.service.lang.`ui-value`
 
-import com.rrain.kupidon.service.lang.AppLang
-import com.rrain.kupidon.service.lang.UiTemplateText
+import com.rrain.kupidon.service.lang.AppLangEnum
+import com.rrain.kupidon.service.lang.UiTemplate
 import com.rrain.kupidon.service.lang.UiText
 import org.intellij.lang.annotations.Language
 
@@ -15,12 +15,12 @@ object EmailInitialVerificationUiText {
   val emailTitle = listOf(
     UiText(
       value = "EmailInitialVerificationEmailTitle",
-      lang = AppLang.enUS.value,
+      lang = AppLangEnum.eng.value,
       text = "Kupidon - email verification",
     ),
     UiText(
       value = "EmailInitialVerificationEmailTitle",
-      lang = AppLang.ruRU.value,
+      lang = AppLangEnum.rus.value,
       text = "Купидон - верификация почты",
     ),
   )
@@ -30,12 +30,12 @@ object EmailInitialVerificationUiText {
     val verificationUrl: String,
   )
   val emailContent = listOf(
-    UiTemplateText(
+    UiTemplate(
       value = "EmailInitialVerificationEmailContent",
-      lang = AppLang.enUS.value,
+      lang = AppLangEnum.eng.value,
       text = { params: EmailContentParams ->
         @Language("html") val html = """
-          <html lang="${AppLang.enUS.value}">
+          <html lang="${AppLangEnum.eng.value}">
           <head>
             <meta charset="utf-8">
             <title>Email verification in the Kupidon application</title>
@@ -52,12 +52,12 @@ object EmailInitialVerificationUiText {
         html
       },
     ),
-    UiTemplateText(
+    UiTemplate(
       value = "EmailInitialVerificationEmailContent",
-      lang = AppLang.ruRU.value,
+      lang = AppLangEnum.rus.value,
       text = { params: EmailContentParams ->
         @Language("html") val html = """
-          <html lang="${AppLang.ruRU.value}">
+          <html lang="${AppLangEnum.rus.value}">
           <head>
             <meta charset="utf-8">
             <title>Верификация почты в приложении Купидон</title>

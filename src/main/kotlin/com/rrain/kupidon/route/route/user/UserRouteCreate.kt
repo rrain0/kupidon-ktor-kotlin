@@ -4,7 +4,7 @@ import com.mongodb.client.model.Filters
 import com.rrain.kupidon.entity.app.Gender
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.PwdHashing
-import com.rrain.kupidon.service.lang.AppLang
+import com.rrain.kupidon.service.lang.AppLangEnum
 import com.rrain.kupidon.service.lang.prepareUiValues
 import com.rrain.kupidon.service.lang.`ui-value`.AppUiText
 import com.rrain.kupidon.service.lang.`ui-value`.EmailInitialVerificationUiText
@@ -25,7 +25,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.toList
 import org.bson.Document
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -155,7 +154,7 @@ fun Application.configureUserRouteCreate() {
       val verificationToken = JwtService
         .generateVerificationAccessToken(id.toString(), user.email)
       
-      val lang = AppLang.getByValueOrDefault(call.parameters["lang"])
+      val lang = AppLangEnum.getByValueOrDefault(call.parameters["lang"])
       val langs = listOf(lang.value)
       
       val appName = AppUiText.appName.prepareUiValues(langs)[0].text
