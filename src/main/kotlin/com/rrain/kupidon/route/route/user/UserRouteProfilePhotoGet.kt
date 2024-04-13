@@ -7,7 +7,7 @@ import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.entity.UserMongo
 import com.rrain.kupidon.service.db.mongo.entity.UserProfilePhotoMongo
-import com.rrain.kupidon.util.SinglePathSegment
+import com.rrain.kupidon.util.UrlSinglePathSegment
 import com.rrain.kupidon.util.toUuid
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -30,7 +30,7 @@ fun Application.configureUserRouteProfilePhotoGet() {
     
     
     // https://dev.kupidon.rrain.ydns.eu:50040/api/user/profile-photo?userId=795415da-a2cb-435b-80ee-98af28b3f0d0&photoId=3f5d4807-1112-4cdb-9eab-40c6a4e26217
-    get(Regex("""${UserRoutes.getProfilePhoto}$SinglePathSegment""")) {
+    get(Regex("""${UserRoutes.getProfilePhoto}$UrlSinglePathSegment""")) {
       val userId = call.parameters[UserRoutes.getProfilePhotoParamUserId]
       val photoId = call.parameters[UserRoutes.getProfilePhotoParamPhotoId]
       

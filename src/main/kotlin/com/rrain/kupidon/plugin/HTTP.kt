@@ -49,8 +49,10 @@ fun Application.configureHTTP() {
     
     // dev react hosts
     allowHost("dev.kupidon.rrain.ydns.eu:50030", listOf("https"))
-    allowHost("localhost:40030", listOf("http","https"))
-    allowHost("192.168.0.178:40030", listOf("http","https"))
+    
+    // react dev local proxy
+    allowHost("localhost:40028", listOf("http","https"))
+    allowHost("192.168.31.20:40028", listOf("http","https"))
     
     // prod react hosts
     allowHost("kupidon.rrain.ydns.eu", listOf("https"))

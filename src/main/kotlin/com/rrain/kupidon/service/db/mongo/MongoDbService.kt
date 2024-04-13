@@ -27,6 +27,9 @@ fun Application.configureMongoDbService(){
   val appName = appConfig["db.connection.application-name"]
   val host = appConfig["db.connection.mongo.host"]
   val port = appConfig["db.connection.mongo.port"].toInt()
+  val user = appConfig["db.connection.mongo.user"]
+  val pwd = appConfig["db.connection.mongo.pwd"]
+  val database = appConfig["db.connection.mongo.database"]
   
   
   
@@ -53,6 +56,10 @@ fun Application.configureMongoDbService(){
   // https://www.mongodb.com/docs/drivers/kotlin/coroutine/current/fundamentals/connection/connection-options/
   val connSettings = MongoClientSettings.builder()
     .applicationName(appName)
+    .also {
+      if (user.isNotEmpty() && pwd.isNotEmpty())
+        it.credential(MongoCredential.createCredential(user, database, pwd.toCharArray()))
+    }
     .applyToClusterSettings {
       it.hosts(listOf(ServerAddress(host,port)))
     }

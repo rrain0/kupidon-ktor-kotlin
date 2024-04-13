@@ -7,8 +7,8 @@ val jacksonVer : String by project
 
 
 plugins {
-  val kotlinV = "1.9.21"
-  val ktorV = "2.3.6"
+  val kotlinV = "1.9.23"
+  val ktorV = "2.3.10"
   
   kotlin("jvm") version kotlinV
   id("io.ktor.plugin") version ktorV
@@ -77,7 +77,9 @@ dependencies {
   implementation("io.ktor:ktor-server-auth-jvm:$ktorVer")
   implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktorVer")
   implementation("io.ktor:ktor-server-jetty-jvm:$ktorVer")
+  
   implementation("ch.qos.logback:logback-classic:$logbackVer")
+  
   testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVer")
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVer")
   
