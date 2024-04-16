@@ -1,12 +1,9 @@
 package com.rrain.kupidon.service.lang.`ui-value`
 
-import com.rrain.kupidon.service.lang.AppLangEnum
-import com.rrain.kupidon.service.lang.UiTemplate
-import com.rrain.kupidon.service.lang.UiText
+import com.rrain.kupidon.service.lang.`lang-service`.Lang
+import com.rrain.kupidon.service.lang.`lang-service`.UiText
+import com.rrain.kupidon.service.lang.`lang-service`.UiTemplate
 import org.intellij.lang.annotations.Language
-
-
-
 
 
 
@@ -14,14 +11,12 @@ object EmailInitialVerificationUiText {
   
   val emailTitle = listOf(
     UiText(
-      value = "EmailInitialVerificationEmailTitle",
-      lang = AppLangEnum.eng.value,
-      text = "Kupidon - email verification",
+      lang = Lang.enUS,
+      value = "Kupidon - email verification",
     ),
     UiText(
-      value = "EmailInitialVerificationEmailTitle",
-      lang = AppLangEnum.rus.value,
-      text = "Купидон - верификация почты",
+      lang = Lang.ruRU,
+      value = "Купидон - верификация почты",
     ),
   )
   
@@ -31,11 +26,10 @@ object EmailInitialVerificationUiText {
   )
   val emailContent = listOf(
     UiTemplate(
-      value = "EmailInitialVerificationEmailContent",
-      lang = AppLangEnum.eng.value,
-      text = { params: EmailContentParams ->
+      lang = Lang.enUS,
+      value = { params: EmailContentParams ->
         @Language("html") val html = """
-          <html lang="${AppLangEnum.eng.value}">
+          <html lang="${Lang.enUS.value}">
           <head>
             <meta charset="utf-8">
             <title>Email verification in the Kupidon application</title>
@@ -53,11 +47,9 @@ object EmailInitialVerificationUiText {
       },
     ),
     UiTemplate(
-      value = "EmailInitialVerificationEmailContent",
-      lang = AppLangEnum.rus.value,
-      text = { params: EmailContentParams ->
+      value = { params: EmailContentParams ->
         @Language("html") val html = """
-          <html lang="${AppLangEnum.rus.value}">
+          <html lang="${Lang.ruRU.value}">
           <head>
             <meta charset="utf-8">
             <title>Верификация почты в приложении Купидон</title>
@@ -73,14 +65,11 @@ object EmailInitialVerificationUiText {
         """.trimIndent()
         html
       },
+      lang = Lang.ruRU,
     ),
   )
   
 }
 
 
-/*data class EmailInitialVerificationParams(
-  val userName: String,
-  val verificationUrl: String,
-)*/
 

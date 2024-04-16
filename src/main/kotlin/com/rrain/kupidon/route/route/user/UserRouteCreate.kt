@@ -4,8 +4,6 @@ import com.mongodb.client.model.Filters
 import com.rrain.kupidon.entity.app.Gender
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.PwdHashing
-import com.rrain.kupidon.service.lang.AppLangEnum
-import com.rrain.kupidon.service.lang.prepareUiValues
 import com.rrain.kupidon.service.lang.`ui-value`.AppUiText
 import com.rrain.kupidon.service.lang.`ui-value`.EmailInitialVerificationUiText
 import com.rrain.kupidon.route.util.respondBadRequest
@@ -16,6 +14,8 @@ import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.entity.UserMongo
 import com.rrain.kupidon.service.db.mongo.entity.UserProfilePhotoMongo
 import com.rrain.kupidon.service.db.mongo.useTransaction
+import com.rrain.kupidon.service.lang.`lang-service`.Lang
+import com.rrain.kupidon.service.lang.`lang-service`.pickUiValue
 import com.rrain.kupidon.util.emailPattern
 import com.rrain.kupidon.util.zonedNow
 import io.ktor.server.application.*
@@ -154,12 +154,12 @@ fun Application.configureUserRouteCreate() {
       val verificationToken = JwtService
         .generateVerificationAccessToken(id.toString(), user.email)
       
-      val lang = AppLangEnum.getByValueOrDefault(call.parameters["lang"])
-      val langs = listOf(lang.value)
+      val lang = Lang.getOrDefault(call.parameters["lang"])
+      val langs = listOf(lang)
       
-      val appName = AppUiText.appName.prepareUiValues(langs)[0].text
-      val emailTitle = EmailInitialVerificationUiText.emailTitle.prepareUiValues(langs)[0].text
-      val emailContent = EmailInitialVerificationUiText.emailContent.prepareUiValues(langs)[0].text(
+      val appName = AppUiText.appName.pickUiValue(langs).value
+      val emailTitle = EmailInitialVerificationUiText.emailTitle.pickUiValue(langs).value
+      val emailContent = EmailInitialVerificationUiText.emailContent.pickUiValue(langs).value(
         EmailInitialVerificationUiText.EmailContentParams(
           userName = user.name,
           verificationUrl = call.request.origin.run {

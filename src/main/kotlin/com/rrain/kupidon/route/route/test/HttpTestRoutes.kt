@@ -12,6 +12,24 @@ fun Application.configureHttpTestRoutes(){
   
   routing {
     
+    get("/test/params"){
+      // get only first occurrence
+      val param = call.parameters["param"]
+      // get all occurrences as list
+      val array = call.parameters.getAll("array")
+      call.respond(object {
+        val param = param
+        val arrayParam = array
+      })
+      /*
+      Example: /test/params?param=sdf,j&param=h,hh&array=firs,t&array=secon,d
+      Result: {
+        "param" : "sdf,j",
+        "arrayParam" : [ "firs,t", "secon,d" ]
+      }
+      */
+    }
+    
     get("/test/http/headers"){
       val headers = call.printHeaders()
       call.respond(headers)

@@ -5,6 +5,8 @@ package com.rrain.kupidon.plugin
 //import io.ktor.serialization.gson.*
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
+import com.fasterxml.jackson.core.util.Separators
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -42,6 +44,17 @@ fun Application.configureJsonSerialization() {
       JacksonObjectMapper = this
       
       configure(SerializationFeature.INDENT_OUTPUT, true)
+      setDefaultPrettyPrinter(DefaultPrettyPrinter(
+        // no space before colon and have space after colon
+        Separators.createDefaultInstance().withObjectFieldValueSpacing(Separators.Spacing.AFTER)
+      ))
+      /*setDefaultPrettyPrinter({
+        class MyPrettyPrinter : DefaultPrettyPrinter() {
+          override fun createInstance(): DefaultPrettyPrinter = MyPrettyPrinter()
+          override fun writeObjectFieldValueSeparator(g: JsonGenerator) = g.writeRaw(": ")
+        }
+        MyPrettyPrinter()
+      }())*/
       /*setDefaultPrettyPrinter(DefaultPrettyPrinter().apply {
         indentArraysWith(DefaultPrettyPrinter.FixedSpaceIndenter.instance)
         indentObjectsWith(DefaultIndenter("  ", "\n"))
