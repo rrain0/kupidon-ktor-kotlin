@@ -3,7 +3,7 @@ package com.rrain.kupidon.service
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
-import com.rrain.kupidon.entity.app.Role
+import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.route.route.auth.AuthRoutes
 import com.rrain.kupidon.util.get
 import com.rrain.kupidon.util.zonedNow

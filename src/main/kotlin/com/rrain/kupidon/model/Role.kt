@@ -1,4 +1,4 @@
-package com.rrain.kupidon.entity.app
+package com.rrain.kupidon.model
 
 import java.lang.IllegalStateException
 
@@ -25,7 +25,7 @@ enum class Role {
   init {
     if (!this.name.matches(rolePattern))
       throw IllegalStateException(
-        "Role name '${this.name}' does not match '${rolePattern}' pattern."
+        "Role name '${this.name}' does not match '$rolePattern' pattern."
       )
   }
 }

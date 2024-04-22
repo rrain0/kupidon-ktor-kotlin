@@ -1,7 +1,7 @@
 package com.rrain.kupidon.route.route.user
 
 import com.mongodb.client.model.Filters
-import com.rrain.kupidon.entity.app.Gender
+import com.rrain.kupidon.model.Gender
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.service.lang.`ui-value`.AppUiText
@@ -11,8 +11,8 @@ import com.rrain.kupidon.route.util.respondInvalidBody
 import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
-import com.rrain.kupidon.service.db.mongo.entity.UserMongo
-import com.rrain.kupidon.service.db.mongo.entity.UserProfilePhotoMongo
+import com.rrain.kupidon.service.db.mongo.model.UserMongo
+import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
 import com.rrain.kupidon.service.db.mongo.useTransaction
 import com.rrain.kupidon.service.lang.`lang-service`.Lang
 import com.rrain.kupidon.service.lang.`lang-service`.pickUiValue

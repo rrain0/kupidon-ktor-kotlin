@@ -1,6 +1,6 @@
 package com.rrain.kupidon.util
 
-import com.rrain.kupidon.entity.app.Gender
+import com.rrain.kupidon.model.Gender
 
 
 fun main(){

@@ -1,4 +1,4 @@
-package com.rrain.kupidon.service.db.mongo.entity
+package com.rrain.kupidon.service.db.mongo.model
 
 import com.rrain.kupidon.route.route.user.UserRoutes
 import io.ktor.http.*

@@ -1,4 +1,4 @@
-package com.rrain.kupidon.service.db.mongo.entity
+package com.rrain.kupidon.service.db.mongo.model
 
 import java.util.UUID
 

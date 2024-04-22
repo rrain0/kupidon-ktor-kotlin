@@ -1,6 +1,6 @@
 package com.rrain.kupidon.route.route.test
 
-import com.rrain.kupidon.entity.app.Role
+import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.plugin.withAnyRole
 import io.ktor.server.application.*
 import io.ktor.server.auth.*

@@ -1,6 +1,6 @@
 package com.rrain.kupidon.plugin
 
-import com.rrain.kupidon.entity.app.Role
+import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.util.cast
 import com.rrain.kupidon.util.logger

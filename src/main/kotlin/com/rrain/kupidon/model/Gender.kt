@@ -1,4 +1,4 @@
-package com.rrain.kupidon.entity.app
+package com.rrain.kupidon.model
 
 
 enum class Gender {

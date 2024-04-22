@@ -1,7 +1,7 @@
-package com.rrain.kupidon.service.db.mongo.entity
+package com.rrain.kupidon.service.db.mongo.model
 
-import com.rrain.kupidon.entity.app.Gender
-import com.rrain.kupidon.entity.app.Role
+import com.rrain.kupidon.model.Gender
+import com.rrain.kupidon.model.Role
 import io.ktor.server.request.*
 import org.bson.Document
 import java.time.LocalDate
