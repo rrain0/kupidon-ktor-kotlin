@@ -1,1 +1,1 @@
-rootProject.name = "com.rrain.kupidon.kupidon-ktor-kotlin"
+rootProject.name = "kupidon-ktor-kotlin"

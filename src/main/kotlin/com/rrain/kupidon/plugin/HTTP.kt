@@ -28,7 +28,7 @@ fun Application.configureHTTP() {
     CORS - Cross-Origin Resource Sharing
     CORS response will be sent on preflight request
    */
-  install(CORS) {
+  /*install(CORS) {
     
     allowCredentials = true
     
@@ -56,7 +56,7 @@ fun Application.configureHTTP() {
     
     // prod react hosts
     allowHost("kupidon.rrain.ydns.eu", listOf("https"))
-  }
+  }*/
   
   
   

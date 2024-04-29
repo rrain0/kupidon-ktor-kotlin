@@ -1,3 +1,6 @@
+// fix for java.lang.NoClassDefFoundError: Could not initialize class org.eclipse.jetty.server.HttpConnection
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 val kotlinVer: String by project
 val ktorVer: String by project
 val mongoKotlinCoroutineVer : String by project
@@ -15,6 +18,10 @@ plugins {
   id("org.jetbrains.kotlin.plugin.serialization") version kotlinV
 }
 
+// fix for java.lang.NoClassDefFoundError: Could not initialize class org.eclipse.jetty.server.HttpConnection
+tasks.withType<ShadowJar> {
+  mergeServiceFiles()
+}
 
 
 group = "com.rrain.kupidon"
@@ -86,10 +93,5 @@ dependencies {
   
   // mail sending
   implementation("org.apache.commons:commons-email:1.5")
-  
-  
-  
-  
-  
   
 }

@@ -12,7 +12,11 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 
 
 fun main() {
-  
+  generateUserPwdHash()
+}
+
+
+fun generateUserPwdHash() {
   // PRIVATE CONFIG
   val pwdHashingInfo = PwdHashingInfo(
     algorithm = "",
@@ -24,7 +28,7 @@ fun main() {
   /*repeat(20){
     println(PwdHashing.generateHash("somepassword"))
   }*/
-  println(PwdHashing.generateHash("test"))
+  println(PwdHashing.generateHash("testing000"))
 }
 
 
