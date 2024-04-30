@@ -8,6 +8,9 @@ build/
 ktor.prod.env
 #ktor.local.env
 #ktor.dev.env
+#ktor.template.env
+
+/nginx/cert-prod
 
 ### STS ###
 .apt_generated

@@ -2,6 +2,7 @@ package com.rrain.kupidon.service
 
 import com.rrain.kupidon.util.get
 import io.ktor.server.application.*
+import java.security.SecureRandom
 import java.security.spec.KeySpec
 import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
@@ -12,24 +13,38 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 
 
 fun main() {
-  generateUserPwdHash()
+  
+  /*"passwordToHash".let { println("hash for $it: ${generateUserPwdHash(
+    it,
+    // PRIVATE CONFIG
+    PwdHashingInfo(
+      algorithm = "",
+      secret = "",
+      iterations = 0,
+      hashLen = 0,
+    )
+  )}") }*/
+  
+  //println("random pwd salt (PWD_HASHING_SECRET): ${generateRandomPwdSalt()}")
+  
 }
 
 
-fun generateUserPwdHash() {
-  // PRIVATE CONFIG
-  val pwdHashingInfo = PwdHashingInfo(
-    algorithm = "",
-    secret = "",
-    iterations = 0,
-    hashLen = 0,
-  )
+
+
+
+fun generateUserPwdHash(pwdToHash: String, pwdHashingInfo: PwdHashingInfo): String {
   PwdHashing.pwdHashingInfo = pwdHashingInfo
-  /*repeat(20){
-    println(PwdHashing.generateHash("somepassword"))
-  }*/
-  println(PwdHashing.generateHash("testing000"))
+  val hash = PwdHashing.generateHash(pwdToHash)
+  return hash
 }
+
+
+@OptIn(ExperimentalEncodingApi::class)
+fun generateRandomPwdSalt(): String = ByteArray(16)
+  .also { SecureRandom().nextBytes(it) }
+  .let { Base64.Default.encode(it) }
+
 
 
 

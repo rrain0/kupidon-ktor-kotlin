@@ -1,0 +1,77 @@
+
+
+name: kupidon-prod-ktor
+
+
+services:
+  ktor:
+    image: rrain0/kupidon-ktor-ktor:1.0.0
+    ports:
+      - '${PROXY_PORT}:${PROXY_PORT}'
+    deploy:
+      restart_policy:
+        condition: any
+        # Time between restart attempts
+        delay: 5s
+        # 'max_attempts' can only be used with 'condition: on-failure'
+        #max_attempts: 3
+        # How long to wait before deciding if a restart has succeeded.
+        window: 120s
+    environment:
+      - KTOR_PORT
+      - MONGO_HOST
+      - MONGO_PORT
+      - MONGO_RS
+      - MONGO_DATABASE
+      - MONGO_USER
+      - MONGO_PWD
+      - PWD_HASHING_ALGORITHM
+      - PWD_HASHING_SECRET
+      - PWD_HASHING_ITERATIONS
+      - PWD_HASHING_HASH_LEN
+      - REFRESH_TOKEN_SECRET
+      - ACCESS_TOKEN_SECRET
+      - MAIL_EMAIL
+      - MAIL_PWD
+
+
+  nginx:
+    image: nginx:1.25.5-alpine
+    network_mode: 'service:ktor'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/templates/nginx.conf.template:ro
+      - ${CERT_FILE}:/etc/ssl/cert/cert.crt:ro
+      - ${CERT_KEY}:/etc/ssl/cert/cert.key:ro
+    deploy:
+      restart_policy:
+        condition: any
+        # Time between restart attempts
+        delay: 5s
+        # 'max_attempts' can only be used with 'condition: on-failure'
+        #max_attempts: 3
+        # How long to wait before deciding if a restart has succeeded.
+        window: 120s
+    environment:
+      # where to find 'templates/nginx.conf.template'
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+      - PROXY_HOST
+      - PROXY_PORT
+      - KTOR_PORT
+
+
+# nginx auto env substitution:
+# https://stackoverflow.com/a/75183393/14168271
+#
+# nginx Docker image can extract environment variables before it starts, but it's a bit tricky.
+# One solution is to:
+#
+# 1) Add env variables to your nginx.conf file.
+# 2) Copy it to /etc/nginx/templates/nginx.conf.template in the container (as opposed to your normal /etc/nginx) in the build step or as a volume.
+# 3)Set the NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx environment variable in docker-compose.yml.
+#
+# This will cause the nginx.conf.template file to be copied to /etc/nginx as nginx.conf
+# and the environment variables will be replaced with their values.
+#
+# There is one caveat to keep in mind: using command property in docker-compose.yml seems to be disabling
+# the extraction functionality.
+

@@ -11,8 +11,24 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.util.*
 import io.ktor.util.date.*
+import java.security.SecureRandom
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
+
+
+
+fun main() {
+  println("random JWT SECRET: ${generateJwtSecret()}")
+}
+
+
+@OptIn(ExperimentalEncodingApi::class)
+fun generateJwtSecret(): String = ByteArray(64)
+  .also { SecureRandom().nextBytes(it) }
+  .let { Base64.Default.encode(it) }
+
 
 
 
