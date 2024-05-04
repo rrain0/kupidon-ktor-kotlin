@@ -8,15 +8,6 @@ services:
     image: rrain0/kupidon-ktor-ktor:1.0.0
     ports:
       - '${PROXY_PORT}:${PROXY_PORT}'
-    deploy:
-      restart_policy:
-        condition: any
-        # Time between restart attempts
-        delay: 5s
-        # 'max_attempts' can only be used with 'condition: on-failure'
-        #max_attempts: 3
-        # How long to wait before deciding if a restart has succeeded.
-        window: 120s
     environment:
       - KTOR_PORT
       - MONGO_HOST
@@ -33,6 +24,7 @@ services:
       - ACCESS_TOKEN_SECRET
       - MAIL_EMAIL
       - MAIL_PWD
+    restart: unless-stopped
 
 
   nginx:
@@ -42,21 +34,13 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/templates/nginx.conf.template:ro
       - ${CERT_FILE}:/etc/ssl/cert/cert.crt:ro
       - ${CERT_KEY}:/etc/ssl/cert/cert.key:ro
-    deploy:
-      restart_policy:
-        condition: any
-        # Time between restart attempts
-        delay: 5s
-        # 'max_attempts' can only be used with 'condition: on-failure'
-        #max_attempts: 3
-        # How long to wait before deciding if a restart has succeeded.
-        window: 120s
     environment:
       # where to find 'templates/nginx.conf.template'
       - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
       - PROXY_HOST
       - PROXY_PORT
       - KTOR_PORT
+    restart: unless-stopped
 
 
 # nginx auto env substitution:
