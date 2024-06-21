@@ -41,22 +41,26 @@ repositories {
 
 dependencies {
   implementation("io.ktor:ktor-server-core-jvm:$ktorVer")
+  implementation("io.ktor:ktor-server-jetty-jvm:$ktorVer")
   implementation("io.ktor:ktor-server-websockets-jvm:$ktorVer")
   
+  
+  implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktorVer")
   
   //implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
   //implementation("io.ktor:ktor-serialization-gson:$ktor_version")
   implementation("io.ktor:ktor-serialization-jackson:$ktorVer")
+  
   // Kotlin Jackson Support
   // https://github.com/FasterXML/jackson-module-kotlin
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVer")
+  
   // Java Time Jackson Support
   // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVer")
   
   
   
-  implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktorVer")
   implementation("io.ktor:ktor-network-tls-certificates:$ktorVer")
   
   
@@ -83,7 +87,6 @@ dependencies {
   implementation("io.ktor:ktor-server-auto-head-response-jvm:$ktorVer")
   implementation("io.ktor:ktor-server-auth-jvm:$ktorVer")
   implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktorVer")
-  implementation("io.ktor:ktor-server-jetty-jvm:$ktorVer")
   
   implementation("ch.qos.logback:logback-classic:$logbackVer")
   

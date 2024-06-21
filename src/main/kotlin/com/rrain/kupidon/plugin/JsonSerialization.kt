@@ -98,6 +98,22 @@ fun Application.configureJsonSerialization() {
           }
         )
         
+        // java.util.UUID
+        .addSerializer(
+          UUID::class, object : StdSerializer<UUID>(UUID::class.java) {
+            override fun serialize(value: UUID, gen: JsonGenerator, provider: SerializerProvider) {
+              return gen.writeString(value.toString())
+            }
+          }
+        )
+        .addDeserializer(
+          UUID::class, object : StdDeserializer<UUID>(UUID::class.java) {
+            override fun deserialize(p: JsonParser, ctxt: DeserializationContext): UUID {
+              return p.valueAsString.toUuid()
+            }
+          }
+        )
+        
         // ObjectId
         .addSerializer(
           ObjectId::class, object : StdSerializer<ObjectId>(ObjectId::class.java) {
@@ -114,21 +130,6 @@ fun Application.configureJsonSerialization() {
           }
         )
         
-        // java.util.UUID
-        .addSerializer(
-          UUID::class, object : StdSerializer<UUID>(UUID::class.java) {
-            override fun serialize(value: UUID, gen: JsonGenerator, provider: SerializerProvider) {
-              return gen.writeString(value.toString())
-            }
-          }
-        )
-        .addDeserializer(
-          UUID::class, object : StdDeserializer<UUID>(UUID::class.java) {
-            override fun deserialize(p: JsonParser, ctxt: DeserializationContext): UUID {
-              return p.valueAsString.toUuid()
-            }
-          }
-        )
       )
       
       // support Kotlin
