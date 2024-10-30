@@ -1,8 +1,8 @@
-package com.rrain.kupidon.service.lang.`ui-value`
+package com.rrain.kupidon.service.lang.`ui-values`
 
-import com.rrain.kupidon.service.lang.`lang-service`.Lang
-import com.rrain.kupidon.service.lang.`lang-service`.UiText
-import com.rrain.kupidon.service.lang.`lang-service`.UiTemplate
+import com.rrain.kupidon.service.lang.Lang
+import com.rrain.kupidon.`mini-libs`.`ui-text`.UiText
+import com.rrain.kupidon.`mini-libs`.`ui-text`.UiTemplate
 import org.intellij.lang.annotations.Language
 
 

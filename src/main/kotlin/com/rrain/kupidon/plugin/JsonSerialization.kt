@@ -114,7 +114,7 @@ fun Application.configureJsonSerialization() {
           }
         )
         
-        // ObjectId
+        // ObjectId for MongoDB
         .addSerializer(
           ObjectId::class, object : StdSerializer<ObjectId>(ObjectId::class.java) {
             override fun serialize(value: ObjectId, gen: JsonGenerator, provider: SerializerProvider) {

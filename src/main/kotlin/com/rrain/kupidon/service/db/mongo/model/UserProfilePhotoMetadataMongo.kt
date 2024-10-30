@@ -31,7 +31,7 @@ data class UserProfilePhotoMetadataMongo(
         val extension = Regex("""[^/]+/(?<ext>[^/]+)""")
           .matchEntire(mimeType)
           ?.let { it.groups["ext"]?.value }
-          ?.let { "."+it }
+          ?.let { ".$it" }
           ?: ""
         URLBuilder(
           protocol = URLProtocol.HTTPS,

@@ -4,8 +4,8 @@ import com.mongodb.client.model.Filters
 import com.rrain.kupidon.model.Gender
 import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.PwdHashing
-import com.rrain.kupidon.service.lang.`ui-value`.AppUiText
-import com.rrain.kupidon.service.lang.`ui-value`.EmailInitialVerificationUiText
+import com.rrain.kupidon.service.lang.`ui-values`.AppUiText
+import com.rrain.kupidon.service.lang.`ui-values`.EmailInitialVerificationUiText
 import com.rrain.kupidon.route.util.respondBadRequest
 import com.rrain.kupidon.route.util.respondInvalidBody
 import com.rrain.kupidon.service.db.mongo.MongoDbService
@@ -14,8 +14,8 @@ import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
 import com.rrain.kupidon.service.db.mongo.useTransaction
-import com.rrain.kupidon.service.lang.`lang-service`.Lang
-import com.rrain.kupidon.service.lang.`lang-service`.pickUiValue
+import com.rrain.kupidon.service.lang.Lang
+import com.rrain.kupidon.`mini-libs`.`ui-text`.pickUiValue
 import com.rrain.kupidon.util.emailPattern
 import com.rrain.kupidon.util.zonedNow
 import io.ktor.server.application.*

@@ -19,7 +19,7 @@ import org.bson.Document
 
 
 
-fun Application.configureUserRoutesCurrent(){
+fun Application.configureUserRouteCurrent(){
   
   fun mongo() = MongoDbService.client
   

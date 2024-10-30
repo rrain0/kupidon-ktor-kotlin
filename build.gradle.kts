@@ -10,8 +10,8 @@ val jacksonVer : String by project
 
 
 plugins {
-  val kotlinV = "1.9.23"
-  val ktorV = "2.3.10"
+  val kotlinV = "2.0.21"
+  val ktorV = "3.0.0"
   
   kotlin("jvm") version kotlinV
   id("io.ktor.plugin") version ktorV

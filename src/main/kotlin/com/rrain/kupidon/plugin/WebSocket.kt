@@ -2,18 +2,17 @@ package com.rrain.kupidon.plugin
 
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
-import java.time.Duration
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
-
+import kotlin.time.Duration.Companion.seconds
 
 
 fun Application.configureSockets() {
   
   
   install(WebSockets) {
-    pingPeriod = Duration.ofSeconds(15)
-    timeout = Duration.ofSeconds(15)
+    pingPeriod = 15.seconds
+    timeout = 15.seconds
     maxFrameSize = Long.MAX_VALUE
     masking = false
   }

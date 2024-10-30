@@ -1,7 +1,7 @@
-package com.rrain.kupidon.service.lang.`ui-value`
+package com.rrain.kupidon.service.lang.`ui-values`
 
-import com.rrain.kupidon.service.lang.`lang-service`.Lang
-import com.rrain.kupidon.service.lang.`lang-service`.UiText
+import com.rrain.kupidon.`mini-libs`.`ui-text`.UiText
+import com.rrain.kupidon.service.lang.Lang
 
 
 object AppUiText {

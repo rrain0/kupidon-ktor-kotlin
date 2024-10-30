@@ -41,7 +41,7 @@ fun Application.configureUserRoutes(){
   configureUserRouteEmailInitialVerify()
   configureUserRouteProfilePhotoGet()
   configureUserRouteProfilePhotoAdd()
-  configureUserRoutesCurrent()
+  configureUserRouteCurrent()
   
   
   
