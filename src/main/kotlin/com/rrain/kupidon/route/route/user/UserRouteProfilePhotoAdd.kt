@@ -19,6 +19,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.utils.io.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import org.bson.Document
@@ -87,7 +88,7 @@ fun Application.configureUserRouteProfilePhotoAdd() {
           "binData" -> {
             if (it is PartData.FileItem) {
               // todo check fileName & contentType properties
-              partialPhoto.binData = it.streamProvider().readBytes()
+              partialPhoto.binData = it.provider().toByteArray()
             }
             it.dispose()
           }

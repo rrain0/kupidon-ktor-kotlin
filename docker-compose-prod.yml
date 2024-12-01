@@ -5,7 +5,9 @@ name: kupidon-prod-ktor
 
 services:
   ktor:
-    image: rrain0/kupidon-ktor-ktor:1.0.0
+    # docker build -t rrain0/kupidon-ktor-ktor:1.0.1 .
+    # docker push rrain0/kupidon-ktor-ktor:1.0.1
+    image: rrain0/kupidon-ktor-ktor:1.0.1
     ports:
       - '${PROXY_PORT}:${PROXY_PORT}'
     environment:
@@ -51,7 +53,7 @@ services:
 #
 # 1) Add env variables to your nginx.conf file.
 # 2) Copy it to /etc/nginx/templates/nginx.conf.template in the container (as opposed to your normal /etc/nginx) in the build step or as a volume.
-# 3)Set the NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx environment variable in docker-compose.yml.
+# 3) Set the NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx environment variable in docker-compose.yml.
 #
 # This will cause the nginx.conf.template file to be copied to /etc/nginx as nginx.conf
 # and the environment variables will be replaced with their values.
