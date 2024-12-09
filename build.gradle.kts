@@ -4,6 +4,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 val kotlinVer: String by project
 val ktorVer: String by project
 val mongoKotlinCoroutineVer : String by project
+val slf4jVer: String by project
 val logbackVer: String by project
 val jacksonVer : String by project
 
@@ -88,6 +89,10 @@ dependencies {
   implementation("io.ktor:ktor-server-auth-jvm:$ktorVer")
   implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktorVer")
   
+  // SLF4J - Simple Logging Facade for Java
+  implementation("org.slf4j:slf4j-api:$slf4jVer")
+  implementation("org.slf4j:jcl-over-slf4j:$slf4jVer")
+  implementation("ch.qos.logback:logback-core:$logbackVer")
   implementation("ch.qos.logback:logback-classic:$logbackVer")
   
   testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVer")
