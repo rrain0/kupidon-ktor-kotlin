@@ -40,7 +40,7 @@ fun Application.configureStaticRoutes() {
     )
     
     // working directory is project root:
-    // D:\PROG\Kotlin\[projects]\kupidon-ktor-kotlin
+    // D:\PROG\Kotlin\Projects\kupidon-ktor-kotlin
     //println("working dir: ${File("").absolutePath}")
     
     

@@ -23,7 +23,7 @@ fun Application.configureHTTP() {
   }
   
   
-  
+  // CORS were moved to nginx
   /*
     CORS - Cross-Origin Resource Sharing
     CORS response will be sent on preflight request

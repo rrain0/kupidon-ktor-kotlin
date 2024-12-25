@@ -9,6 +9,8 @@ prod.up:
 prod.build-up:
 	docker compose -f docker-compose-prod.yml --env-file ktor.prod.env up -d --force-recreate --build
 
+prod.pull-build-up: prod.pull prod.build-up
+
 prod.down:
 	docker compose -f docker-compose-prod.yml --env-file ktor.prod.env down
 
@@ -23,6 +25,8 @@ local.up:
 
 local.build-up:
 	docker compose -f docker-compose-local.yml --env-file ktor.local.env up -d --force-recreate --build
+
+local.pull-build-up: local.pull local.build-up
 
 local.down:
 	docker compose -f docker-compose-local.yml --env-file ktor.local.env down
