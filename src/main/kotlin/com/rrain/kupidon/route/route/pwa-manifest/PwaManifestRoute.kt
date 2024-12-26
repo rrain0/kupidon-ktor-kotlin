@@ -52,36 +52,38 @@ fun Application.configurePwaManifestRoute(){
         "description" to "Kupidon date app",
         "start_url" to ".",
         "display" to "standalone",
-        "orientation" to "portrait", // works only when app installed
+        "orientation" to "portrait",
         
         "theme_color" to "#282c34",
         "background_color" to "#282c34",
         
         "icons" to mutableListOf(
           mutableMapOf(
-            "src" to "/logo64.png",
+            "src" to "/icon64.png",
             "type" to "image/png",
-            "sizes" to "64x64"
+            "sizes" to "64x64",
           ),mutableMapOf(
-            "src" to "/logo192.png",
+            "src" to "/icon192.png",
             "type" to "image/png",
-            "sizes" to "192x192"
+            "sizes" to "192x192",
           ),mutableMapOf(
-            "src" to "/logo512.png",
+            "src" to "/icon512.png",
             "type" to "image/png",
-            "sizes" to "512x512" // splashscreen icon
+            "sizes" to "512x512",
           )
-        )
+        ),
       )
       
+      
+      val searchParams = call.parameters
       
       val baseId = "kupidon-react-pwa"
       val nodeEnvMap = mapOf(
         "development" to mapOf(
-          "id" to "$baseId-development"
+          "id" to "$baseId-dev",
         ),
         "production" to mapOf(
-          "id" to "$baseId-production"
+          "id" to "$baseId-prod",
         ),
       )
       
@@ -96,18 +98,18 @@ fun Application.configurePwaManifestRoute(){
           "lang" to "ru-RU",
           "name" to "Купидон",
           "short_name" to "Купидон",
-          "description" to "Купидон - приложение для свидания",
+          "description" to "Купидон - сервис знакомств",
         ),
       )
       
       
-      val nodeEnv = call.parameters["nodeEnv"]
+      val nodeEnv = searchParams["nodeEnv"]
       if (nodeEnv in nodeEnvMap) manifest.putAll(nodeEnvMap[nodeEnv]!!)
       
-      val lang = call.parameters["lang"]
+      val lang = searchParams["lang"]
       if (lang in lacalizationMap) manifest.putAll(lacalizationMap[lang]!!)
       
-      if (nodeEnv=="development") {
+      if (nodeEnv == "development") {
         manifest["name"] = "Dev ${manifest["name"]}"
         manifest["short_name"] = "Dev ${manifest["short_name"]}"
         manifest["description"] = "Dev ${manifest["description"]}"
