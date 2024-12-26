@@ -2,7 +2,6 @@ package com.rrain.kupidon.plugin
 
 import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.service.JwtService
-import com.rrain.kupidon.util.Any.cast
 import com.rrain.kupidon.util.Logger.logger
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -11,8 +10,6 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.util.*
-import io.ktor.util.pipeline.*
 
 
 
@@ -34,113 +31,66 @@ import io.ktor.util.pipeline.*
     на выполнение определенных действий.
 */
 
-
-fun Application.configureRoleBasedAuthorization(){
-  
-  install(RoleBasedAuthorization) {
-    getRoles = {
-      it?.let {
-        it.cast<JWTPrincipal>()
-          .getListClaim(JwtService.accessTokenRolesClaimName, String::class)
-          .map(Role::valueOf)
-          .toSet()
-      } ?: emptySet()
-    }
-  }
-  
+private fun getRoleFromCall(call: ApplicationCall): Set<Role> {
+  return call.principal<JWTPrincipal>()
+    ?.getListClaim(JwtService.accessTokenRolesClaimName, String::class)
+    ?.map(Role::valueOf)
+    ?.toSet()
+    ?: emptySet()
 }
 
 
 
+class RoleBasedAuthorizationPluginConfiguration {
+  var roles: Set<Role> = emptySet()
+  var callToRoles: (ApplicationCall) -> Set<Role> = ::getRoleFromCall
+}
 
-
-class RoleBasedAuthorization(config: Configuration) {
+// RBAC - role-based access control
+val RoleBasedAuthorizationPlugin = createRouteScopedPlugin(
+  name = "RbacPlugin",
+  createConfiguration = ::RoleBasedAuthorizationPluginConfiguration
+) {
+  val logger = logger()
+  val roles = pluginConfig.roles
   
-  private val logger = logger()
-  
-  private val getRoles = config.getRoles
-  
-  class Configuration {
-    // configure role extraction for particular principal coming from Authorization plugin
-    // TODO deprecated
-    lateinit var getRoles: (Principal?) -> Set<Role>
-  }
-  
-  fun interceptPipeline(
-    pipeline: Route,
-    anyOfRoles: Set<Role> = emptySet(),
-  ) {
-    val authenticatePhase: PipelinePhase = PipelinePhase("Authenticate")
-    // By default, we have 5 phases: Setup, Monitoring, Plugins (Features), Call, Fallback.
-    // Adding Authenticate phase into our pipeline.
-    // TODO deprecated
-    pipeline.insertPhaseAfter(ApplicationCallPipeline.Plugins, authenticatePhase)
-    // Adding Authorization phase after Authentication phase in our pipeline
-    // TODO deprecated
-    pipeline.insertPhaseAfter(authenticatePhase, RoleBasedAuthorizationPhase)
-    
-    // TODO deprecated
-    pipeline.intercept(RoleBasedAuthorizationPhase) {
-      val principal = call.authentication.principal<Principal>()!!
-      val roles = getRoles(principal)
+  pluginConfig.apply {
+    on(AuthenticationChecked) { call ->
+      val tokenRoles = pluginConfig.callToRoles(call)
       
-      if (anyOfRoles.isNotEmpty() && (anyOfRoles - roles).size == anyOfRoles.size) {
-        val msg = "User must have at least one of these roles: ${anyOfRoles.joinToString()}"
+      // No need roles or has at least 1 demanded role
+      val authorized = roles.isEmpty() || tokenRoles.intersect(roles).isNotEmpty()
+      if (!authorized) {
+        val msg = "User must have at least one of these roles: ${roles.joinToString()}"
         logger.debug("Authorization failed for ${call.request.path()}. $msg")
         call.respond(HttpStatusCode.Forbidden, object {
           val code = "LACK_OF_ROLE"
-          val needAnyOfRoles = anyOfRoles
+          val needAnyOfRoles = roles
           val msg = msg
         })
       }
     }
   }
-  
-  companion object Plugin : BaseApplicationPlugin<ApplicationCallPipeline, Configuration, RoleBasedAuthorization> {
-    override val key = AttributeKey<RoleBasedAuthorization>("RoleBasedAuthorization")
-    
-    val RoleBasedAuthorizationPhase = PipelinePhase("Authorization")
-    
-    override fun install(
-      pipeline: ApplicationCallPipeline, configure: Configuration.() -> Unit
-    ): RoleBasedAuthorization {
-      val configuration = Configuration().apply(configure)
-      val plugin = RoleBasedAuthorization(configuration)
-      // Intercept a pipeline ...
-      /*
-      pipeline.intercept(ApplicationCallPipeline.Plugins) {
-        call.response.header("X-Custom-Header", "Hello, world!")
-      }
-       */
-      
-      return plugin
-    }
+}
+
+fun Route.authorized(vararg roles: Role, build: Route.() -> Unit) {
+  install(RoleBasedAuthorizationPlugin) {
+    this.roles = roles.toSet()
   }
-  
+  build()
 }
 
 
-class AuthorizedRouteSelector(private val description: String) : RouteSelector() {
-  override suspend fun evaluate(context: RoutingResolveContext, segmentIndex: Int) = RouteSelectorEvaluation.Constant
-  override fun toString(): String = "(authorize ${description})"
-}
 
 
-fun Route.withAnyRole(vararg roles: Role, build: Route.() -> Unit) =
-  authorizedRoute(anyOfRoles = roles.toSet(), build = build)
 
 
-private fun Route.authorizedRoute(
-  anyOfRoles: Set<Role>,
-  build: Route.() -> Unit
-): Route {
-  val description = "(anyOf(${anyOfRoles.joinToString(",")}))"
-  val authorizedRouteSelector = AuthorizedRouteSelector(description)
-  val authorizedRoute = createChild(authorizedRouteSelector)
-  
-  val plugin = application.plugin(RoleBasedAuthorization)
-  plugin.interceptPipeline(authorizedRoute, anyOfRoles)
-  
-  authorizedRoute.build()
-  return authorizedRoute
-}
+
+
+
+
+
+
+
+
+

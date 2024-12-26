@@ -34,7 +34,6 @@ fun Application.module() {
   configureJsonSerialization()
   configureHttp()
   configureJwtAuthentication()
-  configureRoleBasedAuthorization()
   
   configureExceptionHandling()
   configureRouting()

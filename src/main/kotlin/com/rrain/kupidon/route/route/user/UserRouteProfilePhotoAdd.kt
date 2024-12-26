@@ -38,10 +38,8 @@ fun Application.configureUserRouteProfilePhotoAdd() {
   
   
   routing {
-    
-    
     authenticate {
-    post(UserRoutes.postProfilePhoto) {
+      post(UserRoutes.postProfilePhoto) {
       val userId = call.principal<JWTPrincipal>()!!.subject!!
       val userUuid = userId.toUuid()
       
@@ -212,9 +210,7 @@ fun Application.configureUserRouteProfilePhotoAdd() {
       call.respond(object {
         val user = updatedUser.convertToSend(call.request)
       })
-    }}
-    
-    
-    
+    }
+    }
   }
 }
