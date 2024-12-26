@@ -20,7 +20,10 @@ import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMetadataMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
 import com.rrain.kupidon.service.db.mongo.useTransaction
-import com.rrain.kupidon.util.*
+import com.rrain.kupidon.util.DateTime.toZonedDateTime
+import com.rrain.kupidon.util.DateTime.zonedDateTimePattern
+import com.rrain.kupidon.util.DateTime.zonedNow
+import com.rrain.kupidon.util.Uuid.toUuid
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -108,133 +111,133 @@ fun Application.configureUserRouteUpdate() {
         val update = Update()
         
         
-        data.fields().forEach { (k,v) -> when(k){
-            "name" -> {
-              try {
-                if (!v.isTextual) throw RuntimeException()
-                val name = v.asText()
-                if (name.isEmpty()) throw RuntimeException()
-                if (name.length>100) throw RuntimeException()
-                update.name = name
-              }
-              catch (ex: Exception){
-                return@put call.respondInvalidBody(
-                  "Name must be string and must not be empty and name max length is 100"
-                )
-              }
+        data.fields().forEach { (k,v) -> when(k) {
+          "name" -> {
+            try {
+              if (!v.isTextual) throw RuntimeException()
+              val name = v.asText()
+              if (name.isEmpty()) throw RuntimeException()
+              if (name.length>100) throw RuntimeException()
+              update.name = name
             }
-            
-            "birthDate" -> {
-              try {
-                if (!v.isTextual) throw RuntimeException()
-                val birthDate = v.asText().toZonedDateTime()
-                val nowWithUserZone = zonedNow()
-                  .withZoneSameInstant(birthDate.zone)
-                  .withHour(0)
-                  .withMinute(0)
-                  .withSecond(0)
-                  .withNano(0)
-                if (ChronoUnit.YEARS.between(birthDate, nowWithUserZone)<18){
-                  return@put call.respondInvalidBody(
-                    "You must be at least 18 years old"
-                  )
-                }
-                update.birthDate = birthDate.toLocalDate()
-              }
-              catch (ex: Exception){
-                return@put call.respondInvalidBody(
-                  "'birthDate' must be string '$zonedDateTimePattern'" +
-                    ", for example '2005-11-10T00:00:00.000+08:00'"
-                )
-              }
-            }
-            
-            "gender" -> {
-              try {
-                val gender = JacksonObjectMapper.treeToValue<Gender>(v)
-                update.gender = gender
-              }
-              catch (ex: Exception){
-                return@put call.respondInvalidBody(
-                  "Gender must be string of ${Gender.entries}"
-                )
-              }
-            }
-            
-            "aboutMe" -> {
-              try {
-                if (!v.isTextual) throw RuntimeException()
-                val aboutMe = v.asText()
-                if (aboutMe.length>2000) throw RuntimeException()
-                update.aboutMe = aboutMe
-              }
-              catch (ex: Exception){
-                return@put call.respondInvalidBody(
-                  "'About me' must be string and must have max 2000 chars"
-                )
-              }
-            }
-            
-            "currentPwd" -> {
-              try {
-                if (!v.isTextual) throw RuntimeException()
-                var currentPwd = v.asText()
-                if (currentPwd.length !in 1..200) throw RuntimeException()
-                currentPwd = currentPwd.let(PwdHashing::generateHash)
-                update.currentPwdHashed = currentPwd
-              }
-              catch (ex: Exception) {
-                return@put call.respondInvalidBody(
-                  "Current password must be string and its length must be from 1 to 200 chars"
-                )
-              }
-            }
-            
-            "pwd" -> {
-              try {
-                if (!v.isTextual) throw RuntimeException()
-                var pwd = v.asText()
-                if (pwd.length !in 6..200) throw RuntimeException()
-                pwd = pwd.let(PwdHashing::generateHash)
-                update.newPwdHashed = pwd
-              }
-              catch (ex: Exception) {
-                return@put call.respondInvalidBody(
-                  "Password must be string and its length must be from 6 to 200 chars"
-                )
-              }
-            }
-            
-            "photos" -> {
-              val photosUpdations =
-                try { JacksonObjectMapper.treeToValue<PhotosUpdations>(v) }
-                catch (ex: Exception){
-                  ex.printStackTrace()
-                  println(ex.message)
-                  return@put call.respondInvalidBody(
-                    "Invalid photos format: ${ex.message}"
-                  )
-                }
-              
-              photosUpdations.replace.forEachIndexed { i,it ->
-                if (it.index !in 0..5) return@put call.respondInvalidBody(
-                  "photos.replace[$i].index must be in range ${0..5}"
-                )
-              }
-              
-              
-              update.photos = PreparedPhotosUpdations(
-                remove = photosUpdations.remove,
-                replace = photosUpdations.replace,
-              )
-            }
-            
-            else -> {
+            catch (ex: Exception){
               return@put call.respondInvalidBody(
-                "Unknown property '$k'"
+                "Name must be string and must not be empty and name max length is 100"
               )
             }
-          } }
+          }
+          
+          "birthDate" -> {
+            try {
+              if (!v.isTextual) throw RuntimeException()
+              val birthDate = v.asText().toZonedDateTime()
+              val nowWithUserZone = zonedNow()
+                .withZoneSameInstant(birthDate.zone)
+                .withHour(0)
+                .withMinute(0)
+                .withSecond(0)
+                .withNano(0)
+              if (ChronoUnit.YEARS.between(birthDate, nowWithUserZone)<18){
+                return@put call.respondInvalidBody(
+                  "You must be at least 18 years old"
+                )
+              }
+              update.birthDate = birthDate.toLocalDate()
+            }
+            catch (ex: Exception){
+              return@put call.respondInvalidBody(
+                "'birthDate' must be string '$zonedDateTimePattern'" +
+                  ", for example '2005-11-10T00:00:00.000+08:00'"
+              )
+            }
+          }
+          
+          "gender" -> {
+            try {
+              val gender = JacksonObjectMapper.treeToValue<Gender>(v)
+              update.gender = gender
+            }
+            catch (ex: Exception){
+              return@put call.respondInvalidBody(
+                "Gender must be string of ${Gender.entries}"
+              )
+            }
+          }
+          
+          "aboutMe" -> {
+            try {
+              if (!v.isTextual) throw RuntimeException()
+              val aboutMe = v.asText()
+              if (aboutMe.length>2000) throw RuntimeException()
+              update.aboutMe = aboutMe
+            }
+            catch (ex: Exception){
+              return@put call.respondInvalidBody(
+                "'About me' must be string and must have max 2000 chars"
+              )
+            }
+          }
+          
+          "currentPwd" -> {
+            try {
+              if (!v.isTextual) throw RuntimeException()
+              var currentPwd = v.asText()
+              if (currentPwd.length !in 1..200) throw RuntimeException()
+              currentPwd = currentPwd.let(PwdHashing::generateHash)
+              update.currentPwdHashed = currentPwd
+            }
+            catch (ex: Exception) {
+              return@put call.respondInvalidBody(
+                "Current password must be string and its length must be from 1 to 200 chars"
+              )
+            }
+          }
+          
+          "pwd" -> {
+            try {
+              if (!v.isTextual) throw RuntimeException()
+              var pwd = v.asText()
+              if (pwd.length !in 6..200) throw RuntimeException()
+              pwd = pwd.let(PwdHashing::generateHash)
+              update.newPwdHashed = pwd
+            }
+            catch (ex: Exception) {
+              return@put call.respondInvalidBody(
+                "Password must be string and its length must be from 6 to 200 chars"
+              )
+            }
+          }
+          
+          "photos" -> {
+            val photosUpdations =
+              try { JacksonObjectMapper.treeToValue<PhotosUpdations>(v) }
+              catch (ex: Exception){
+                ex.printStackTrace()
+                println(ex.message)
+                return@put call.respondInvalidBody(
+                  "Invalid photos format: ${ex.message}"
+                )
+              }
+            
+            photosUpdations.replace.forEachIndexed { i,it ->
+              if (it.index !in 0..5) return@put call.respondInvalidBody(
+                "photos.replace[$i].index must be in range ${0..5}"
+              )
+            }
+            
+            
+            update.photos = PreparedPhotosUpdations(
+              remove = photosUpdations.remove,
+              replace = photosUpdations.replace,
+            )
+          }
+          
+          else -> {
+            return@put call.respondInvalidBody(
+              "Unknown property '$k'"
+            )
+          }
+        } }
         
         
         

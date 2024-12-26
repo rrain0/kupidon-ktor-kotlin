@@ -5,8 +5,8 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.route.route.auth.AuthRoutes
-import com.rrain.kupidon.util.get
-import com.rrain.kupidon.util.zonedNow
+import com.rrain.kupidon.util.application.get
+import com.rrain.kupidon.util.DateTime.zonedNow
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.util.*

@@ -1,7 +1,7 @@
 package com.rrain.kupidon.util
 
 
-fun main(){
+fun main() {
   run { // small red dot
     val url = DataUrl(
       "data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAZABkAAD"

@@ -11,7 +11,7 @@ import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMetadataMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
 import com.rrain.kupidon.service.db.mongo.useTransaction
-import com.rrain.kupidon.util.toUuid
+import com.rrain.kupidon.util.Uuid.toUuid
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*

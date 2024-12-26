@@ -1,6 +1,6 @@
 package com.rrain.kupidon.service
 
-import com.rrain.kupidon.util.get
+import com.rrain.kupidon.util.application.get
 import io.ktor.server.application.*
 import java.security.SecureRandom
 import java.security.spec.KeySpec

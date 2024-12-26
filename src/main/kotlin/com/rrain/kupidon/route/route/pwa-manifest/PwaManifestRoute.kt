@@ -12,7 +12,7 @@ object PwaManifestRoute {
 
 
 
-fun Application.configurePwaManifestRoute(){
+fun Application.configurePwaManifestRoute() {
   
   
   
@@ -49,7 +49,7 @@ fun Application.configurePwaManifestRoute(){
         "lang" to "en-US",
         "name" to "Kupidon",
         "short_name" to "Kupidon",
-        "description" to "Kupidon date app",
+        "description" to "Kupidon - date app",
         "start_url" to ".",
         "display" to "standalone",
         "orientation" to "portrait",
@@ -62,15 +62,17 @@ fun Application.configurePwaManifestRoute(){
             "src" to "/icon64.png",
             "type" to "image/png",
             "sizes" to "64x64",
-          ),mutableMapOf(
+          ),
+          mutableMapOf(
             "src" to "/icon192.png",
             "type" to "image/png",
             "sizes" to "192x192",
-          ),mutableMapOf(
+          ),
+          mutableMapOf(
             "src" to "/icon512.png",
             "type" to "image/png",
             "sizes" to "512x512",
-          )
+          ),
         ),
       )
       
@@ -92,13 +94,13 @@ fun Application.configurePwaManifestRoute(){
           "lang" to "en-US",
           "name" to "Kupidon",
           "short_name" to "Kupidon",
-          "description" to "Kupidon date app",
+          "description" to "Kupidon - date app",
         ),
         "ru-RU" to mapOf(
           "lang" to "ru-RU",
           "name" to "Купидон",
           "short_name" to "Купидон",
-          "description" to "Купидон - сервис знакомств",
+          "description" to "Купидон - приложение для свиданий",
         ),
       )
       

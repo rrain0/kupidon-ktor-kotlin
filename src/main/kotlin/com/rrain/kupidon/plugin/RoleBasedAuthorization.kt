@@ -2,8 +2,8 @@ package com.rrain.kupidon.plugin
 
 import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.service.JwtService
-import com.rrain.kupidon.util.cast
-import com.rrain.kupidon.util.logger
+import com.rrain.kupidon.util.Any.cast
+import com.rrain.kupidon.util.Logger.logger
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -63,6 +63,7 @@ class RoleBasedAuthorization(config: Configuration) {
   
   class Configuration {
     // configure role extraction for particular principal coming from Authorization plugin
+    // TODO deprecated
     lateinit var getRoles: (Principal?) -> Set<Role>
   }
   
@@ -74,10 +75,13 @@ class RoleBasedAuthorization(config: Configuration) {
     val authenticatePhase: PipelinePhase = PipelinePhase("Authenticate")
     // By default, we have 5 phases: Setup, Monitoring, Plugins (Features), Call, Fallback.
     // Adding Authenticate phase into our pipeline.
+    // TODO deprecated
     pipeline.insertPhaseAfter(ApplicationCallPipeline.Plugins, authenticatePhase)
     // Adding Authorization phase after Authentication phase in our pipeline
+    // TODO deprecated
     pipeline.insertPhaseAfter(authenticatePhase, RoleBasedAuthorizationPhase)
     
+    // TODO deprecated
     pipeline.intercept(RoleBasedAuthorizationPhase) {
       val principal = call.authentication.principal<Principal>()!!
       val roles = getRoles(principal)

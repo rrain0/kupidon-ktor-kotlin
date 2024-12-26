@@ -1,4 +1,4 @@
-package com.rrain.kupidon.util
+package com.rrain.kupidon.util.Uuid
 
 import java.util.*
 
