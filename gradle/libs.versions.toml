@@ -7,7 +7,7 @@ jackson-version = "2.18.2"
 mongo-kotlin-coroutine-version = "5.2.1"
 slf4j-version = "2.0.16"
 logback-version = "1.5.15"
-kotlinx-datetime-version = "0.6.1"
+apache-email = "1.6.0"
 
 
 
@@ -19,18 +19,28 @@ kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization"
 
 
 [libraries]
+# Ktor server
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }
 ktor-server-jetty-jakarta = { module = "io.ktor:ktor-server-jetty-jakarta-jvm", version.ref = "ktor-version" }
 
+# SLF4J - Simple Logging Facade for Java
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j-version" }
+jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j", version.ref = "slf4j-version" }
+logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback-version" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-version" }
+
+# Ktor plugins
+ktor-websocket = { module = "io.ktor:ktor-server-websockets-jvm", version.ref = "ktor-version" }
+
+# Content negotiation & Jackson
 ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor-version" }
 ktor-serialization-jackson = { module = "io.ktor:ktor-serialization-jackson-jvm", version.ref = "ktor-version" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson-version" }
+jackson-java-time = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson-version" }
 
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime-version" }
+# Kotlin coroutine MongoDB driver
+mongodb-driver-kotlin-coroutine = { module = "org.mongodb:mongodb-driver-kotlin-coroutine", version.ref = "mongo-kotlin-coroutine-version" }
+mongodb-bson-kotlinx = { module = "org.mongodb:bson-kotlinx", version.ref = "mongo-kotlin-coroutine-version" }
 
-
-
-ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json-jvm", version.ref = "ktor-version" }
-logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-version" }
-ktor-server-test-host = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor-version" }
-kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin-version" }
+# Mail sending
+apache-email = { module = "org.apache.commons:commons-email", version.ref = "apache-email" }

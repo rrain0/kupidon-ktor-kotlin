@@ -1,25 +1,9 @@
-// fix for java.lang.NoClassDefFoundError: Could not initialize class org.eclipse.jetty.server.HttpConnection
-//import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
-val kotlinVer: String by project
-val ktorVer: String by project
-val mongoKotlinCoroutineVer : String by project
-val slf4jVer: String by project
-val logbackVer: String by project
-val jacksonVer : String by project
-
-
 
 plugins {
   alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.ktor)
   alias(libs.plugins.kotlin.plugin.serialization)
 }
-
-// fix for java.lang.NoClassDefFoundError: Could not initialize class org.eclipse.jetty.server.HttpConnection
-/*tasks.withType<ShadowJar> {
-  mergeServiceFiles()
-}*/
 
 group = "com.rrain.kupidon"
 version = "0.0.1"
@@ -36,69 +20,46 @@ repositories {
 }
 
 dependencies {
+  // Ktor server
   implementation(libs.ktor.server.core)
   implementation(libs.ktor.server.jetty.jakarta)
   
+  // SLF4J - Simple Logging Facade for Java
+  implementation(libs.slf4j.api)
+  implementation(libs.jcl.over.slf4j)
+  implementation(libs.logback.core)
+  implementation(libs.logback.classic)
   
+  // Ktor plugins
+  implementation(libs.ktor.websocket)
+  // for using of x-forwarded (and forwarded) headers of proxy server
+  implementation("io.ktor:ktor-server-forwarded-header:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-call-logging-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-call-id-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-partial-content-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-cors-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-caching-headers-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-host-common-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-status-pages-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-resources:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-auto-head-response-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-auth-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-auth-jwt-jvm:${libs.versions.ktor.version}")
   
+  // Content negotiation & Jackson
   implementation(libs.ktor.server.content.negotiation)
   implementation(libs.ktor.serialization.jackson)
   // Kotlin Jackson Support
   // https://github.com/FasterXML/jackson-module-kotlin
   implementation(libs.jackson.module.kotlin)
-  
-  
-  
-  implementation(libs.kotlinx.datetime)
-  // TODO move to Kotlin Time
   // Java Time Jackson Support
   // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
-  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVer")
-  
-  
-  
-  implementation("io.ktor:ktor-network-tls-certificates:$ktorVer")
-  
-  
+  implementation(libs.jackson.java.time)
   
   // Kotlin coroutine MongoDB driver
-  implementation("org.mongodb:mongodb-driver-kotlin-coroutine:$mongoKotlinCoroutineVer")
-  implementation("org.mongodb:bson-kotlinx:$mongoKotlinCoroutineVer")
-  
-  
-  // for using of x-forwarded (and forwarded) headers of proxy server
-  implementation("io.ktor:ktor-server-forwarded-header:$ktorVer")
-  
-  implementation("io.ktor:ktor-server-call-logging-jvm:$ktorVer")
-  implementation("io.ktor:ktor-server-call-id-jvm:$ktorVer")
-  implementation("io.ktor:ktor-server-partial-content-jvm:$ktorVer")
-  implementation("io.ktor:ktor-server-cors-jvm:$ktorVer")
-  implementation("io.ktor:ktor-server-caching-headers-jvm:$ktorVer")
-  implementation("io.ktor:ktor-server-host-common-jvm:$ktorVer")
-  implementation("io.ktor:ktor-server-status-pages-jvm:$ktorVer")
-  implementation("io.ktor:ktor-server-resources:$ktorVer")
-  implementation("io.ktor:ktor-server-auto-head-response-jvm:$ktorVer")
-  implementation("io.ktor:ktor-server-auth-jvm:$ktorVer")
-  implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktorVer")
-  
-  
-  implementation("io.ktor:ktor-server-websockets-jvm:$ktorVer")
-  
-  
-  // SLF4J - Simple Logging Facade for Java
-  implementation("org.slf4j:slf4j-api:$slf4jVer")
-  implementation("org.slf4j:jcl-over-slf4j:$slf4jVer")
-  implementation("ch.qos.logback:logback-core:$logbackVer")
-  implementation("ch.qos.logback:logback-classic:$logbackVer")
-  
+  implementation(libs.mongodb.driver.kotlin.coroutine)
+  implementation(libs.mongodb.bson.kotlinx)
   
   // Mail sending
-  implementation("org.apache.commons:commons-email:1.6.0")
-  
-  
-  // Tests
-  testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVer")
-  testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVer")
-  
-  
+  implementation(libs.apache.email)
 }

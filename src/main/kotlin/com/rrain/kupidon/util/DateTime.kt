@@ -35,8 +35,8 @@ fun String.toZonedDateTime() = ZonedDateTime.parse(this, zonedDateTimeFormatter)
 
 
 
-fun ZonedDateTime.toTimestamp(): Long =
-  this.toInstant().toEpochMilli()
+fun ZonedDateTime.toTimestamp(): Long = this.toInstant().toEpochMilli()
+
 fun Long.toZonedDateTime(): ZonedDateTime =
   ZonedDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneId.of("UTC"))
 
