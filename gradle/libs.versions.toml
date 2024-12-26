@@ -7,6 +7,7 @@ jackson-version = "2.18.2"
 mongo-kotlin-coroutine-version = "5.2.1"
 slf4j-version = "2.0.16"
 logback-version = "1.5.15"
+kotlinx-datetime-version = "0.6.1"
 
 
 
@@ -24,6 +25,8 @@ ktor-server-jetty-jakarta = { module = "io.ktor:ktor-server-jetty-jakarta-jvm", 
 ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor-version" }
 ktor-serialization-jackson = { module = "io.ktor:ktor-serialization-jackson-jvm", version.ref = "ktor-version" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson-version" }
+
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime-version" }
 
 
 

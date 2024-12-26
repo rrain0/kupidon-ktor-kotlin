@@ -5,9 +5,9 @@ name: kupidon-prod-ktor
 
 services:
   ktor:
-    # docker build -t rrain0/kupidon-ktor-ktor:1.0.1 .
-    # docker push rrain0/kupidon-ktor-ktor:1.0.1
-    image: rrain0/kupidon-ktor-ktor:1.0.1
+    # docker build -t rrain0/kupidon-ktor-ktor:1.0.2 .
+    # docker push rrain0/kupidon-ktor-ktor:1.0.2
+    image: rrain0/kupidon-ktor-ktor:1.0.2
     ports:
       - '${PROXY_PORT}:${PROXY_PORT}'
     environment:
