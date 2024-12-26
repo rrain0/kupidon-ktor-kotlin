@@ -21,17 +21,17 @@ import io.ktor.util.pipeline.*
   процедура, в результате выполнения которой для субъекта идентификации
   выявляется его идентификатор, однозначно определяющий этого субъекта в информационной системе.
   
-● Аутентификация — проверка логина/пароля
+● Аутентификация — проверка логина / пароля
   — HTTP Error: 401 Unauthorized, To help you out,
-  it will always include a 'WWW-Authenticate' header that describes how to authenticate.
+    it will always include a 'WWW-Authenticate' header that describes how to authenticate.
   — процедура проверки подлинности,
-  например проверка подлинности пользователя путем сравнения введенного им пароля с паролем,
-  сохраненным в базе данных.
+    например проверка подлинности пользователя путем сравнения введенного им пароля с паролем,
+    сохраненным в базе данных.
   
 ● Авторизация — проверка ролей пользователя
   — HTTP Error: 403 Forbidden
   — предоставление определенному лицу или группе лиц прав
-  на выполнение определенных действий.
+    на выполнение определенных действий.
 */
 
 
@@ -40,7 +40,7 @@ fun Application.configureRoleBasedAuthorization(){
   install(RoleBasedAuthorization) {
     getRoles = {
       it?.let {
-         it.cast<JWTPrincipal>()
+        it.cast<JWTPrincipal>()
           .getListClaim(JwtService.accessTokenRolesClaimName, String::class)
           .map(Role::valueOf)
           .toSet()
