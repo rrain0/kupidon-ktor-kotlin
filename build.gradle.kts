@@ -11,19 +11,15 @@ val jacksonVer : String by project
 
 
 plugins {
-  val kotlinV = "2.1.0"
-  val ktorV = "3.0.2"
-  
-  kotlin("jvm") version kotlinV
-  id("io.ktor.plugin") version ktorV
-  id("org.jetbrains.kotlin.plugin.serialization") version kotlinV
+  alias(libs.plugins.kotlin.jvm)
+  alias(libs.plugins.ktor)
+  alias(libs.plugins.kotlin.plugin.serialization)
 }
 
 // fix for java.lang.NoClassDefFoundError: Could not initialize class org.eclipse.jetty.server.HttpConnection
 /*tasks.withType<ShadowJar> {
   mergeServiceFiles()
 }*/
-
 
 group = "com.rrain.kupidon"
 version = "0.0.1"
@@ -35,29 +31,25 @@ application {
   applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
-
-
 repositories {
   mavenCentral()
 }
 
 dependencies {
-  implementation("io.ktor:ktor-server-core-jvm:$ktorVer")
-  implementation("io.ktor:ktor-server-jetty-jakarta-jvm:$ktorVer")
-  implementation("io.ktor:ktor-server-websockets-jvm:$ktorVer")
+  implementation(libs.ktor.server.core)
+  implementation(libs.ktor.server.jetty.jakarta)
   
   
   
-  implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktorVer")
-  
-  //implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
-  //implementation("io.ktor:ktor-serialization-gson:$ktor_version")
-  implementation("io.ktor:ktor-serialization-jackson:$ktorVer")
-  
+  implementation(libs.ktor.server.content.negotiation)
+  implementation(libs.ktor.serialization.jackson)
   // Kotlin Jackson Support
   // https://github.com/FasterXML/jackson-module-kotlin
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVer")
+  implementation(libs.jackson.module.kotlin)
   
+  
+  
+  // TODO move to Kotlin Time
   // Java Time Jackson Support
   // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVer")
@@ -89,6 +81,9 @@ dependencies {
   implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktorVer")
   
   
+  implementation("io.ktor:ktor-server-websockets-jvm:$ktorVer")
+  
+  
   // SLF4J - Simple Logging Facade for Java
   implementation("org.slf4j:slf4j-api:$slf4jVer")
   implementation("org.slf4j:jcl-over-slf4j:$slf4jVer")
@@ -101,7 +96,7 @@ dependencies {
   
   
   // Tests
-  testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVer")
+  testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVer")
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVer")
   
   

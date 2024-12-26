@@ -5,18 +5,17 @@ import io.ktor.client.statement.*
 import io.ktor.server.testing.*
 import kotlin.test.*
 import io.ktor.http.*
-import com.rrain.kupidon.route.configureRouting
 
 
 
-// todo explore
+// TODO explore
 class ApplicationTest {
     @Test
-    fun testRoot() = testApplication {
+    fun testKtorHello() = testApplication {
         application {
-            configureRouting()
+            module()
         }
-        client.get("/").apply {
+        client.get("/ktor/hello").apply {
             assertEquals(HttpStatusCode.OK, status)
             assertEquals("Hello World!", bodyAsText())
         }

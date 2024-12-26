@@ -10,17 +10,11 @@ import io.ktor.server.routing.*
 
 fun Application.configureMainRoutes(){
   
-  
-  
   routing {
-    
-    
     
     get("/ktor/hello") {
       call.respondText("Hello World!")
     }
-    
-    
     
   }
   
