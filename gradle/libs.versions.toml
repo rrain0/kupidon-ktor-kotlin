@@ -29,14 +29,15 @@ jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j", version.ref = "slf4j-ver
 logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback-version" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-version" }
 
-# Ktor plugins
-ktor-websocket = { module = "io.ktor:ktor-server-websockets-jvm", version.ref = "ktor-version" }
-
 # Content negotiation & Jackson
 ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor-version" }
 ktor-serialization-jackson = { module = "io.ktor:ktor-serialization-jackson-jvm", version.ref = "ktor-version" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson-version" }
 jackson-java-time = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson-version" }
+
+# Ktor plugins
+ktor-websocket = { module = "io.ktor:ktor-server-websockets-jvm", version.ref = "ktor-version" }
+ktor-forwarded-headers = { module = "io.ktor:ktor-server-forwarded-header", version.ref = "ktor-version" }
 
 # Kotlin coroutine MongoDB driver
 mongodb-driver-kotlin-coroutine = { module = "org.mongodb:mongodb-driver-kotlin-coroutine", version.ref = "mongo-kotlin-coroutine-version" }

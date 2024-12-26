@@ -14,7 +14,7 @@ fun Application.configureUserRouteEmailInitialVerify() {
     
     
     /*
-    // todo Language
+    // todo email - Language
     get(UserRoutes.emailInitialVerification) {
       val verificationToken = call.request.queryParameters[UserRoutes.verifyTokenParamName]
       

@@ -66,7 +66,6 @@ class RoleBasedAuthorization(config: Configuration) {
     lateinit var getRoles: (Principal?) -> Set<Role>
   }
   
-  // TODO deal with deprecations
   fun interceptPipeline(
     pipeline: Route,
     anyOfRoles: Set<Role> = emptySet(),

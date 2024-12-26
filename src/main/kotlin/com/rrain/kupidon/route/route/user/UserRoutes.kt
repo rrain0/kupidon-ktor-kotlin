@@ -43,15 +43,9 @@ fun Application.configureUserRoutes(){
   configureUserRouteProfilePhotoAdd()
   configureUserRouteCurrent()
   
-  
-  
   fun mongo() = MongoDbService.client
   
-  
-  
   routing {
-    
-    
     
     get(UserRoutes.getById) {
       val userId = call.parameters["id"]!!
@@ -74,15 +68,6 @@ fun Application.configureUserRoutes(){
         val user = userById.convertToSend(call.request)
       })
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
   }
   

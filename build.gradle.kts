@@ -30,22 +30,6 @@ dependencies {
   implementation(libs.logback.core)
   implementation(libs.logback.classic)
   
-  // Ktor plugins
-  implementation(libs.ktor.websocket)
-  // for using of x-forwarded (and forwarded) headers of proxy server
-  implementation("io.ktor:ktor-server-forwarded-header:${libs.versions.ktor.version}")
-  implementation("io.ktor:ktor-server-call-logging-jvm:${libs.versions.ktor.version}")
-  implementation("io.ktor:ktor-server-call-id-jvm:${libs.versions.ktor.version}")
-  implementation("io.ktor:ktor-server-partial-content-jvm:${libs.versions.ktor.version}")
-  implementation("io.ktor:ktor-server-cors-jvm:${libs.versions.ktor.version}")
-  implementation("io.ktor:ktor-server-caching-headers-jvm:${libs.versions.ktor.version}")
-  implementation("io.ktor:ktor-server-host-common-jvm:${libs.versions.ktor.version}")
-  implementation("io.ktor:ktor-server-status-pages-jvm:${libs.versions.ktor.version}")
-  implementation("io.ktor:ktor-server-resources:${libs.versions.ktor.version}")
-  implementation("io.ktor:ktor-server-auto-head-response-jvm:${libs.versions.ktor.version}")
-  implementation("io.ktor:ktor-server-auth-jvm:${libs.versions.ktor.version}")
-  implementation("io.ktor:ktor-server-auth-jwt-jvm:${libs.versions.ktor.version}")
-  
   // Content negotiation & Jackson
   implementation(libs.ktor.server.content.negotiation)
   implementation(libs.ktor.serialization.jackson)
@@ -55,6 +39,21 @@ dependencies {
   // Java Time Jackson Support
   // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
   implementation(libs.jackson.java.time)
+  
+  // Ktor plugins
+  implementation(libs.ktor.websocket)
+  // use proxy server forwarded & x-forwarded headers
+  implementation(libs.ktor.forwarded.headers)
+  implementation("io.ktor:ktor-server-call-logging-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-call-id-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-partial-content-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-caching-headers-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-host-common-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-status-pages-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-resources:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-auto-head-response-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-auth-jvm:${libs.versions.ktor.version}")
+  implementation("io.ktor:ktor-server-auth-jwt-jvm:${libs.versions.ktor.version}")
   
   // Kotlin coroutine MongoDB driver
   implementation(libs.mongodb.driver.kotlin.coroutine)
