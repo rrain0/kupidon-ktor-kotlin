@@ -71,7 +71,7 @@ fun Application.configureUserRouteProfilePhotoGet() {
       call.respondBytes(
         ContentType.parse(photo.mimeType),
         HttpStatusCode.OK,
-        suspend { photo.binData }
+        suspend { photo.binData.data }
       )
     }
     

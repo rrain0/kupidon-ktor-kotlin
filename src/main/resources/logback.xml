@@ -7,10 +7,10 @@
     <root level="debug">
         <appender-ref ref="STDOUT"/>
     </root>
-    <logger name="org.eclipse.jetty" level="info"/>
-    <logger name="io.netty" level="info"/>
-    <logger name="reactor.netty" level="info"/>
-    <logger name="io.r2dbc" level="debug"/>
-    <logger name="org.mongodb.driver" level="info"/>
-    <logger name="Application" level="info"/>
+    <logger name="org.eclipse.jetty" level="INFO"/>
+    <logger name="io.netty" level="INFO"/>
+    <logger name="reactor.netty" level="INFO"/>
+    <logger name="io.r2dbc" level="DEBUG"/>
+    <logger name="org.mongodb.driver" level="INFO"/>
+    <logger name="Application" level="INFO"/>
 </configuration>

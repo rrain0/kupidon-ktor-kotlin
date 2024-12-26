@@ -23,6 +23,7 @@ import io.ktor.utils.io.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import org.bson.Document
+import org.bson.types.Binary
 import java.util.UUID
 
 
@@ -121,7 +122,7 @@ fun Application.configureUserRouteProfilePhotoAdd() {
       
       val photo = UserProfilePhotoMongo(
         partialPhoto.id!!, partialPhoto.index!!, partialPhoto.name!!,
-        partialPhoto.mimeType!!, partialPhoto.binData!!
+        partialPhoto.mimeType!!, Binary(partialPhoto.binData!!)
       )
       
       if (photo.index !in 0..5) return@post call.respondInvalidBody(
@@ -137,7 +138,7 @@ fun Application.configureUserRouteProfilePhotoAdd() {
       /*if (photo.mimeType!="image/webp") return@post call.respondInvalidBody(
         "photo mimeType must be 'image/webp'"
       )*/
-      if (photo.binData.size > 0.4*1024*1024)
+      if (photo.binData.data.size > 0.4*1024*1024)
         return@post call.respondInvalidBody(
           "photo bytes max size must be 0.4MB, " +
             "but yours is ${photo.binData} bytes"

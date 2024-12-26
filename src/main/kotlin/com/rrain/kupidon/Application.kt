@@ -13,8 +13,7 @@ import com.rrain.kupidon.service.db.mongo.configureMongoDbService
 
 
 // TODO deprecated
-fun main(args: Array<String>): Unit =
-  io.ktor.server.jetty.EngineMain.main(args)
+fun main(args: Array<String>): Unit = io.ktor.server.jetty.jakarta.EngineMain.main(args)
 
 
 

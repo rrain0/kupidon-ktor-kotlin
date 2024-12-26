@@ -1,5 +1,5 @@
 // fix for java.lang.NoClassDefFoundError: Could not initialize class org.eclipse.jetty.server.HttpConnection
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+//import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 val kotlinVer: String by project
 val ktorVer: String by project
@@ -11,8 +11,8 @@ val jacksonVer : String by project
 
 
 plugins {
-  val kotlinV = "2.0.21"
-  val ktorV = "3.0.0"
+  val kotlinV = "2.1.0"
+  val ktorV = "3.0.2"
   
   kotlin("jvm") version kotlinV
   id("io.ktor.plugin") version ktorV
@@ -20,15 +20,16 @@ plugins {
 }
 
 // fix for java.lang.NoClassDefFoundError: Could not initialize class org.eclipse.jetty.server.HttpConnection
-tasks.withType<ShadowJar> {
+/*tasks.withType<ShadowJar> {
   mergeServiceFiles()
-}
+}*/
 
 
 group = "com.rrain.kupidon"
 version = "0.0.1"
+
 application {
-  mainClass.set("io.ktor.server.jetty.EngineMain")
+  mainClass.set("io.ktor.server.jetty.jakarta.EngineMain")
   
   val isDevelopment: Boolean = project.ext.has("development")
   applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
@@ -42,8 +43,9 @@ repositories {
 
 dependencies {
   implementation("io.ktor:ktor-server-core-jvm:$ktorVer")
-  implementation("io.ktor:ktor-server-jetty-jvm:$ktorVer")
+  implementation("io.ktor:ktor-server-jetty-jakarta-jvm:$ktorVer")
   implementation("io.ktor:ktor-server-websockets-jvm:$ktorVer")
+  
   
   
   implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktorVer")
@@ -66,12 +68,9 @@ dependencies {
   
   
   
-  
-  
   // Kotlin coroutine MongoDB driver
   implementation("org.mongodb:mongodb-driver-kotlin-coroutine:$mongoKotlinCoroutineVer")
-  
-  
+  implementation("org.mongodb:bson-kotlinx:$mongoKotlinCoroutineVer")
   
   
   // for using of x-forwarded (and forwarded) headers of proxy server
@@ -89,17 +88,21 @@ dependencies {
   implementation("io.ktor:ktor-server-auth-jvm:$ktorVer")
   implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktorVer")
   
+  
   // SLF4J - Simple Logging Facade for Java
   implementation("org.slf4j:slf4j-api:$slf4jVer")
   implementation("org.slf4j:jcl-over-slf4j:$slf4jVer")
   implementation("ch.qos.logback:logback-core:$logbackVer")
   implementation("ch.qos.logback:logback-classic:$logbackVer")
   
+  
+  // Mail sending
+  implementation("org.apache.commons:commons-email:1.6.0")
+  
+  
+  // Tests
   testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVer")
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVer")
   
-  
-  // mail sending
-  implementation("org.apache.commons:commons-email:1.5")
   
 }

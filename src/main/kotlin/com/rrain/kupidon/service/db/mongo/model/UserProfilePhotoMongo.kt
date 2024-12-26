@@ -1,5 +1,6 @@
 package com.rrain.kupidon.service.db.mongo.model
 
+import org.bson.types.Binary
 import java.util.UUID
 
 
@@ -10,5 +11,5 @@ data class UserProfilePhotoMongo(
   val index: Int,
   val name: String,
   val mimeType: String,
-  val binData: ByteArray,
+  val binData: Binary,
 )
