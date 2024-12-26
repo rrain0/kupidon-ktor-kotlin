@@ -39,40 +39,43 @@ fun Application.configureJwtAuthentication() {
     
     provider {
       
-      authenticate { auth -> runBlocking(Dispatchers.IO){
+      authenticate { auth -> runBlocking(Dispatchers.IO) {
         val authHeader = auth.call.request.headers["Authorization"]
-        if (authHeader==null)
+        if (authHeader == null) {
           return@runBlocking auth.call
             .respond(HttpStatusCode.Unauthorized, ErrNoAuthHeader)
-        if (!authHeader.startsWith("Bearer "))
+        }
+        if (!authHeader.startsWith("Bearer ")) {
           return@runBlocking auth.call
-          .respond(HttpStatusCode.Unauthorized, ErrAuthHeaderWrongFormat)
+            .respond(HttpStatusCode.Unauthorized, ErrAuthHeaderWrongFormat)
+        }
           
         
         val accessToken = authHeader.substring("Bearer ".length)
-        if (accessToken.isEmpty())
+        if (accessToken.isEmpty()) {
           return@runBlocking auth.call
             .respond(HttpStatusCode.Unauthorized, ErrEmptyToken)
+        }
         
         val verifier = JwtService.accessTokenVerifier
         val decodedJwt = try { verifier.verify(accessToken) }
         // Token was encoded by wrong algorithm. Required HMAC256.
-        catch (ex: AlgorithmMismatchException){
+        catch (ex: AlgorithmMismatchException) {
           return@runBlocking auth.call
             .respond(HttpStatusCode.Unauthorized, ErrTokenAlgorithmMismatch)
         }
         // Damaged Token - Токен повреждён и не может быть декодирован
-        catch (ex: JWTDecodeException){
+        catch (ex: JWTDecodeException) {
           return@runBlocking auth.call
             .respond(HttpStatusCode.Unauthorized, ErrTokenDamaged)
         }
         // Modified Token - Токен умышленно модифицирован (подделан)
-        catch (ex: SignatureVerificationException){
+        catch (ex: SignatureVerificationException) {
           return@runBlocking auth.call
             .respond(HttpStatusCode.Unauthorized, ErrTokenModified)
         }
         // Token has expired
-        catch (ex: TokenExpiredException){
+        catch (ex: TokenExpiredException) {
           return@runBlocking auth.call
             .respond(HttpStatusCode.Unauthorized, ErrTokenExpired)
         }

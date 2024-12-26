@@ -40,7 +40,11 @@ dependencies {
   // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
   implementation(libs.jackson.java.time)
   
-  // Ktor plugins
+  // Auth
+  implementation(libs.ktor.server.auth)
+  implementation(libs.ktor.server.auth.jwt)
+  
+  // Other ktor plugins
   implementation(libs.ktor.websocket)
   // use proxy server forwarded & x-forwarded headers
   implementation(libs.ktor.forwarded.headers)
@@ -52,8 +56,6 @@ dependencies {
   implementation("io.ktor:ktor-server-status-pages-jvm:${libs.versions.ktor.version}")
   implementation("io.ktor:ktor-server-resources:${libs.versions.ktor.version}")
   implementation("io.ktor:ktor-server-auto-head-response-jvm:${libs.versions.ktor.version}")
-  implementation("io.ktor:ktor-server-auth-jvm:${libs.versions.ktor.version}")
-  implementation("io.ktor:ktor-server-auth-jwt-jvm:${libs.versions.ktor.version}")
   
   // Kotlin coroutine MongoDB driver
   implementation(libs.mongodb.driver.kotlin.coroutine)

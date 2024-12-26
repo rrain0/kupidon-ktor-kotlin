@@ -17,12 +17,14 @@ fun Application.configureLoggingAndMonitoring(){
   //loggerContext.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME).level = ch.qos.logback.classic.Level.DEBUG
   
   
+  // todo explore
   install(CallLogging) {
     level = Level.INFO
     filter { call -> call.request.path().startsWith("/") }
     callIdMdc("call-id")
   }
   
+  // todo explore
   install(CallId) {
     header(HttpHeaders.XRequestId)
     verify { callId: String ->
