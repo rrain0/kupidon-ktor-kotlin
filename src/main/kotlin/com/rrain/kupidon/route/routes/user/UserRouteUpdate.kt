@@ -10,7 +10,7 @@ import com.mongodb.client.model.WriteModel
 import com.rrain.kupidon.model.Gender
 import com.rrain.kupidon.plugin.JacksonObjectMapper
 import com.rrain.kupidon.plugin.getUserId
-import com.rrain.kupidon.service.PwdHashing
+import com.rrain.kupidon.service.PwdHashService
 import com.rrain.kupidon.route.util.respondBadRequest
 import com.rrain.kupidon.route.util.respondInvalidBody
 import com.rrain.kupidon.route.util.respondNoUserById
@@ -183,7 +183,7 @@ fun Application.configureUserRouteUpdate() {
               if (!v.isTextual) throw RuntimeException()
               var currentPwd = v.asText()
               if (currentPwd.length !in 1..200) throw RuntimeException()
-              currentPwd = currentPwd.let(PwdHashing::generateHash)
+              currentPwd = currentPwd.let(PwdHashService::generateHash)
               update.currentPwdHashed = currentPwd
             }
             catch (ex: Exception) {
@@ -198,7 +198,7 @@ fun Application.configureUserRouteUpdate() {
               if (!v.isTextual) throw RuntimeException()
               var pwd = v.asText()
               if (pwd.length !in 6..200) throw RuntimeException()
-              pwd = pwd.let(PwdHashing::generateHash)
+              pwd = pwd.let(PwdHashService::generateHash)
               update.newPwdHashed = pwd
             }
             catch (ex: Exception) {

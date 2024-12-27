@@ -33,7 +33,7 @@ import io.ktor.server.routing.*
 
 private fun getRoleFromCall(call: ApplicationCall): Set<Role> {
   return call.principal<JWTPrincipal>()
-    ?.getListClaim(JwtService.accessTokenRolesClaimName, String::class)
+    ?.getListClaim(JwtService.config.accessTokenRolesClaimName, String::class)
     ?.map(Role::valueOf)
     ?.toSet()
     ?: emptySet()

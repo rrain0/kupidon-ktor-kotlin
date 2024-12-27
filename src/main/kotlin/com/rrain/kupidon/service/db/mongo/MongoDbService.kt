@@ -83,18 +83,29 @@ fun Application.configureMongoDbService() {
   // most applications only require a single instance of a MongoClient,
   // even across multiple threads.
   val mongoClient = MongoClient.create(connSettings)
-  MongoDbService.client = mongoClient
-  
   val databaseName = appConfig["db.connection.mongo.database"]
-  MongoDbService.dbName = databaseName
+  
+  MongoDbService.config = MongoDbService.Config(
+    client = mongoClient,
+    dbName = databaseName,
+  )
   
 }
 
 
 
 object MongoDbService {
-  lateinit var client: MongoClient
-  lateinit var dbName: String
+  
+  data class Config(
+    val client: MongoClient,
+    val dbName: String,
+  )
+  
+  lateinit var config: Config
+  
+  val client get() = config.client
+  val dbName get() = config.dbName
+  
   val db get() = client.db(dbName)
   fun db(dbName: String) = client.db(dbName)
 }
@@ -104,8 +115,7 @@ object MongoDbService {
 
 val MongoClient.db get() = this.getDatabase(MongoDbService.dbName)
 fun MongoClient.db(dbName: String) = this.getDatabase(dbName)
-inline fun <reified T : Any> MongoDatabase.coll(collName: String)
-  = this.getCollection<T>(collName)
+inline fun <reified T : Any> MongoDatabase.coll(collName: String) = this.getCollection<T>(collName)
 
 
 

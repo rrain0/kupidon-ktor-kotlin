@@ -5,6 +5,7 @@ import com.mongodb.client.model.Filters
 import com.rrain.kupidon.route.util.respondBadRequest
 import com.rrain.kupidon.route.util.respondNoUserById
 import com.rrain.kupidon.service.*
+import com.rrain.kupidon.service.JwtService.getUserId
 import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
@@ -31,8 +32,8 @@ fun Application.configureAuthRouteRefresh(){
     
     
     
-    get(AuthRoutes.refresh){
-      val refreshToken = call.request.cookies[JwtService.refreshTokenCookieName]
+    get(AuthRoutes.refresh) {
+      val refreshToken = call.request.cookies[JwtService.config.refreshTokenCookieName]
       
       refreshToken ?: return@get call.respondBadRequest(
         code = "NO_REFRESH_TOKEN_COOKIE",
@@ -59,7 +60,7 @@ fun Application.configureAuthRouteRefresh(){
       }
       
       
-      val userId = decodedRefresh.subject
+      val userId = decodedRefresh.getUserId()
       val userUuid = userId.toUuid()
       
       val m = mongo()
@@ -81,7 +82,8 @@ fun Application.configureAuthRouteRefresh(){
       val newAccessToken = JwtService.generateAccessToken(userId, roles)
       val newRefreshToken = JwtService.generateRefreshToken(userId)
       
-      // сделать позже save refresh token & device info to db as opened session
+      // 1) Сделать позже - save refresh token & device info to db as opened session
+      // 2) При генерации access token генерится и новый refresh token, а старые рефреши всё ещё валидны
       
       call.response.cookies.append(
         JwtService.generateRefreshTokenCookie(newRefreshToken,domain)

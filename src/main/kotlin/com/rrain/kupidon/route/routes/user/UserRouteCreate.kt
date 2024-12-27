@@ -3,7 +3,7 @@ package com.rrain.kupidon.route.routes.user
 import com.mongodb.client.model.Filters
 import com.rrain.kupidon.model.Gender
 import com.rrain.kupidon.service.JwtService
-import com.rrain.kupidon.service.PwdHashing
+import com.rrain.kupidon.service.PwdHashService
 import com.rrain.kupidon.service.lang.`ui-values`.AppUiText
 import com.rrain.kupidon.service.lang.`ui-values`.EmailInitialVerificationUiText
 import com.rrain.kupidon.route.util.respondBadRequest
@@ -109,7 +109,7 @@ fun Application.configureUserRouteCreate() {
         id = UUID.randomUUID(),
         roles = setOf(),
         email = userToCreate.email,
-        pwd = userToCreate.pwd.let(PwdHashing::generateHash),
+        pwd = userToCreate.pwd.let(PwdHashService::generateHash),
         created = now,
         updated = now,
         name = userToCreate.name,

@@ -18,7 +18,7 @@ fun main() {
   /*"passwordToHash".let { println("hash for $it: ${generateUserPwdHash(
     it,
     // PRIVATE CONFIG
-    PwdHashingInfo(
+    PwdHashing.Config(
       algorithm = "",
       secret = "",
       iterations = 0,
@@ -34,9 +34,9 @@ fun main() {
 
 
 
-fun generateUserPwdHash(pwdToHash: String, pwdHashingInfo: PwdHashingInfo): String {
-  PwdHashing.pwdHashingInfo = pwdHashingInfo
-  val hash = PwdHashing.generateHash(pwdToHash)
+fun generateUserPwdHash(pwdToHash: String, config: PwdHashService.Config): String {
+  PwdHashService.config = config
+  val hash = PwdHashService.generateHash(pwdToHash)
   return hash
 }
 
@@ -51,8 +51,8 @@ fun generateRandomPwdSalt(): String = ByteArray(16)
 
 fun Application.configurePwdHashing() {
   
-  PwdHashing.run {
-    pwdHashingInfo = PwdHashingInfo(
+  PwdHashService.run {
+    config = PwdHashService.Config(
       algorithm = appConfig["db.user-pwd-hashing.algorithm"],
       secret = appConfig["db.user-pwd-hashing.secret"],
       iterations = appConfig["db.user-pwd-hashing.iterations"].toInt(),
@@ -63,20 +63,26 @@ fun Application.configurePwdHashing() {
 
 
 
-object PwdHashing {
+object PwdHashService {
   
-  lateinit var pwdHashingInfo: PwdHashingInfo
+  data class Config(
+    val algorithm: String,
+    val secret: String,
+    val iterations: Int,
+    val hashLen: Int,
+  )
+  
+  lateinit var config: PwdHashService.Config
   
   @OptIn(ExperimentalEncodingApi::class)
   fun generateHash(pwd: String): String {
-    val info = pwdHashingInfo
-    val combinedSalt: ByteArray = "${info.secret}".toByteArray(Charsets.UTF_8)
-    val factory: SecretKeyFactory = SecretKeyFactory.getInstance(info.algorithm)
+    val combinedSalt: ByteArray = "${config.secret}".toByteArray(Charsets.UTF_8)
+    val factory: SecretKeyFactory = SecretKeyFactory.getInstance(config.algorithm)
     val spec: KeySpec = PBEKeySpec(
       pwd.toCharArray(),
       combinedSalt,
-      info.iterations,
-      info.hashLen
+      config.iterations,
+      config.hashLen
     )
     val key: SecretKey = factory.generateSecret(spec)
     val hash: String = key.encoded.let { Base64.Default.encode(it) }
@@ -84,16 +90,9 @@ object PwdHashing {
   }
   
   fun checkPwd(pwd: String, hash: String): Boolean {
-    val pwdhash: String = generateHash(pwd)
-    return pwdhash == hash
+    val pwdHash: String = generateHash(pwd)
+    return pwdHash == hash
   }
-
+  
 }
 
-
-data class PwdHashingInfo(
-  val algorithm: String,
-  val secret: String,
-  val iterations: Int,
-  val hashLen: Int,
-)

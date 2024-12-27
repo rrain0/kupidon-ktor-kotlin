@@ -12,18 +12,23 @@ import java.nio.charset.StandardCharsets
 
 fun Application.configureEmailService(){
   
-  EmailService.run {
-    fromEmail = appConfig["mail.email"]
-    fromPwd = appConfig["mail.pwd"]
-  }
+  EmailService.config = EmailService.Config(
+    fromEmail = appConfig["mail.email"],
+    fromPwd = appConfig["mail.pwd"],
+  )
   
 }
 
 
 
 object EmailService {
-  lateinit var fromEmail: String
-  lateinit var fromPwd: String
+  
+  data class Config(
+    val fromEmail: String,
+    val fromPwd: String,
+  )
+  
+  lateinit var config: Config
   
   
   // https://commons.apache.org/proper/commons-email/userguide.html
@@ -33,9 +38,9 @@ object EmailService {
     SimpleEmail().run {
       hostName = "smtp.yandex.ru"
       setSmtpPort(465)
-      setAuthenticator(DefaultAuthenticator(fromEmail, fromPwd))
+      setAuthenticator(DefaultAuthenticator(config.fromEmail, config.fromPwd))
       isSSLOnConnect = true
-      setFrom(fromEmail)
+      setFrom(config.fromEmail)
       addTo(emailMessage.to)
       subject = emailMessage.title
       setMsg(emailMessage.content)
@@ -48,9 +53,9 @@ object EmailService {
     HtmlEmail().run {
       hostName = "smtp.yandex.ru"
       setSmtpPort(465)
-      setAuthenticator(DefaultAuthenticator(fromEmail, fromPwd))
+      setAuthenticator(DefaultAuthenticator(config.fromEmail, config.fromPwd))
       isSSLOnConnect = true
-      setFrom(fromEmail, emailMessage.fromName)
+      setFrom(config.fromEmail, emailMessage.fromName)
       addTo(emailMessage.to)
       subject = emailMessage.title
       setCharset(StandardCharsets.UTF_8.name())

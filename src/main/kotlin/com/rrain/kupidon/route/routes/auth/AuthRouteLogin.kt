@@ -2,7 +2,7 @@ package com.rrain.kupidon.route.routes.auth
 
 import com.mongodb.client.model.Filters
 import com.rrain.kupidon.service.JwtService
-import com.rrain.kupidon.service.PwdHashing
+import com.rrain.kupidon.service.PwdHashService
 import com.rrain.kupidon.route.util.respondBadRequest
 import com.rrain.kupidon.route.util.respondInvalidBody
 import com.rrain.kupidon.service.db.mongo.MongoDbService
@@ -52,7 +52,7 @@ fun Application.configureAuthRouteLogin(){
         .limit(1)
         .firstOrNull()
       
-      if (user==null || !PwdHashing.checkPwd(login.pwd, user.pwd))
+      if (user==null || !PwdHashService.checkPwd(login.pwd, user.pwd))
         return@post call.respondBadRequest(
           code = "NO_USER",
           msg = "There is no user with such login-password",
