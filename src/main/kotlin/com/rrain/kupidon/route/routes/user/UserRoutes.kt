@@ -35,7 +35,8 @@ object UserRoutes {
 
 
 
-fun Application.configureUserRoutes(){
+fun Application.configureUserRoutes() {
+  
   configureUserRouteCreate()
   configureUserRouteUpdate()
   configureUserRouteEmailInitialVerify()

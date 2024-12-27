@@ -8,6 +8,7 @@ import com.rrain.kupidon.util.application.get
 import com.rrain.kupidon.util.DateTime.toTimestamp
 import com.rrain.kupidon.util.DateTime.toZonedDateTime
 import io.ktor.server.application.*
+import com.rrain.kupidon.util.application.appConfig
 import org.bson.BsonReader
 import org.bson.BsonWriter
 import org.bson.UuidRepresentation
@@ -20,9 +21,7 @@ import java.time.ZonedDateTime
 
 
 
-fun Application.configureMongoDbService(){
-  
-  val appConfig = environment.config
+fun Application.configureMongoDbService() {
   
   val appName = appConfig["db.connection.application-name"]
   val host = appConfig["db.connection.mongo.host"]

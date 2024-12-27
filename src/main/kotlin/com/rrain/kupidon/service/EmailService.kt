@@ -1,5 +1,6 @@
 package com.rrain.kupidon.service
 
+import com.rrain.kupidon.util.application.appConfig
 import com.rrain.kupidon.util.application.get
 import io.ktor.server.application.*
 import org.apache.commons.mail.DefaultAuthenticator
@@ -10,8 +11,6 @@ import java.nio.charset.StandardCharsets
 
 
 fun Application.configureEmailService(){
-  
-  val appConfig = environment.config
   
   EmailService.run {
     fromEmail = appConfig["mail.email"]

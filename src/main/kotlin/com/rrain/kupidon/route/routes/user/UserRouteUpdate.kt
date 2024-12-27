@@ -9,6 +9,7 @@ import com.mongodb.client.model.Updates
 import com.mongodb.client.model.WriteModel
 import com.rrain.kupidon.model.Gender
 import com.rrain.kupidon.plugin.JacksonObjectMapper
+import com.rrain.kupidon.plugin.getUserId
 import com.rrain.kupidon.service.PwdHashing
 import com.rrain.kupidon.route.util.respondBadRequest
 import com.rrain.kupidon.route.util.respondInvalidBody
@@ -26,7 +27,6 @@ import com.rrain.kupidon.util.DateTime.zonedNow
 import com.rrain.kupidon.util.Uuid.toUuid
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -86,7 +86,7 @@ fun Application.configureUserRouteUpdate() {
   routing {
     authenticate {
       put(UserRoutes.update) {
-        val userId = call.principal<JWTPrincipal>()!!.subject!!
+        val userUuid = call.getUserId().toUuid()
         
         val data =
           try { call.receive<JsonNode>() }
@@ -260,7 +260,6 @@ fun Application.configureUserRouteUpdate() {
           val nPhotoBinData = UserProfilePhotoMongo::binData.name
           
           
-          val userUuid = userId.toUuid()
           val userById = m.db.coll<UserMongo>("users")
             .find(session, Filters.eq(nUserId, userUuid))
             .projection(Document("$nUserPhotos.$nPhotoBinData", false))

@@ -7,6 +7,7 @@ import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.route.routes.auth.AuthRoutes
 import com.rrain.kupidon.util.application.get
 import com.rrain.kupidon.util.DateTime.zonedNow
+import com.rrain.kupidon.util.application.appConfig
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.util.*
@@ -33,8 +34,6 @@ fun generateJwtSecret(): String = ByteArray(64)
 
 
 fun Application.configureJwtService() {
-  
-  val appConfig = environment.config
   
   JwtService.run {
     accessTokenSecret = appConfig["jwt.access-token.secret"]
@@ -105,7 +104,7 @@ object JwtService {
   lateinit var refreshTokenSecret: String
   var refreshTokenLifetime: Duration = Duration.parse("30d") // 30 days expiration
   
-  fun buildAlgorithm(secret: String) = Algorithm.HMAC512(secret)
+  fun buildAlgorithm(secret: String) = Algorithm.HMAC256(secret)
   val algorithmName = buildAlgorithm("").name
   
   
@@ -115,10 +114,15 @@ object JwtService {
     
     val accessToken = JWT.create()
       .withExpiresAt(zonedNow().plus(lifetime.toJavaDuration()).toInstant())
-      .withSubject(id) // determines user
+      // Determines user
+      .withSubject(id)
+      // Describes the recipient of the token (instead of subject)
       //.withAudience(accessJwt.audience)
+      // The entity that issues the token
       //.withIssuer(accessJwt.issuer)
       //.withClaim("login", login)
+      // An optional parameter providing additional context or scope
+      //.withClaim("realm", realm)
       .withClaim(accessTokenRolesClaimName, roles.map { it.toString() })
       .sign(buildAlgorithm(secret))
     return accessToken
@@ -155,7 +159,8 @@ object JwtService {
   
   fun generateRefreshTokenCookie(
     refreshToken: String,
-    domain: String // according to RFC you can specify only domain (without port) for all its ports
+    // according to RFC you can specify only domain (without port) for all its ports
+    domain: String
   ): Cookie {
     return Cookie(
       name = refreshTokenCookieName,
@@ -170,12 +175,13 @@ object JwtService {
   
   
   fun generateRefreshTokenExpiredCookie(
-    domain: String // according to RFC you can specify only domain (without port) for all its ports
+    // according to RFC you can specify only domain (without port) for all its ports
+    domain: String
   ): Cookie {
     return Cookie(
       name = refreshTokenCookieName,
       value = "",
-      expires = GMTDate.START,
+      maxAge = 0,
       domain = domain,
       path = AuthRoutes.base, // only one path can be set
       secure = true,

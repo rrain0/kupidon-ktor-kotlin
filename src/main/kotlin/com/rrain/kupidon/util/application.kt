@@ -5,6 +5,8 @@ import io.ktor.server.config.*
 import io.ktor.util.*
 
 
+val Application.appConfig get() = environment.config
+
 operator fun ApplicationConfig.get(prop: String) = this.property(prop).getString()
 
 
@@ -16,4 +18,5 @@ fun ApplicationCall.printHeaders(): Map<String,List<String>> {
   println("}")
   return headersMap
 }
+
 

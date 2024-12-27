@@ -2,6 +2,7 @@ package com.rrain.kupidon.service
 
 import com.rrain.kupidon.util.application.get
 import io.ktor.server.application.*
+import com.rrain.kupidon.util.application.appConfig
 import java.security.SecureRandom
 import java.security.spec.KeySpec
 import javax.crypto.SecretKey
@@ -48,8 +49,7 @@ fun generateRandomPwdSalt(): String = ByteArray(16)
 
 
 
-fun Application.configurePwdHashing(){
-  val appConfig = environment.config
+fun Application.configurePwdHashing() {
   
   PwdHashing.run {
     pwdHashingInfo = PwdHashingInfo(

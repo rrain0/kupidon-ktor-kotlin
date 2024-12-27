@@ -1,6 +1,7 @@
 package com.rrain.kupidon.route.routes.user
 
 import com.mongodb.client.model.Filters
+import com.rrain.kupidon.plugin.getUserId
 import com.rrain.kupidon.route.util.respondNoUserById
 import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
@@ -31,8 +32,7 @@ fun Application.configureUserRouteCurrent(){
     
     authenticate {
       get(UserRoutes.current) {
-        val principal = call.principal<JWTPrincipal>()!!
-        val userId = principal.subject!!
+        val userId = call.getUserId()
         val userUuid = userId.toUuid()
         
         val m = mongo()
