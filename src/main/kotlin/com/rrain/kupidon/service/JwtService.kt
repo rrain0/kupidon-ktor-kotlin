@@ -4,7 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.rrain.kupidon.model.Role
-import com.rrain.kupidon.route.route.auth.AuthRoutes
+import com.rrain.kupidon.route.routes.auth.AuthRoutes
 import com.rrain.kupidon.util.application.get
 import com.rrain.kupidon.util.DateTime.zonedNow
 import io.ktor.http.*
@@ -32,7 +32,7 @@ fun generateJwtSecret(): String = ByteArray(64)
 
 
 
-fun Application.configureJwtService(){
+fun Application.configureJwtService() {
   
   val appConfig = environment.config
   
@@ -87,7 +87,6 @@ object ErrTokenUnknownVerificationError {
 
 
 
-
 enum class AccessTokenType {
   EMAIL_VERIFICATION,
 }
@@ -106,7 +105,9 @@ object JwtService {
   lateinit var refreshTokenSecret: String
   var refreshTokenLifetime: Duration = Duration.parse("30d") // 30 days expiration
   
-  const val algorithmName = "HS256"
+  fun buildAlgorithm(secret: String) = Algorithm.HMAC512(secret)
+  val algorithmName = buildAlgorithm("").name
+  
   
   fun generateAccessToken(id: String, roles: Set<Role>): String {
     val secret = accessTokenSecret
@@ -119,7 +120,7 @@ object JwtService {
       //.withIssuer(accessJwt.issuer)
       //.withClaim("login", login)
       .withClaim(accessTokenRolesClaimName, roles.map { it.toString() })
-      .sign(Algorithm.HMAC256(secret))
+      .sign(buildAlgorithm(secret))
     return accessToken
   }
   
@@ -133,7 +134,7 @@ object JwtService {
       .withSubject(id)
       .withClaim("type", AccessTokenType.EMAIL_VERIFICATION.name)
       .withClaim("email", email)
-      .sign(Algorithm.HMAC256(secret))
+      .sign(buildAlgorithm(secret))
     return accessToken
   }
 
@@ -147,7 +148,7 @@ object JwtService {
       .withSubject(id) // determines user
       //.withAudience(refreshJwt.audience)
       //.withIssuer(refreshJwt.issuer)
-      .sign(Algorithm.HMAC256(secret))
+      .sign(buildAlgorithm(secret))
     return refreshToken
   }
   
@@ -185,7 +186,7 @@ object JwtService {
   
   val accessTokenVerifier: JWTVerifier by lazy {
     JWT
-      .require(Algorithm.HMAC256(accessTokenSecret))
+      .require(buildAlgorithm(accessTokenSecret))
       //.withAudience(jwtAudience)
       //.withIssuer(jwtIssuer)
       .build()
@@ -193,7 +194,7 @@ object JwtService {
   
   val emailValidationAccessTokenVerifier: JWTVerifier by lazy {
     JWT
-      .require(Algorithm.HMAC256(accessTokenSecret))
+      .require(buildAlgorithm(accessTokenSecret))
       .withClaim("type", AccessTokenType.EMAIL_VERIFICATION.name)
       .withClaimPresence("email")
       //.withAudience(jwtAudience)
@@ -203,7 +204,7 @@ object JwtService {
   
   val refreshTokenVerifier: JWTVerifier by lazy {
     JWT
-      .require(Algorithm.HMAC256(refreshTokenSecret))
+      .require(buildAlgorithm(refreshTokenSecret))
       //.withAudience(jwtAudience)
       //.withIssuer(jwtIssuer)
       .build()

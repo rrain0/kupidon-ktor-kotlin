@@ -11,16 +11,14 @@ import com.rrain.kupidon.service.configurePwdHashing
 import com.rrain.kupidon.service.db.mongo.configureMongoDbService
 
 
+fun main(args: Array<String>) {
+  io.ktor.server.jetty.jakarta.EngineMain.main(args)
+}
 
-fun main(args: Array<String>): Unit = io.ktor.server.jetty.jakarta.EngineMain.main(args)
 
 
-
-// application.conf references the main function.
-// This annotation prevents the IDE from marking it as unused.
-@Suppress("unused")
+// application.conf references this function.
 fun Application.module() {
-  
   configureLoggingAndMonitoring()
   
   configureJwtService()
@@ -37,5 +35,4 @@ fun Application.module() {
   
   configureExceptionHandling()
   configureRouting()
-  
 }

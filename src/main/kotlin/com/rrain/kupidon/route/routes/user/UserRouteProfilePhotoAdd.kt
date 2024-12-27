@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.route.user
+package com.rrain.kupidon.route.routes.user
 
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
@@ -11,7 +11,6 @@ import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMetadataMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
 import com.rrain.kupidon.service.db.mongo.useTransaction
-import com.rrain.kupidon.util.Print.println
 import com.rrain.kupidon.util.Uuid.toUuid
 import io.ktor.http.content.*
 import io.ktor.server.application.*

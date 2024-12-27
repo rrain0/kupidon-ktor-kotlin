@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.route.user
+package com.rrain.kupidon.route.routes.user
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.treeToValue

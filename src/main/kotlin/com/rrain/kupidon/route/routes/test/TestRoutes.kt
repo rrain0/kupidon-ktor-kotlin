@@ -1,28 +1,13 @@
-package com.rrain.kupidon.route.route.test
+package com.rrain.kupidon.route.routes.test
 
 import io.ktor.server.application.*
-import io.ktor.server.routing.*
 
 
-fun Application.configureTestRoutes(){
-  typeSafeRoutingTest()
+fun Application.configureTestRoutes() {
   configureStaticRoutes()
   configureJsonSerializationTestRoutes()
   configureHttpTestRoutes()
   configureAuthorizationTestRoutes()
   configureSendEmailTestRoutes()
   configureMongoTestRoutes()
-  
-  
-  
-  
-  
-  routing {
-  
-  
-    
-  }
-  
-  
-  
 }

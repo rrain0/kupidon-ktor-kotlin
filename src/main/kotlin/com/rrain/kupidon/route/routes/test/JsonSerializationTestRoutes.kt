@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.route.test
+package com.rrain.kupidon.route.routes.test
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
@@ -22,7 +22,7 @@ fun Application.configureJsonSerializationTestRoutes() {
         "yes" to true,
         "nothing" to listOf(1,Unit),
         false to "no",
-        "array" to arrayOf("first", 2, false),
+        "array" to arrayOf<Any>("first", 2, false),
         "object" to object { val id = "kjldshnv"; val prop = false },
         "map" to mapOf("red" to "#ff0000", "green" to "#00ff00", "blue" to "#0000ff"),
       ))

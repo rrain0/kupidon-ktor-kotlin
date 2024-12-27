@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.route.test
+package com.rrain.kupidon.route.routes.test
 
 import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.plugin.authorized

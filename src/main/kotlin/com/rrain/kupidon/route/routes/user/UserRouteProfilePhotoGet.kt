@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.route.user
+package com.rrain.kupidon.route.routes.user
 
 import com.mongodb.client.model.Aggregates
 import com.rrain.kupidon.route.util.respondInvalidParams

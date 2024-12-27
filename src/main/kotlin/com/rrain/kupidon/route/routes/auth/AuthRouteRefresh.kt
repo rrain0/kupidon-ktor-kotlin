@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.route.auth
+package com.rrain.kupidon.route.routes.auth
 
 import com.auth0.jwt.exceptions.*
 import com.mongodb.client.model.Filters

@@ -46,7 +46,7 @@ dependencies {
   
   // Other ktor plugins
   implementation(libs.ktor.websocket)
-  // use proxy server forwarded & x-forwarded headers
+  // Use proxy server forwarded & x-forwarded headers
   implementation(libs.ktor.forwarded.headers)
   implementation("io.ktor:ktor-server-call-logging-jvm:${libs.versions.ktor.version}")
   implementation("io.ktor:ktor-server-call-id-jvm:${libs.versions.ktor.version}")
@@ -54,7 +54,6 @@ dependencies {
   implementation("io.ktor:ktor-server-caching-headers-jvm:${libs.versions.ktor.version}")
   implementation("io.ktor:ktor-server-host-common-jvm:${libs.versions.ktor.version}")
   implementation("io.ktor:ktor-server-status-pages-jvm:${libs.versions.ktor.version}")
-  implementation("io.ktor:ktor-server-resources:${libs.versions.ktor.version}")
   implementation("io.ktor:ktor-server-auto-head-response-jvm:${libs.versions.ktor.version}")
   
   // Kotlin coroutine MongoDB driver

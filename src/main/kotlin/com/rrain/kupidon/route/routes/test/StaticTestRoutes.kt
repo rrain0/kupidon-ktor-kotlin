@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.route.test
+package com.rrain.kupidon.route.routes.test
 
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*

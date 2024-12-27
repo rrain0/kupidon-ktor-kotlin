@@ -1,13 +1,9 @@
-package com.rrain.kupidon.route.route.test
+package com.rrain.kupidon.route.routes.test
 
 import com.mongodb.client.model.Aggregates
 import com.mongodb.client.model.Field
 import com.mongodb.client.model.Filters
-import com.mongodb.client.model.UpdateOneModel
 import com.mongodb.client.model.Updates
-import com.mongodb.client.model.WriteModel
-import com.mongodb.internal.bulk.WriteRequest
-import com.mongodb.internal.bulk.WriteRequestWithIndex
 import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.useTransaction
@@ -19,7 +15,6 @@ import kotlinx.coroutines.flow.toList
 import org.bson.Document
 import org.bson.types.ObjectId
 import java.util.UUID
-import javax.print.Doc
 
 
 fun Application.configureMongoTestRoutes(){

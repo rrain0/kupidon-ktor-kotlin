@@ -1,6 +1,6 @@
 package com.rrain.kupidon.service.db.mongo.model
 
-import com.rrain.kupidon.route.route.user.UserRoutes
+import com.rrain.kupidon.route.routes.user.UserRoutes
 import io.ktor.http.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*

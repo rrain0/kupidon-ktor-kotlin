@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.route.`pwa-manifest`
+package com.rrain.kupidon.route.routes.`pwa-manifest`
 
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -44,12 +44,24 @@ fun Application.configurePwaManifestRoute() {
       
       //println("call.parameters ${call.parameters}")
       
+      val defaultLang = "en-US"
+      val localizationMap = mapOf(
+        "en-US" to mapOf(
+          "lang" to "en-US",
+          "short_name" to "Kupidon",
+          "name" to "Kupidon - date app",
+          "description" to "Kupidon is a dating and relationship app. We offer users a selection of date ideas and places to make their meetings unforgettable.",
+        ),
+        "ru-RU" to mapOf(
+          "lang" to "ru-RU",
+          "short_name" to "Купидон",
+          "name" to "Купидон - приложение для свиданий",
+          "description" to "Купидон — это приложение для знакомств и укрепления отношений. Мы предлагаем пользователям подборки идей и мест для свиданий, чтобы сделать их встречи незабываемыми.",
+        ),
+      )
       
       val manifest = mutableMapOf(
-        "lang" to "en-US",
-        "name" to "Kupidon",
-        "short_name" to "Kupidon",
-        "description" to "Kupidon - date app",
+        *localizationMap[defaultLang]!!.entries.map { it.toPair() }.toTypedArray(),
         "start_url" to ".",
         "display" to "standalone",
         "orientation" to "portrait",
@@ -59,17 +71,12 @@ fun Application.configurePwaManifestRoute() {
         
         "icons" to mutableListOf(
           mutableMapOf(
-            "src" to "/icon64.png",
-            "type" to "image/png",
-            "sizes" to "64x64",
-          ),
-          mutableMapOf(
-            "src" to "/icon192.png",
+            "src" to "icon192.png",
             "type" to "image/png",
             "sizes" to "192x192",
           ),
           mutableMapOf(
-            "src" to "/icon512.png",
+            "src" to "icon512.png",
             "type" to "image/png",
             "sizes" to "512x512",
           ),
@@ -89,31 +96,16 @@ fun Application.configurePwaManifestRoute() {
         ),
       )
       
-      val lacalizationMap = mapOf(
-        "en-US" to mapOf(
-          "lang" to "en-US",
-          "name" to "Kupidon",
-          "short_name" to "Kupidon",
-          "description" to "Kupidon - date app",
-        ),
-        "ru-RU" to mapOf(
-          "lang" to "ru-RU",
-          "name" to "Купидон",
-          "short_name" to "Купидон",
-          "description" to "Купидон - приложение для свиданий",
-        ),
-      )
-      
       
       val nodeEnv = searchParams["nodeEnv"]
       if (nodeEnv in nodeEnvMap) manifest.putAll(nodeEnvMap[nodeEnv]!!)
       
       val lang = searchParams["lang"]
-      if (lang in lacalizationMap) manifest.putAll(lacalizationMap[lang]!!)
+      if (lang in localizationMap) manifest.putAll(localizationMap[lang]!!)
       
       if (nodeEnv == "development") {
-        manifest["name"] = "Dev ${manifest["name"]}"
         manifest["short_name"] = "Dev ${manifest["short_name"]}"
+        manifest["name"] = "Dev ${manifest["name"]}"
         manifest["description"] = "Dev ${manifest["description"]}"
       }
       
