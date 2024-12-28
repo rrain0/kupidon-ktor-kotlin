@@ -1,6 +1,7 @@
 package com.rrain.kupidon.route.routes.user
 
 import com.mongodb.client.model.Filters
+import com.rrain.kupidon.route.util.respondInvalidParams
 import com.rrain.kupidon.route.util.respondNoUserById
 import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
@@ -49,8 +50,10 @@ fun Application.configureUserRoutes() {
   routing {
     
     get(UserRoutes.getById) {
-      val userId = call.parameters["id"]!!
-      val userUuid = userId.toUuid()
+      val userUuid = try { call.parameters["id"]!!.toUuid() }
+      catch (ex: Exception) {
+        return@get call.respondInvalidParams("'id' param must be uuid-string")
+      }
       
       val m = mongo()
       val nUserId = UserMongo::id.name

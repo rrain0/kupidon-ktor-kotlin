@@ -50,7 +50,7 @@ suspend inline fun ApplicationCall.respondInvalidBody(msg: String? = null) = thi
   }
 )
 
-// Некорректный формат параметров запроса
+// Некорректный формат параметров запроса (query params)
 suspend inline fun ApplicationCall.respondInvalidParams(msg: String? = null) = this.respond(
   HttpStatusCode.BadRequest,
   object {

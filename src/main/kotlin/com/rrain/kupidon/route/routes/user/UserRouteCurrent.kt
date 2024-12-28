@@ -19,7 +19,7 @@ import org.bson.Document
 
 
 
-fun Application.configureUserRouteCurrent(){
+fun Application.configureUserRouteCurrent() {
   
   fun mongo() = MongoDbService.client
   
@@ -31,8 +31,7 @@ fun Application.configureUserRouteCurrent(){
     
     authenticate {
       get(UserRoutes.current) {
-        val userId = call.getUserId()
-        val userUuid = userId.toUuid()
+        val userUuid = call.getUserId().toUuid()
         
         val m = mongo()
         val nUserId = UserMongo::id.name

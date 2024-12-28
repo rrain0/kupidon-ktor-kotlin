@@ -4,6 +4,7 @@ import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
 import com.rrain.kupidon.plugin.getUserId
 import com.rrain.kupidon.route.util.respondInvalidBody
+import com.rrain.kupidon.route.util.respondInvalidParams
 import com.rrain.kupidon.route.util.respondNoUserById
 import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
@@ -50,13 +51,19 @@ fun Application.configureUserRouteProfilePhotoAdd() {
           var binData: ByteArray? = null
         }
         
-        var error: String? = null
+        var unknownPropError: String? = null
+        var invalidParamError: String? = null
         multipart.forEachPart {
+          if (unknownPropError != null || invalidParamError != null) return@forEachPart
           val prop = it.name
           when (prop) {
             "id" -> {
               if (it is PartData.FormItem) {
-                partialPhoto.id = it.value.toUuid()
+                partialPhoto.id = try { it.value.toUuid() }
+                catch (ex: Exception) {
+                  invalidParamError = "'id' must be uuid-string"
+                  return@forEachPart
+                }
               }
               it.dispose()
             }
@@ -90,12 +97,14 @@ fun Application.configureUserRouteProfilePhotoAdd() {
             }
             
             else -> {
-              error = "Unknown property '$prop'"
+              unknownPropError = "Unknown property '$prop'"
+              return@forEachPart
             }
           }
         }
         
-        if (error != null) return@post call.respondInvalidBody(error)
+        if (unknownPropError != null) return@post call.respondInvalidBody(unknownPropError)
+        if (invalidParamError != null) return@post call.respondInvalidBody(invalidParamError)
         if (partialPhoto.index == null) return@post call.respondInvalidBody(
           "field 'index' must exist and its type must be Int"
         )

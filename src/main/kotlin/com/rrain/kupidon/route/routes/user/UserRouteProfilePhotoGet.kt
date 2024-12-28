@@ -33,19 +33,14 @@ fun Application.configureUserRouteProfilePhotoGet() {
     
     // https://dev.kupidon.rrain.ydns.eu:50040/api/user/profile-photo?userId=795415da-a2cb-435b-80ee-98af28b3f0d0&photoId=3f5d4807-1112-4cdb-9eab-40c6a4e26217
     get(Regex("""${UserRoutes.getProfilePhoto}$UrlSinglePathSegment""")) {
-      val userId = call.parameters[UserRoutes.getProfilePhotoParamUserId]
-      val photoId = call.parameters[UserRoutes.getProfilePhotoParamPhotoId]
-      
-      
-      userId ?: return@get call.respondInvalidParams(
-        "'userId' param must be present and must be string"
-      )
-      photoId ?: return@get call.respondInvalidParams(
-        "'photoId' param must be present and must be string"
-      )
-      
-      val userUuid = userId.toUuid()
-      val photoUuid = photoId.toUuid()
+      val userUuid = try { call.parameters[UserRoutes.getProfilePhotoParamUserId]!!.toUuid() }
+      catch (ex: Exception) {
+        return@get call.respondInvalidParams("'userId' param must be uuid-string")
+      }
+      val photoUuid = try { call.parameters[UserRoutes.getProfilePhotoParamPhotoId]!!.toUuid() }
+      catch (ex: Exception) {
+        return@get call.respondInvalidParams("'photoId' param must be uuid-string")
+      }
       
       val m = mongo()
       val nUserId = UserMongo::id.name
@@ -66,7 +61,7 @@ fun Application.configureUserRouteProfilePhotoGet() {
       photo ?: return@get call.respond(
         HttpStatusCode.NotFound, object {
           val code = "NOT_FOUND"
-          val msg = "Photo with such userId=$userId & photoId=$photoId was not found"
+          val msg = "Photo with such userId=$userUuid & photoId=$photoUuid was not found"
         }
       )
       

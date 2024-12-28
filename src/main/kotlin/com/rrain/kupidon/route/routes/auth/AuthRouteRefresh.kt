@@ -60,8 +60,10 @@ fun Application.configureAuthRouteRefresh(){
       }
       
       
-      val userId = decodedRefresh.getUserId()
-      val userUuid = userId.toUuid()
+      val userUuid = try { decodedRefresh.getUserId().toUuid() }
+      catch (ex: Exception) {
+      
+      }
       
       val m = mongo()
       val nUserId = UserMongo::id.name
@@ -79,8 +81,8 @@ fun Application.configureAuthRouteRefresh(){
       val roles = user.roles
       val domain = call.request.origin.serverHost
       
-      val newAccessToken = JwtService.generateAccessToken(userId, roles)
-      val newRefreshToken = JwtService.generateRefreshToken(userId)
+      val newAccessToken = JwtService.generateAccessToken(userUuid.toString(), roles)
+      val newRefreshToken = JwtService.generateRefreshToken(userUuid.toString())
       
       // 1) Сделать позже - save refresh token & device info to db as opened session
       // 2) При генерации access token генерится и новый refresh token, а старые рефреши всё ещё валидны
