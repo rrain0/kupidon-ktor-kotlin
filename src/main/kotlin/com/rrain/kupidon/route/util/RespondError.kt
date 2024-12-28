@@ -5,10 +5,18 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 
 
+/*
+  {
+    code: ... for machines,
+    msg: ... for humans,
+    ... additional fields for machines if necessary,
+    extraCode?: ... for machines,
+  }
 
-suspend inline fun ApplicationCall.respondBadRequest
-(code: String, msg: String)
-= this.respond(
+ */
+
+
+suspend inline fun ApplicationCall.respondBadRequest(code: String, msg: String) = this.respond(
   HttpStatusCode.BadRequest,
   object {
     val code = code
@@ -18,9 +26,7 @@ suspend inline fun ApplicationCall.respondBadRequest
 
 
 
-suspend inline fun ApplicationCall.respondBadRequest
-(body: Any)
-= this.respond(
+suspend inline fun ApplicationCall.respondBadRequest(body: Any) = this.respond(
   HttpStatusCode.BadRequest,
   body
 )

@@ -4,7 +4,7 @@ import io.ktor.server.application.*
 import com.rrain.kupidon.plugin.*
 import com.rrain.kupidon.plugin.configureJsonSerialization
 import com.rrain.kupidon.route.*
-import com.rrain.kupidon.route.util.configureExceptionHandling
+import com.rrain.kupidon.plugin.configureStatusPages
 import com.rrain.kupidon.service.configureEmailService
 import com.rrain.kupidon.service.configureJwtService
 import com.rrain.kupidon.service.configurePwdHashing
@@ -19,7 +19,8 @@ fun main(args: Array<String>) {
 
 // application.conf references this function.
 fun Application.module() {
-  configureLoggingAndMonitoring()
+  configureLogging()
+  configureJsonSerialization()
   
   configureJwtService()
   configurePwdHashing()
@@ -28,11 +29,14 @@ fun Application.module() {
   configureMongoDbService()
   
   configureAdministration()
-  configureSockets()
-  configureJsonSerialization()
-  configureHttp()
+  configureWebSockets()
+  
+  configureHttpCachingHeaders()
+  configureHttpForwardedHeaders()
+  configureHttpAutoHeadResponse()
+  configureStatusPages()
+  
   configureJwtAuthentication()
   
-  configureExceptionHandling()
   configureRouting()
 }

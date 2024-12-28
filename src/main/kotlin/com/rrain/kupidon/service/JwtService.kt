@@ -71,11 +71,11 @@ object JwtService {
     val refreshTokenLifetime: Duration = Duration.parse("30d"), // 30 days expiration
     
     val emailVerifyAccessTokenLifetime: Duration = Duration.parse("1d") // 1 day expiration
-  )
+  ) {
+    val algorithmName = buildAlgorithm("").name
+  }
   
   lateinit var config: Config
-  
-  val algorithmName = config.buildAlgorithm("").name
   
   fun DecodedJWT.getUserId() = this.subject!!
   
@@ -195,7 +195,7 @@ object JwtService {
 // Token was encoded by wrong algorithm. Required HMAC256.
 object ErrTokenAlgorithmMismatch {
   val code = "TOKEN_ALGORITHM_MISMATCH"
-  val msg = "Token was encoded by wrong algorithm, required ${JwtService.algorithmName}"
+  val msg = "Token was encoded by wrong algorithm, required ${JwtService.config.algorithmName}"
 }
 // Damaged Token - Токен повреждён и не может быть декодирован
 object ErrTokenDamaged {

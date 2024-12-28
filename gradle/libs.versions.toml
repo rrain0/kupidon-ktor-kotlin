@@ -40,8 +40,13 @@ ktor-server-auth = { module = "io.ktor:ktor-server-auth-jvm", version.ref = "kto
 ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt-jvm", version.ref = "ktor-version" }
 
 # Other ktor plugins
-ktor-websocket = { module = "io.ktor:ktor-server-websockets-jvm", version.ref = "ktor-version" }
+ktor-websocket = { module = "io.ktor:ktor-server-websockets", version.ref = "ktor-version" }
 ktor-forwarded-headers = { module = "io.ktor:ktor-server-forwarded-header", version.ref = "ktor-version" }
+ktor-caching-headers = { module = "io.ktor:ktor-server-caching-headers", version.ref = "ktor-version" }
+ktor-auto-head-response = { module = "io.ktor:ktor-server-auto-head-response", version.ref = "ktor-version" }
+ktor-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor-version" }
+ktor-call-id = { module = "io.ktor:ktor-server-call-id", version.ref = "ktor-version" }
+ktor-call-logging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor-version" }
 
 # Kotlin coroutine MongoDB driver
 mongodb-driver-kotlin-coroutine = { module = "org.mongodb:mongodb-driver-kotlin-coroutine", version.ref = "mongo-kotlin-coroutine-version" }

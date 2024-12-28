@@ -7,6 +7,7 @@ import java.io.File
 
 
 
+// Serves static files from resources
 fun Application.configureStaticRoutes() {
   
   routing {
@@ -16,9 +17,9 @@ fun Application.configureStaticRoutes() {
     // serves static content from application resources folder:
     // <project-folder>/src/main/resources
     staticResources(
-      // http://localhost:40040/static/......
-      // http://localhost:40040/static/index.html
-      // http://localhost:40040/static/ban.jpg
+      // http://localhost:40019/static/......
+      // http://localhost:40019/static/index.html
+      // http://localhost:40019/static/ban.jpg
       "/static", // url base path
       // <project-folder>/src/main/resources/static
       "static" // subfolder in resources folder
@@ -31,9 +32,9 @@ fun Application.configureStaticRoutes() {
     // serves static content from application working directory:
     // <project-folder>
     staticFiles(
-      // http://localhost:40040/static-files/......
-      // http://localhost:40040/static-files/ban.jpg
-      // http://localhost:40040/static-files/index.html
+      // http://localhost:40019/static-files/......
+      // http://localhost:40019/static-files/ban.jpg
+      // http://localhost:40019/static-files/index.html
       "/static-files",
       // <project-folder>/build/resources/main/static
       File("build/resources/main/static")

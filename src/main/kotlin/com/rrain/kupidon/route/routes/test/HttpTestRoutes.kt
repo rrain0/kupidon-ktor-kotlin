@@ -23,7 +23,7 @@ fun Application.configureHttpTestRoutes(){
     }
     
     
-    get("/test/params"){
+    get("/test/params") {
       // get only first occurrence
       val param = call.parameters["param"]
       // get all occurrences as list
@@ -41,7 +41,7 @@ fun Application.configureHttpTestRoutes(){
       */
     }
     
-    get("/test/http/headers"){
+    get("/test/http/headers") {
       val headers = call.printHeaders()
       call.respond(headers)
       
@@ -50,7 +50,9 @@ fun Application.configureHttpTestRoutes(){
       //call.response.header(HttpHeaders.ContentType, "application/json")
     }
     
-    get("/test/http/proxy-info"){
+    get("/test/http/proxy-info") {
+      // /manifest.json?lang=ru-RU
+      val url = call.request.uri
       
       // https://ktor.io/docs/forward-headers.html#original-request-information
       

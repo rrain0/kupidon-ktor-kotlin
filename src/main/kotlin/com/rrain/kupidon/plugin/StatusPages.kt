@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.util
+package com.rrain.kupidon.plugin
 
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -7,45 +7,18 @@ import io.ktor.server.response.*
 
 
 
-/*
-  {
-    code: ... for machines,
-    msg: ... for humans,
-    ... additional fields for machines if necessary,
-    extraCode?: ... for machines,
-  }
-
- */
-
-
-fun Application.configureExceptionHandling(){
+fun Application.configureStatusPages() {
   
   install(StatusPages) {
     
     // Configure responses from exceptions
+    // Will be configured in specific route handlers
     exception<Throwable> { call, cause ->
       when (cause){
         /*is AuthenticationException -> call.respond(
           HttpStatusCode.Unauthorized,
           object {
             val code = cause.code
-            val msg = cause.message
-          }
-        )*/
-        
-        /*is AuthorizationException -> call.respond(
-          HttpStatusCode.Forbidden,
-          object {
-            val code = 403
-            val insufficientRoles = cause.insufficientRoles
-            val msg = cause.message
-          }
-        )*/
-        
-        /*is NoSuchUserException -> call.respond(
-          HttpStatusCode.BadRequest,
-          object {
-            val code = "incorrect-login-pwd"
             val msg = cause.message
           }
         )*/
@@ -60,12 +33,10 @@ fun Application.configureExceptionHandling(){
       }
     }
     
-    /*
     // Configure responses from status codes
     status(HttpStatusCode.NotFound) { call, status ->
-      call.respondText(text = "404: Page Not Found", status = status)
+      call.respondText(text = "404 Not Found", status = status)
     }
-    */
     
     /*
     // Send an html page respectively to status code

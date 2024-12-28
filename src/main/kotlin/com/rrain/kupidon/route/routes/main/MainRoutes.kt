@@ -13,7 +13,7 @@ fun Application.configureMainRoutes(){
   routing {
     
     get("/ktor/hello") {
-      call.respondText("Hello World!")
+      call.respondText("Hello Ktor!")
     }
     
   }

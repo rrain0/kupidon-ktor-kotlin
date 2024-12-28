@@ -10,7 +10,9 @@ import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
 import com.rrain.kupidon.util.UrlPath.UrlSinglePathSegment
 import com.rrain.kupidon.util.Uuid.toUuid
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.application.*
+import io.ktor.server.plugins.cachingheaders.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.firstOrNull
@@ -68,6 +70,8 @@ fun Application.configureUserRouteProfilePhotoGet() {
         }
       )
       
+      // Unique images have unique URL so can cache indefinitely
+      call.caching = CachingOptions(CacheControl.MaxAge(maxAgeSeconds = Int.MAX_VALUE))
       call.respondBytes(
         ContentType.parse(photo.mimeType),
         HttpStatusCode.OK,

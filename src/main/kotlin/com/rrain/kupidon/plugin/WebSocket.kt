@@ -7,7 +7,8 @@ import io.ktor.server.routing.*
 import kotlin.time.Duration.Companion.seconds
 
 
-fun Application.configureSockets() {
+// todo explore
+fun Application.configureWebSockets() {
   
   
   install(WebSockets) {
