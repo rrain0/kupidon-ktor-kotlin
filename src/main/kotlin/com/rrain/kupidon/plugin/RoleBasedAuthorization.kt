@@ -2,7 +2,7 @@ package com.rrain.kupidon.plugin
 
 import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.service.JwtService
-import com.rrain.kupidon.util.Logger.logger
+import com.rrain.kupidon.util.logger.logger
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*

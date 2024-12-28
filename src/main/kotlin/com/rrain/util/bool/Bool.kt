@@ -1,4 +1,4 @@
-package com.rrain.kupidon.util.Bool
+package com.rrain.util.bool
 
 
 

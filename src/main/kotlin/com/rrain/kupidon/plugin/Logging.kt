@@ -1,7 +1,7 @@
 package com.rrain.kupidon.plugin
 
-import com.rrain.kupidon.util.Any.mapNull
-import com.rrain.kupidon.util.Any.mapTruly
+import com.rrain.util.any.mapNull
+import com.rrain.util.any.mapTruly
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*

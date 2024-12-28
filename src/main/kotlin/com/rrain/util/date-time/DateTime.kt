@@ -1,4 +1,4 @@
-package com.rrain.kupidon.util.DateTime
+package com.rrain.util.`date-time`
 
 import java.time.*
 import java.time.format.DateTimeFormatter
@@ -70,7 +70,7 @@ fun String.toLocalDate(): LocalDate = LocalDate.parse(this, localDateFormat)
 
 
 
-fun main(){
+fun main() {
   
   run {
     println("LocalDate test")

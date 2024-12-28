@@ -1,4 +1,4 @@
-package com.rrain.kupidon.util.Logger
+package com.rrain.kupidon.util.logger
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

@@ -5,8 +5,8 @@ import com.mongodb.kotlin.client.coroutine.ClientSession
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import com.rrain.kupidon.util.application.get
-import com.rrain.kupidon.util.DateTime.toTimestamp
-import com.rrain.kupidon.util.DateTime.toZonedDateTime
+import com.rrain.util.`date-time`.toTimestamp
+import com.rrain.util.`date-time`.toZonedDateTime
 import io.ktor.server.application.*
 import com.rrain.kupidon.util.application.appConfig
 import org.bson.BsonReader

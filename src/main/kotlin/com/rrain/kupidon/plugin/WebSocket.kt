@@ -7,7 +7,7 @@ import io.ktor.server.routing.*
 import kotlin.time.Duration.Companion.seconds
 
 
-// todo explore
+// todo explore websocket
 fun Application.configureWebSockets() {
   
   

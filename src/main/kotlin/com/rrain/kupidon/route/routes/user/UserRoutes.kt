@@ -7,7 +7,7 @@ import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
-import com.rrain.kupidon.util.Uuid.toUuid
+import com.rrain.util.uuid.toUuid
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*

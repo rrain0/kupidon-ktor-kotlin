@@ -4,7 +4,7 @@ package com.rrain.kupidon.plugin
 //import com.google.gson.*
 //import io.ktor.serialization.gson.*
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.rrain.kupidon.service.json.configureJson
+import com.rrain.util.json.configureJson
 import io.ktor.serialization.jackson.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.application.*

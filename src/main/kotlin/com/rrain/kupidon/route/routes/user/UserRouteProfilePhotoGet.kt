@@ -7,8 +7,8 @@ import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
-import com.rrain.kupidon.util.UrlPath.UrlSinglePathSegment
-import com.rrain.kupidon.util.Uuid.toUuid
+import com.rrain.kupidon.util.url.UrlSinglePathSegment
+import com.rrain.util.uuid.toUuid
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*

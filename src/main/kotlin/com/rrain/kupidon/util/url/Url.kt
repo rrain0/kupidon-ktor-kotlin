@@ -1,4 +1,4 @@
-package com.rrain.kupidon.util.UrlPath
+package com.rrain.kupidon.util.url
 
 
 

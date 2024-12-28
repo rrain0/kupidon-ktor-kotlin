@@ -3,7 +3,7 @@ package com.rrain.kupidon.util
 import com.rrain.kupidon.model.Gender
 
 
-fun main(){
+fun main() {
   println(Gender.valueOf("MALE"))
   
   // Exception in thread "main" java.lang.IllegalArgumentException:

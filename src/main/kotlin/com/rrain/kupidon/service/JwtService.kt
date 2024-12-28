@@ -7,7 +7,7 @@ import com.auth0.jwt.interfaces.DecodedJWT
 import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.route.routes.auth.AuthRoutes
 import com.rrain.kupidon.util.application.get
-import com.rrain.kupidon.util.DateTime.zonedNow
+import com.rrain.util.`date-time`.zonedNow
 import com.rrain.kupidon.util.application.appConfig
 import io.ktor.http.*
 import io.ktor.server.application.*
