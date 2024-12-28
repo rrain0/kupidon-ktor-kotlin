@@ -28,13 +28,12 @@ fun Application.module() {
   
   configureMongoDbService()
   
-  configureAdministration()
-  configureWebSockets()
-  
   configureHttpCachingHeaders()
   configureHttpForwardedHeaders()
   configureHttpAutoHeadResponse()
   configureStatusPages()
+  
+  configureWebSockets()
   
   configureJwtAuthentication()
   
