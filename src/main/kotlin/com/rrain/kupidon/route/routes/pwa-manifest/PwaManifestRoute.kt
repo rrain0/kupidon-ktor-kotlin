@@ -71,12 +71,12 @@ fun Application.configurePwaManifestRoute() {
         
         "icons" to mutableListOf(
           mutableMapOf(
-            "src" to "icon192.png",
+            "src" to "public/res/icon192.png",
             "type" to "image/png",
             "sizes" to "192x192",
           ),
           mutableMapOf(
-            "src" to "icon512.png",
+            "src" to "public/res/icon512.png",
             "type" to "image/png",
             "sizes" to "512x512",
           ),
