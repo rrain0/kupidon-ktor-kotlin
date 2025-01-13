@@ -9,7 +9,7 @@ import io.ktor.server.routing.*
 
 
 
-fun Application.configureHttpTestRoutes(){
+fun Application.configureHttpTestRoutes() {
   
   routing {
     
@@ -17,7 +17,7 @@ fun Application.configureHttpTestRoutes(){
       val url = call.request.uri
       println("url (path & params): $url")
       // example: "url (path & params): /test/url-path-params?name=a"
-      call.respond( object {
+      call.respond(object {
         val urlPathParams = url
       })
     }
@@ -27,13 +27,13 @@ fun Application.configureHttpTestRoutes(){
       // get only first occurrence
       val param = call.parameters["param"]
       // get all occurrences as list
-      val array = call.parameters.getAll("array")
+      val arrayParam = call.parameters.getAll("arrayParam")
       call.respond(object {
         val param = param
-        val arrayParam = array
+        val arrayParam = arrayParam
       })
       /*
-      Example: /test/params?param=sdf,j&param=h,hh&array=firs,t&array=secon,d
+      Example: /test/params?param=sdf,j&param=h,hh&arrayParam=firs,t&arrayParam=secon,d
       Result: {
         "param" : "sdf,j",
         "arrayParam" : [ "firs,t", "secon,d" ]

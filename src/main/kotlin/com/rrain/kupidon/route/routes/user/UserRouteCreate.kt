@@ -65,17 +65,17 @@ fun Application.configureUserRouteCreate() {
           "Invalid email format"
         )
       }
-      if (userToCreate.email.length>100)
+      if (userToCreate.email.length > 100)
         return@post call.respondInvalidBody(
           "Email max length is 100 chars"
         )
       
-      if (userToCreate.pwd.length<6){
+      if (userToCreate.pwd.length < 6){
         return@post call.respondInvalidBody(
           "Password must be at least 6 chars length"
         )
       }
-      if (userToCreate.pwd.length>200)
+      if (userToCreate.pwd.length > 200)
         return@post call.respondInvalidBody(
           "Password max length is 200 chars"
         )
@@ -85,7 +85,7 @@ fun Application.configureUserRouteCreate() {
           "Name must not be empty"
         )
       }
-      if (userToCreate.name.length>100){
+      if (userToCreate.name.length > 100){
         return@post call.respondInvalidBody(
           "Name max length is 100"
         )
@@ -97,7 +97,7 @@ fun Application.configureUserRouteCreate() {
         .withMinute(0)
         .withSecond(0)
         .withNano(0)
-      if (ChronoUnit.YEARS.between(userToCreate.birthDate, nowWithUserZone)<18){
+      if (ChronoUnit.YEARS.between(userToCreate.birthDate, nowWithUserZone) < 18){
         return@post call.respondInvalidBody(
           "You must be at least 18 years old"
         )
@@ -134,7 +134,7 @@ fun Application.configureUserRouteCreate() {
           .limit(1)
           .firstOrNull()
         
-        if (userByEmail!=null) return@post call.respondBadRequest(
+        if (userByEmail != null) return@post call.respondBadRequest(
           code = "DUPLICATE_EMAIL",
           msg = "User with such email already exists",
         )
