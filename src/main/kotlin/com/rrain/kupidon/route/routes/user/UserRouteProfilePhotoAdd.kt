@@ -177,19 +177,19 @@ fun Application.configureUserRouteProfilePhotoAdd() {
             session.abortTransaction()
             return@post call.respondNoUserById()
           }
-          if (userById.photos.any { it.index==photo.index }){
+          if (userById.photos.any { it.index == photo.index }){
             session.abortTransaction()
             return@post call.respondInvalidBody(
               "Duplicate photo index"
             )
           }
-          if (userById.photos.any { it.id==photo.id }){
+          if (userById.photos.any { it.id == photo.id }){
             session.abortTransaction()
             return@post call.respondInvalidBody(
               "Duplicate photo id in single user"
             )
           }
-          if (userById.photos.size>=6){
+          if (userById.photos.size >= 6){
             session.abortTransaction()
             return@post call.respondInvalidBody(
               "Maximum photos count is 6"

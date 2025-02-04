@@ -33,10 +33,10 @@ fun Application.configureHttpTestRoutes() {
         val arrayParam = arrayParam
       })
       /*
-      Example: /test/params?param=sdf,j&param=h,hh&arrayParam=firs,t&arrayParam=secon,d
+      Example: /test/params?param=sdf,j&param=h,hh&arrayParam=firs,t&arrayParam=second
       Result: {
         "param" : "sdf,j",
-        "arrayParam" : [ "firs,t", "secon,d" ]
+        "arrayParam" : [ "firs,t", "second" ]
       }
       */
     }

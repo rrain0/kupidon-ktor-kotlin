@@ -20,6 +20,10 @@ repositories {
 }
 
 dependencies {
+  // Kotlin
+  // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
+  implementation(libs.kotlin.coroutines.core)
+  
   // Ktor server
   implementation(libs.ktor.server.core)
   implementation(libs.ktor.server.jetty.jakarta)
