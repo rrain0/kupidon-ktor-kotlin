@@ -7,6 +7,7 @@ fun Application.configureTestRoutes() {
   configureStaticRoutes()
   configureJsonSerializationTestRoutes()
   configureHttpTestRoutes()
+  configureImgTestRoutes()
   configureAuthorizationTestRoutes()
   configureSendEmailTestRoutes()
   configureMongoTestRoutes()

@@ -21,6 +21,7 @@ kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization"
 
 [libraries]
 # Kotlin
+# Транзитивная зависимость без которой в рантайме может не найтись класс
 kotlin-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutines-version" }
 
 # Ktor server
@@ -29,8 +30,11 @@ ktor-server-jetty-jakarta = { module = "io.ktor:ktor-server-jetty-jakarta-jvm", 
 
 # SLF4J - Simple Logging Facade for Java
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j-version" }
+# Транзитивная зависимость без которой в рантайме может не найтись класс
 jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j", version.ref = "slf4j-version" }
+# Транзитивная зависимость без которой в рантайме может не найтись класс
 logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback-version" }
+# Транзитивная зависимость без которой в рантайме может не найтись класс
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-version" }
 
 # Content negotiation & Jackson
