@@ -16,7 +16,7 @@ object AuthRoutes {
 
 
 
-fun Application.configureAuthRoutes(){
+fun Application.configureAuthRoutes() {
   configureAuthRouteLogin()
   configureAuthRouteRefresh()
   
@@ -24,9 +24,6 @@ fun Application.configureAuthRoutes(){
   
   
   routing {
-    
-    
-    
     
     /*
     delete(AuthRoutes.logout) {
@@ -43,7 +40,6 @@ fun Application.configureAuthRoutes(){
       call.respond(HttpStatusCode.OK)
     }
     */
-    
     
   }
   
