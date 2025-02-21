@@ -1,13 +1,13 @@
 package com.rrain.kupidon.route.routes.test
 
+import com.rrain.util.fileutils.FileU
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.cachingheaders.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.io.File
-
+import kotlinx.coroutines.delay
 
 
 
@@ -15,10 +15,24 @@ fun Application.configureImgTestRoutes() {
   
   routing {
     
-    var imgError = false
-    
     // http://localhost:40019/test/image/ban.jpg
     get("/test/image/ban.jpg") {
+      val banImgStream = FileU.getResourceAsStream("static/ban.jpg")
+      
+      call.caching = CachingOptions(CacheControl.NoStore(null))
+      call.respondOutputStream(
+        contentType = ContentType.parse("image/jpg"),
+        status = HttpStatusCode.OK
+      ) { banImgStream.transferTo(this) }
+    }
+    
+    
+    
+    
+    var imgError = false
+    
+    // http://localhost:40019/test/image/errorable/ban.jpg
+    get("/test/image/errorable/ban.jpg") {
       
       if (imgError) {
         return@get call.respond(
@@ -27,23 +41,20 @@ fun Application.configureImgTestRoutes() {
         )
       }
       
-      // <project-folder>/build/resources/main/static/ban.jpg
-      // is built from
-      // <project-folder>/src/main/resources/static/ban.jpg
-      val banImg = File("build/resources/main/static/ban.jpg")
+      val banImgStream = FileU.getResourceAsStream("static/ban.jpg")
       
-      call.respondBytes(
-        contentType = ContentType.fromFileExtension(banImg.extension)[0],
-        status = HttpStatusCode.OK,
-        suspend { banImg.readBytes() }
-      )
+      call.caching = CachingOptions(CacheControl.NoStore(null))
+      call.respondOutputStream(
+        contentType = ContentType.parse("image/jpg"),
+        status = HttpStatusCode.OK
+      ) { banImgStream.transferTo(this) }
     }
     
-    get("/test/image/error/enable") {
+    get("/test/image/errorable/enable-error") {
       imgError = true
       call.respondText("Image error enabled")
     }
-    get("/test/image/error/disable") {
+    get("/test/image/errorable/disable-error") {
       imgError = false
       call.respondText("Image error disabled")
     }
@@ -52,22 +63,34 @@ fun Application.configureImgTestRoutes() {
     
     
     
-    // http://localhost:40019/test/image/greek-man.png
-    get("/test/image/greek-man.png") {
+    // http://localhost:40019/test/image/delay/ban.jpg
+    get("/test/image/delay/ban.jpg") {
       
-      // <project-folder>/build/resources/main/static/greek man IMG_20230922_094037_882 #top.png
-      // is built from
-      // <project-folder>/src/main/resources/static/greek man IMG_20230922_094037_882 #top.png
-      val greekManImg =
-        File("build/resources/main/static/greek man IMG_20230922_094037_882 #top.png")
+      delay(4000)
+      
+      val banImgStream = FileU.getResourceAsStream("static/ban.jpg")
       
       call.caching = CachingOptions(CacheControl.NoStore(null))
-      call.respondBytes(
-        contentType = ContentType.fromFileExtension(greekManImg.extension)[0],
-        status = HttpStatusCode.OK,
-        suspend { greekManImg.readBytes() }
-      )
+      call.respondOutputStream(
+        contentType = ContentType.parse("image/jpg"),
+        status = HttpStatusCode.OK
+      ) { banImgStream.transferTo(this) }
     }
+    
+    // http://localhost:40019/test/image/delay-error-404/ban.jpg
+    get("/test/image/delay-error-404/ban.jpg") {
+      delay(4000)
+      return@get call.respond(HttpStatusCode.NotFound)
+    }
+    
+    // http://localhost:40019/test/image/delay-error-500/ban.jpg
+    get("/test/image/delay-error-500/ban.jpg") {
+      delay(4000)
+      return@get call.respond(HttpStatusCode.InternalServerError)
+    }
+    
+    
+    
   }
   
 }

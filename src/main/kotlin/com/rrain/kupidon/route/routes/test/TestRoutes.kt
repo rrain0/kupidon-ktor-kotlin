@@ -4,7 +4,6 @@ import io.ktor.server.application.*
 
 
 fun Application.configureTestRoutes() {
-  configureStaticRoutes()
   configureJsonSerializationTestRoutes()
   configureHttpTestRoutes()
   configureImgTestRoutes()
