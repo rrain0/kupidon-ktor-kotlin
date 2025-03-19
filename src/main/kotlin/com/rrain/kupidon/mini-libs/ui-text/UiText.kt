@@ -23,9 +23,9 @@ fun <L : Enum<L>, T : UiValue<L>>List<T>.pickUiValue(langs: List<L>): T {
   return this
     .sortedWith { a, b ->
       val aIdx = langs.indexOf(a.lang)
-        .let { if (it==-1) langs.size else it }
+        .let { if (it == -1) langs.size else it }
       val bIdx = langs.indexOf(b.lang)
-        .let { if (it==-1) langs.size else it }
+        .let { if (it == -1) langs.size else it }
       aIdx - bIdx
     }
     .first()

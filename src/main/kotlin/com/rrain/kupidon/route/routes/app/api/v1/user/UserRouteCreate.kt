@@ -154,8 +154,7 @@ fun Application.configureUserRouteCreate() {
       val verificationToken = JwtService
         .generateVerificationAccessToken(id.toString(), user.email)
       
-      val lang = Lang.getOrDefault(call.parameters["lang"])
-      val langs = listOf(lang)
+      val langs = call.parameters.getAll("lang")!!.map { Lang.getOrDefault(it) }
       
       val appName = AppUiText.appName.pickUiValue(langs).value
       val emailTitle = EmailInitialVerificationUiText.emailTitle.pickUiValue(langs).value
@@ -165,7 +164,7 @@ fun Application.configureUserRouteCreate() {
           verificationUrl = call.request.origin.run {
             val url = "$scheme://$serverHost:$serverPort${UserRoutes.emailInitialVerification}"
             val query = "${UserRoutes.verifyTokenParamName}=$verificationToken"
-            url+query
+            url + query
           },
         )
       )

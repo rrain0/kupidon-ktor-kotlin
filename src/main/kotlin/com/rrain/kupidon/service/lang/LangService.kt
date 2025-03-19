@@ -11,7 +11,7 @@ enum class Lang(val value: String) {
     val Default = enUS
     
     fun getOrDefault(value: String?): Lang {
-      return Lang.entries.find { it.value==value } ?: Default
+      return Lang.entries.find { it.value == value } ?: Default
     }
   }
   
