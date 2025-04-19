@@ -7,7 +7,7 @@ services:
   ktor:
     # docker build -t rrain0/kupidon-ktor-ktor:1.0.3 .
     # docker push rrain0/kupidon-ktor-ktor:1.0.3
-    image: rrain0/kupidon-ktor-ktor:1.0.8
+    image: rrain0/kupidon-ktor-ktor:1.0.9
     ports:
       - '${PROXY_PORT}:${PROXY_PORT}'
     environment:
