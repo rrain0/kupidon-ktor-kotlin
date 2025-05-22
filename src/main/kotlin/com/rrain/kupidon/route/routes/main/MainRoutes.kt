@@ -8,7 +8,7 @@ import io.ktor.server.routing.*
 
 
 
-fun Application.configureMainRoutes(){
+fun Application.configureMainRoutes() {
   
   routing {
     

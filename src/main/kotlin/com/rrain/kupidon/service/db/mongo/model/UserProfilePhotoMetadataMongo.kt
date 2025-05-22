@@ -2,8 +2,6 @@ package com.rrain.kupidon.service.db.mongo.model
 
 import com.rrain.kupidon.route.routes.app.api.v1.user.UserRoutes
 import io.ktor.http.*
-import io.ktor.server.plugins.*
-import io.ktor.server.request.*
 import java.util.UUID
 
 
@@ -15,37 +13,42 @@ data class UserProfilePhotoMetadataMongo(
   val name: String,
   val mimeType: String,
 ) {
-  fun convertToSend(userUuid: UUID, request: ApplicationRequest) = this.let {
-    object {
-      val id = it.id
-      val index = it.index
-      val name = it.name
-      val mimeType = it.mimeType
-      var url = run {
-        val host = request.origin.serverHost
-        val port = request.origin.serverPort
+  
+  fun convertToSend(
+    userId: UUID,
+    host: String,
+    port: Int,
+  ) = this.let {
+    mutableMapOf<String, Any?>(
+      "id" to id,
+      "index" to index,
+      "name" to name,
+      "mimeType" to mimeType,
+      "url" to run {
         val path = UserRoutes.getProfilePhoto
         val userIdParam = UserRoutes.getProfilePhotoParamUserId
         val photoIdParam = UserRoutes.getProfilePhotoParamPhotoId
         val photoId = it.id
+        // TODO save extension in db instead of mime type (maxLen = 20)
         val extension = Regex("""[^/]+/(?<ext>[^/]+)""")
           .matchEntire(mimeType)
           ?.let { it.groups["ext"]?.value }
-          ?.let { ".$it" }
-          ?: ""
+        val extPart = extension?.let { ".$it" } ?: ""
+        
         URLBuilder(
           protocol = URLProtocol.HTTPS,
           host = host,
           port = port,
           //pathSegments = listOf(name),
           parameters = Parameters.build {
-            append(userIdParam, userUuid.toString())
+            append(userIdParam, userId.toString())
             append(photoIdParam, photoId.toString())
           }
         )
-          .apply { path(path, "$name $id$extension") }
+          .apply { path(path, "$name $id$extPart") }
           .build().toString()
-      }
-    }
+      },
+    )
   }
+  
 }

@@ -3,7 +3,12 @@ package com.rrain.util.uuid
 import java.util.*
 
 
-
+fun main() {
+  
+  // generate UUIDs
+  println((1..16).map { UUID.randomUUID() })
+  
+}
 
 fun String.toUuid(): UUID = UUID.fromString(this)
 

@@ -3,6 +3,7 @@
 [versions]
 kotlin-version = "2.1.20"
 kotlin-coroutines-version = "1.10.1"
+kotlin-datetime-version = "0.6.1"
 ktor-version = "3.1.1"
 jackson-version = "2.18.3"
 mongo-kotlin-coroutine-version = "5.4.0"
@@ -23,6 +24,7 @@ kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization"
 # Kotlin
 # Транзитивная зависимость без которой в рантайме может не найтись класс
 kotlin-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin-coroutines-version" }
+kotlin-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlin-datetime-version" }
 
 # Ktor server
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }

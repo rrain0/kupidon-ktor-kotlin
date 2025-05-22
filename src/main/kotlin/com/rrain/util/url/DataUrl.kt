@@ -1,4 +1,4 @@
-package com.rrain.kupidon.util.`data-url`
+package com.rrain.util.url
 
 
 fun main() {
@@ -31,7 +31,7 @@ class DataUrl(dataUrl: String){
   
   init {
     val schemeSeparatorIdx = dataUrl.indexOf(":")
-    if (schemeSeparatorIdx==-1)
+    if (schemeSeparatorIdx == -1)
       throw RuntimeException("Url must have scheme separator ':'")
     
     val scheme = dataUrl.substring(0,schemeSeparatorIdx)
@@ -40,7 +40,7 @@ class DataUrl(dataUrl: String){
     
     val path = dataUrl.substring(schemeSeparatorIdx+1)
     val dataSeparatorIdx = path.indexOf(",")
-    if (dataSeparatorIdx==-1)
+    if (dataSeparatorIdx == -1)
       throw RuntimeException("Data Url must have data separator ','")
     
     data = path.substring(dataSeparatorIdx+1)

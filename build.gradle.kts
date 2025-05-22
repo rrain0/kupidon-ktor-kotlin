@@ -23,6 +23,8 @@ dependencies {
   // Kotlin
   // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
   implementation(libs.kotlin.coroutines.core)
+  // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-datetime
+  implementation(libs.kotlin.datetime)
   
   // Ktor server
   implementation(libs.ktor.server.core)

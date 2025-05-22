@@ -11,13 +11,31 @@ import kotlinx.coroutines.delay
 
 
 
+private fun getBanSmirksImgStream() = FileU.getResourceAsStream(
+  "static/Ban smirks  Nanatsu no Taizai.jpg"
+)
+private fun getZeroTwoImgStream() = FileU.getResourceAsStream(
+  "static/#zerotwo #ava #top #chan 5949c006e568394a2ddd56143ed94c25.jpg"
+)
+
+
 fun Application.configureImgTestRoutes() {
   
   routing {
     
     // http://localhost:40019/test/image/ban.jpg
     get("/test/image/ban.jpg") {
-      val banImgStream = FileU.getResourceAsStream("static/ban.jpg")
+      val banImgStream = getBanSmirksImgStream()
+      
+      call.caching = CachingOptions(CacheControl.NoStore(null))
+      call.respondOutputStream(
+        contentType = ContentType.parse("image/jpg"),
+        status = HttpStatusCode.OK
+      ) { banImgStream.transferTo(this) }
+    }
+    // http://localhost:40019/test/image/zerotwo.jpg
+    get("/test/image/zerotwo.jpg") {
+      val banImgStream = getZeroTwoImgStream()
       
       call.caching = CachingOptions(CacheControl.NoStore(null))
       call.respondOutputStream(
@@ -41,7 +59,7 @@ fun Application.configureImgTestRoutes() {
         )
       }
       
-      val banImgStream = FileU.getResourceAsStream("static/ban.jpg")
+      val banImgStream = getBanSmirksImgStream()
       
       call.caching = CachingOptions(CacheControl.NoStore(null))
       call.respondOutputStream(
@@ -68,7 +86,7 @@ fun Application.configureImgTestRoutes() {
       
       delay(4000)
       
-      val banImgStream = FileU.getResourceAsStream("static/ban.jpg")
+      val banImgStream = getBanSmirksImgStream()
       
       call.caching = CachingOptions(CacheControl.NoStore(null))
       call.respondOutputStream(

@@ -8,8 +8,10 @@ import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
+import com.rrain.kupidon.service.db.mongo.model.UserDataType
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
+import com.rrain.`util-ktor`.request.getHostPort
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
@@ -19,7 +21,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import org.bson.Document
 
 
-fun Application.configureAuthRouteLogin(){
+fun Application.configureAuthRouteLogin() {
   
   fun mongo() = MongoDbService.client
   
@@ -51,7 +53,7 @@ fun Application.configureAuthRouteLogin(){
         .limit(1)
         .firstOrNull()
       
-      if (user==null || !PwdHashService.checkPwd(login.pwd, user.pwd))
+      if (user == null || !PwdHashService.checkPwd(login.pwd, user.pwd))
         return@post call.respondBadRequest(
           code = "NO_USER",
           msg = "There is no user with such login-password",
@@ -72,7 +74,10 @@ fun Application.configureAuthRouteLogin(){
       )
       call.respond(object {
         val accessToken = accessToken
-        val user = user.convertToSend(call.request)
+        val user = run {
+          val (host, port) = call.request.getHostPort()
+          user.convertToSend(UserDataType.Current, host, port)
+        }
       })
     }
     

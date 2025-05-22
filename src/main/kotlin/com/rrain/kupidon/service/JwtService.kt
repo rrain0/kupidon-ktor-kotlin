@@ -6,9 +6,9 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.route.routes.app.api.v1.auth.AuthRoutes
-import com.rrain.kupidon.util.application.get
+import com.rrain.`util-ktor`.application.get
 import com.rrain.util.`date-time`.zonedNow
-import com.rrain.kupidon.util.application.appConfig
+import com.rrain.`util-ktor`.application.appConfig
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.util.*
@@ -22,6 +22,7 @@ import kotlin.time.toJavaDuration
 
 fun main() {
   println("random JWT SECRET: ${generateJwtSecret()}")
+  println("generated access token: ${generateCustomAccessToken()}")
 }
 
 
@@ -29,6 +30,24 @@ fun main() {
 fun generateJwtSecret(): String = ByteArray(64)
   .also { SecureRandom().nextBytes(it) }
   .let { Base64.Default.encode(it) }
+
+
+fun generateCustomAccessToken(): String {
+  JwtService.config = JwtService.Config(
+    accessTokenSecret =
+      "SECRET",
+    accessTokenLifetime = Duration.parse("${365 * 2}d"),
+    
+    refreshTokenSecret =
+      "SECRET",
+    refreshTokenLifetime = Duration.parse("30d"),
+    
+    emailVerifyAccessTokenLifetime = Duration.parse("1d"),
+  )
+  return JwtService.generateAccessToken(
+    "USER_ID", setOf()
+  )
+}
 
 
 

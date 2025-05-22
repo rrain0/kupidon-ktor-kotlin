@@ -2,12 +2,14 @@ package com.rrain.kupidon.service.db.mongo.model
 
 import com.rrain.kupidon.model.Gender
 import com.rrain.kupidon.model.Role
-import io.ktor.server.request.*
+import com.rrain.util.`date-time`.getAge
 import org.bson.Document
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.UUID
 
+
+enum class UserDataType { Full, Current, Other }
 
 
 data class UserMongo(
@@ -40,22 +42,41 @@ data class UserMongo(
   val transactions: Document?,
 ){
   
-  fun convertToSend(request: ApplicationRequest): MutableMap<String,Any?> {
-    return mutableMapOf(
+  fun convertToSend(
+    userType: UserDataType = UserDataType.Other,
+    host: String,
+    port: Int,
+  ): MutableMap<String,Any?> {
+    val lvl = when (userType) {
+      UserDataType.Full -> 2
+      UserDataType.Current -> 1
+      UserDataType.Other -> 0
+    }
+    val data = mutableMapOf<String,Any?>(
       "id" to id,
+      "name" to name,
+      "birthDate" to birthDate, // TODO replace by age
+      "age" to getAge(birthDate), // TODO use time zone from client (url param or request header)
+      "gender" to gender,
+      "aboutMe" to aboutMe,
+      "photos" to photos.map { it.convertToSend(id, host, port) },
+    )
+    
+    if (lvl >= 1) data.putAll(listOf(
       "roles" to roles,
       "email" to email,
       // todo email
-      //"emailVerified" to true,
+      "emailVerified" to true,
+      "transactions" to transactions,
+    ))
+    
+    if (lvl >= 2) data.putAll(listOf(
+      "pwd" to pwd, // hashed pwd
       "created" to created,
       "updated" to updated,
-      "name" to name,
-      "birthDate" to birthDate,
-      "gender" to gender,
-      "aboutMe" to aboutMe,
-      "photos" to photos.map { it.convertToSend(id, request) },
-      "transactions" to transactions,
-    )
+    ))
+    
+    return data
   }
   
 }

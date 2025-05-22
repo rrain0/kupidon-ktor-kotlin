@@ -17,10 +17,12 @@ import com.rrain.kupidon.route.`response-errors`.respondNoUserById
 import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
+import com.rrain.kupidon.service.db.mongo.model.UserDataType
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMetadataMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
 import com.rrain.kupidon.service.db.mongo.useTransaction
+import com.rrain.`util-ktor`.request.getHostPort
 import com.rrain.util.`date-time`.toZonedDateTime
 import com.rrain.util.`date-time`.zonedDateTimePattern
 import com.rrain.util.`date-time`.zonedNow
@@ -375,7 +377,10 @@ fun Application.configureUserRouteUpdate() {
         
         
         call.respond(object {
-          val user = user.convertToSend(call.request)
+          val user = run {
+            val (host, port) = call.request.getHostPort()
+            user.convertToSend(UserDataType.Current, host, port)
+          }
         })
       }
     }

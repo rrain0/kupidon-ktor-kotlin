@@ -16,7 +16,9 @@ import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
 import com.rrain.kupidon.service.db.mongo.useTransaction
 import com.rrain.kupidon.service.lang.Lang
 import com.rrain.kupidon.`mini-libs`.`ui-text`.pickUiValue
-import com.rrain.kupidon.util.validation.emailPattern
+import com.rrain.kupidon.service.db.mongo.model.UserDataType
+import com.rrain.`util-ktor`.request.getHostPort
+import com.rrain.util.validation.emailPattern
 import com.rrain.util.`date-time`.zonedNow
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -201,7 +203,10 @@ fun Application.configureUserRouteCreate() {
       )
       call.respond(object {
         val accessToken = accessToken
-        val user = user.convertToSend(call.request)
+        val user = run {
+          val (host, port) = call.request.getHostPort()
+          user.convertToSend(UserDataType.Current, host, port)
+        }
       })
     }
     
