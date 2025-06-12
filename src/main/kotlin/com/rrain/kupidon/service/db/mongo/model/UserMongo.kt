@@ -46,17 +46,17 @@ data class UserMongo(
     userType: UserDataType = UserDataType.Other,
     host: String,
     port: Int,
-  ): MutableMap<String,Any?> {
+  ): MutableMap<String, Any?> {
     val lvl = when (userType) {
       UserDataType.Full -> 2
       UserDataType.Current -> 1
       UserDataType.Other -> 0
     }
-    val data = mutableMapOf<String,Any?>(
+    val data = mutableMapOf<String, Any?>(
       "id" to id,
       "name" to name,
       "birthDate" to birthDate, // TODO replace by age
-      "age" to getAge(birthDate), // TODO use time zone from client (url param or request header)
+      "age" to getAge(birthDate),
       "gender" to gender,
       "aboutMe" to aboutMe,
       "photos" to photos.map { it.convertToSend(id, host, port) },

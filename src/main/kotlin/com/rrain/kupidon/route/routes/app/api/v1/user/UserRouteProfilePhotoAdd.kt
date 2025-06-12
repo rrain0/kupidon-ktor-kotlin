@@ -5,13 +5,13 @@ import com.mongodb.client.model.Updates
 import com.rrain.kupidon.plugin.getUserId
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
-import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.model.UserDataType
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMetadataMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
+import com.rrain.kupidon.service.db.mongo.mongo
 import com.rrain.kupidon.service.db.mongo.useTransaction
 import com.rrain.`util-ktor`.request.getHostPort
 import com.rrain.util.uuid.toUuid
@@ -32,8 +32,6 @@ import java.util.UUID
 
 
 fun Application.configureUserRouteProfilePhotoAdd() {
-  
-  fun mongo() = MongoDbService.client
   
   
   

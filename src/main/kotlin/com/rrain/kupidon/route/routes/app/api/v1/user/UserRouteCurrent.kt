@@ -3,12 +3,12 @@ package com.rrain.kupidon.route.routes.app.api.v1.user
 import com.mongodb.client.model.Filters
 import com.rrain.kupidon.plugin.getUserId
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
-import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.model.UserDataType
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
+import com.rrain.kupidon.service.db.mongo.mongo
 import com.rrain.`util-ktor`.request.getHostPort
 import com.rrain.util.uuid.toUuid
 import io.ktor.server.application.*
@@ -22,8 +22,6 @@ import org.bson.Document
 
 
 fun Application.configureUserRouteCurrent() {
-  
-  fun mongo() = MongoDbService.client
   
   
   

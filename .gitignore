@@ -6,11 +6,7 @@ build/
 
 ### Private config ###
 ktor.prod.env
-#ktor.local.env
-#ktor.dev.env
-#ktor.template.env
-
-/nginx/cert-prod
+/nginx-proxy/certs-prod/
 
 ### STS ###
 .apt_generated

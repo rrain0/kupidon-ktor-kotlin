@@ -7,6 +7,7 @@ import io.ktor.server.routing.*
 import kotlin.time.Duration.Companion.seconds
 
 
+
 // todo explore websocket
 fun Application.configureWebSockets() {
   
@@ -20,7 +21,7 @@ fun Application.configureWebSockets() {
   
   
   routing {
-    webSocket("/ws") { // websocketSession
+    webSocket("/ws") { // websocket session
       for (frame in incoming) {
         if (frame is Frame.Text) {
           val text = frame.readText()

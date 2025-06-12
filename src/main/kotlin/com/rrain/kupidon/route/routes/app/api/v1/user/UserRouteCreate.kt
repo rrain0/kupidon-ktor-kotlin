@@ -8,7 +8,6 @@ import com.rrain.kupidon.service.lang.`ui-values`.AppUiText
 import com.rrain.kupidon.service.lang.`ui-values`.EmailInitialVerificationUiText
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
-import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
@@ -17,6 +16,7 @@ import com.rrain.kupidon.service.db.mongo.useTransaction
 import com.rrain.kupidon.service.lang.Lang
 import com.rrain.kupidon.`mini-libs`.`ui-text`.pickUiValue
 import com.rrain.kupidon.service.db.mongo.model.UserDataType
+import com.rrain.kupidon.service.db.mongo.mongo
 import com.rrain.`util-ktor`.request.getHostPort
 import com.rrain.util.validation.emailPattern
 import com.rrain.util.`date-time`.zonedNow
@@ -36,8 +36,6 @@ import java.util.*
 
 
 fun Application.configureUserRouteCreate() {
-  
-  fun mongo() = MongoDbService.client
   
   
   

@@ -6,11 +6,11 @@ import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
 import com.rrain.kupidon.service.*
 import com.rrain.kupidon.service.JwtService.getUserId
-import com.rrain.kupidon.service.db.mongo.MongoDbService
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
+import com.rrain.kupidon.service.db.mongo.mongo
 import com.rrain.util.uuid.toUuid
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -20,9 +20,8 @@ import kotlinx.coroutines.flow.firstOrNull
 import org.bson.Document
 
 
-fun Application.configureAuthRouteRefresh(){
-  
-  fun mongo() = MongoDbService.client
+
+fun Application.configureAuthRouteRefresh() {
   
   
   

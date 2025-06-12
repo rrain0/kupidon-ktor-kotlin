@@ -7,35 +7,37 @@ services:
   ktor:
     # docker build -t rrain0/kupidon-ktor-ktor:1.0.3 .
     # docker push rrain0/kupidon-ktor-ktor:1.0.3
-    image: rrain0/kupidon-ktor-ktor:1.0.10
+    image: rrain0/kupidon-ktor-ktor:1.0.11
     ports:
       - '${PROXY_PORT}:${PROXY_PORT}'
+    volumes:
+      - ./mongo-client/certs-prod:/data/mongo-client-certs/:ro
     environment:
       - KTOR_PORT
       - MONGO_HOST
       - MONGO_PORT
       - MONGO_RS
       - MONGO_DATABASE
-      - MONGO_USER
-      - MONGO_PWD
+      - MONGO_BACKEND_CLIENT_CERT
+      - MONGO_CA_CERT
       - PWD_HASHING_ALGORITHM
       - PWD_HASHING_SECRET
       - PWD_HASHING_ITERATIONS
       - PWD_HASHING_HASH_LEN
-      - REFRESH_TOKEN_SECRET
-      - ACCESS_TOKEN_SECRET
+      - AUTH_REFRESH_TOKEN_SECRET
+      - AUTH_ACCESS_TOKEN_SECRET
       - MAIL_EMAIL
       - MAIL_PWD
     restart: unless-stopped
 
 
-  nginx:
+  nginx-proxy:
     image: nginx:1.25.5-alpine
     network_mode: 'service:ktor'
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/templates/nginx.conf.template:ro
-      - ${CERT_FILE}:/etc/ssl/cert/cert.crt:ro
-      - ${CERT_KEY}:/etc/ssl/cert/cert.key:ro
+      - ./nginx-proxy/nginx.conf:/etc/nginx/templates/nginx.conf.template:ro
+      - ${PROXY_CERT_CRT}:/etc/ssl/cert/cert.crt:ro
+      - ${PROXY_CERT_KEY}:/etc/ssl/cert/cert.key:ro
     environment:
       # where to find 'templates/nginx.conf.template'
       - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
