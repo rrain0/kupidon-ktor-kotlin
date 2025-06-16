@@ -18,7 +18,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.firstOrNull
-import org.bson.Document
 
 
 
@@ -32,7 +31,7 @@ fun Application.configureUserRouteCurrent() {
     
     
     authenticate {
-      get(UserRoutes.current) {
+      get(UserRoutes.userCurrent) {
         val userUuid = call.getUserId().toUuid()
         
         val m = mongo()

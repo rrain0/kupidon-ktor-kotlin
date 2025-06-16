@@ -28,18 +28,18 @@ import org.bson.Document
 
 
 object UserRoutes {
-  const val base = "${ApiV1Routes.base}/user"
+  const val user = "${ApiV1Routes.base}/user"
   
-  const val current = "$base/current"
-  const val create = "$base/create"
-  const val update = "$base/update"
-  const val emailInitialVerification = "$base/verify/initial-email"
-  const val getById = "$base/get-by-id/{id}"
+  const val userCurrent = "$user/current"
+  const val userId = "$user/id/{id}"
   
-  const val getProfilePhoto = "$base/profile-photo"
+  const val getProfilePhoto = "$user/profile-photo"
   const val postProfilePhoto = getProfilePhoto
   const val getProfilePhotoParamUserId = "userId"
   const val getProfilePhotoParamPhotoId = "photoId"
+  
+  
+  const val emailInitialVerification = "$user/verify/initial-email"
   
   const val verifyTokenParamName = "verification-token"
 }
@@ -57,7 +57,7 @@ fun Application.configureUserRoutes() {
   
   routing {
     
-    get(UserRoutes.getById) {
+    get(UserRoutes.userId) {
       val userUuid = try { call.parameters["id"]!!.toUuid() }
       catch (ex: Exception) {
         return@get call.respondInvalidParams("'id' param must be uuid-string")

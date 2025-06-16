@@ -58,7 +58,7 @@ fun Application.configureUserActionRouteLike() {
           fromUserId = userUuid,
           toUserId = userLikeReq.toUserId,
           // TODO DateTime
-          created = zonedNow(),
+          createdAt = zonedNow(),
         )
         
         

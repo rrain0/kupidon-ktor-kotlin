@@ -22,8 +22,8 @@ data class ChatMessageMongo(
   val id: UUID,
   
   // "2023-06-04T15:21:18.094Z" in string
-  val created: ZonedDateTime,
-  val updated: ZonedDateTime,
+  val createdAt: ZonedDateTime,
+  val updatedAt: ZonedDateTime,
   
   val content: ChatMessageContent,
 ) {
@@ -31,8 +31,8 @@ data class ChatMessageMongo(
   fun convertToSend(): MutableMap<String, Any?> {
     return mutableMapOf(
       "id" to id,
-      "created" to created,
-      "updated" to updated,
+      "createdAt" to createdAt,
+      "updatedAt" to updatedAt,
       "content" to content.convertToSend(),
     )
   }

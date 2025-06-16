@@ -13,14 +13,14 @@ data class UserToUserLikeMongo(
   val toUserId: UUID,
   
   // "2023-06-04T15:21:18.094Z" in string
-  val created: ZonedDateTime,
+  val createdAt: ZonedDateTime,
 ) {
   
   fun convertToSend(): Map<String, Any?> {
     return mutableMapOf(
       "fromUserId" to fromUserId,
       "toUserId" to toUserId,
-      "created" to created,
+      "createdAt" to createdAt,
     )
   }
   

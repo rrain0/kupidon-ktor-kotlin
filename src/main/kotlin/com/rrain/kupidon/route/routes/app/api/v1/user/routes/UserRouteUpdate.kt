@@ -52,13 +52,13 @@ fun Application.configureUserRouteUpdate() {
     val id: UUID,
     val index: Int,
   )
-  data class PhotosUpdations (
+  data class PhotosUpdates (
     val remove: List<UUID>,
     val replace: List<ReplacePhoto>,
   )
   
   
-  data class PreparedPhotosUpdations(
+  data class PreparedPhotosUpdates(
     val remove: List<UUID>,
     val replace: List<ReplacePhoto>,
   )
@@ -78,7 +78,7 @@ fun Application.configureUserRouteUpdate() {
     var currentPwdHashed: String? by props
     var newPwdHashed: String? by props
     
-    var photos: PreparedPhotosUpdations by props
+    var photos: PreparedPhotosUpdates by props
   }
   
   
@@ -86,7 +86,7 @@ fun Application.configureUserRouteUpdate() {
   
   routing {
     authenticate {
-      put(UserRoutes.update) {
+      put(UserRoutes.user) {
         val userUuid = call.getUserId().toUuid()
         
         val data =
@@ -210,8 +210,8 @@ fun Application.configureUserRouteUpdate() {
           }
           
           "photos" -> {
-            val photosUpdations =
-              try { JacksonObjectMapper.treeToValue<PhotosUpdations>(v) }
+            val photosUpdates =
+              try { JacksonObjectMapper.treeToValue<PhotosUpdates>(v) }
               catch (ex: Exception){
                 ex.printStackTrace()
                 println(ex.message)
@@ -220,16 +220,16 @@ fun Application.configureUserRouteUpdate() {
                 )
               }
             
-            photosUpdations.replace.forEachIndexed { i,it ->
+            photosUpdates.replace.forEachIndexed { i, it ->
               if (it.index !in 0..5) return@put call.respondInvalidBody(
                 "photos.replace[$i].index must be in range ${0..5}"
               )
             }
             
             
-            update.photos = PreparedPhotosUpdations(
-              remove = photosUpdations.remove,
-              replace = photosUpdations.replace,
+            update.photos = PreparedPhotosUpdates(
+              remove = photosUpdates.remove,
+              replace = photosUpdates.replace,
             )
           }
           
@@ -254,7 +254,7 @@ fun Application.configureUserRouteUpdate() {
           val nUserGender = UserMongo::gender.name
           val nUserAboutMe = UserMongo::aboutMe.name
           val nUserPhotos = UserMongo::photos.name
-          val nUserUpdated = UserMongo::updated.name
+          val nUserUpdated = UserMongo::updatedAt.name
           
           val nPhotoId = UserProfilePhotoMetadataMongo::id.name
           val nPhotoIndex = UserProfilePhotoMetadataMongo::index.name

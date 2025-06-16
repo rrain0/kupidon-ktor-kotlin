@@ -28,8 +28,8 @@ data class UserMongo(
   
   // "2023-06-04T15:21:18.094+08:00" in string
   // default timezone is UTC+0
-  val created: ZonedDateTime,
-  val updated: ZonedDateTime,
+  val createdAt: ZonedDateTime,
+  val updatedAt: ZonedDateTime,
   
   // имя
   val name: String,
@@ -39,8 +39,6 @@ data class UserMongo(
   val gender: Gender,
   val aboutMe: String,
   val photos: List<UserProfilePhotoMetadataMongo>,
-  
-  val transactions: Document?,
 ) {
   
   fun convertToSend(
@@ -68,13 +66,12 @@ data class UserMongo(
       "email" to email,
       // todo email
       "emailVerified" to true,
-      "transactions" to transactions,
     ))
     
     if (lvl >= 2) data.putAll(listOf(
       "pwd" to pwd, // hashed pwd
-      "created" to created,
-      "updated" to updated,
+      "createdAt" to createdAt,
+      "updatedAt" to updatedAt,
     ))
     
     return data

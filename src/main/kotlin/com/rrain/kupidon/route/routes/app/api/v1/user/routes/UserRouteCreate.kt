@@ -11,12 +11,12 @@ import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
-import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
 import com.rrain.kupidon.service.db.mongo.useTransaction
 import com.rrain.kupidon.service.lang.Lang
 import com.rrain.kupidon.`mini-libs`.`ui-text`.pickUiValue
 import com.rrain.kupidon.route.routes.app.api.v1.user.UserRoutes
 import com.rrain.kupidon.service.db.mongo.model.UserDataType
+import com.rrain.kupidon.service.db.mongo.model.projectUserMongo
 import com.rrain.kupidon.service.db.mongo.mongo
 import com.rrain.`util-ktor`.request.getHostPort
 import com.rrain.util.validation.emailPattern
@@ -28,7 +28,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
-import org.bson.Document
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -52,41 +51,43 @@ fun Application.configureUserRouteCreate() {
       val gender: Gender,
       val birthDate: ZonedDateTime,
     )
-    post(UserRoutes.create) {
+    post(UserRoutes.user) {
       val userToCreate = try {
         call.receive<UserCreateReq>()
       }
-      catch (ex: Exception){
+      catch (ex: Exception) {
         return@post call.respondInvalidBody()
       }
       
       
-      if (!userToCreate.email.matches(emailPattern)){
+      if (!userToCreate.email.matches(emailPattern)) {
         return@post call.respondInvalidBody(
           "Invalid email format"
         )
       }
-      if (userToCreate.email.length > 100)
+      if (userToCreate.email.length > 100) {
         return@post call.respondInvalidBody(
           "Email max length is 100 chars"
         )
+      }
       
-      if (userToCreate.pwd.length < 6){
+      if (userToCreate.pwd.length < 6) {
         return@post call.respondInvalidBody(
           "Password must be at least 6 chars length"
         )
       }
-      if (userToCreate.pwd.length > 200)
+      if (userToCreate.pwd.length > 200) {
         return@post call.respondInvalidBody(
           "Password max length is 200 chars"
         )
+      }
       
-      if (userToCreate.name.isEmpty()){
+      if (userToCreate.name.isEmpty()) {
         return@post call.respondInvalidBody(
           "Name must not be empty"
         )
       }
-      if (userToCreate.name.length > 100){
+      if (userToCreate.name.length > 100) {
         return@post call.respondInvalidBody(
           "Name max length is 100"
         )
@@ -112,14 +113,13 @@ fun Application.configureUserRouteCreate() {
         roles = setOf(),
         email = userToCreate.email,
         pwd = userToCreate.pwd.let(PwdHashService::generateHash),
-        created = now,
-        updated = now,
+        createdAt = now,
+        updatedAt = now,
         name = userToCreate.name,
         birthDate = userToCreate.birthDate.toLocalDate(),
         gender = userToCreate.gender,
         aboutMe = "",
         photos = listOf(),
-        transactions = null,
       )
       
       
@@ -127,12 +127,10 @@ fun Application.configureUserRouteCreate() {
       val user = m.useTransaction { session ->
         val nUserId = UserMongo::id.name
         val nUserEmail = UserMongo::email.name
-        val nUserPhotos = UserMongo::photos.name
-        val nPhotoBinData = UserProfilePhotoMongo::binData.name
         
         val userByEmail = m.db.coll<UserMongo>("users")
           .find(session, Filters.eq(nUserEmail, tryUser.email))
-          .projection(Document("$nUserPhotos.$nPhotoBinData", false))
+          .projectUserMongo()
           .limit(1)
           .firstOrNull()
         
@@ -146,7 +144,7 @@ fun Application.configureUserRouteCreate() {
         
         m.db.coll<UserMongo>("users")
           .find(session, Filters.eq(nUserId, tryUser.id))
-          .projection(Document("$nUserPhotos.$nPhotoBinData", false))
+          .projectUserMongo()
           .limit(1)
           .first()
       }

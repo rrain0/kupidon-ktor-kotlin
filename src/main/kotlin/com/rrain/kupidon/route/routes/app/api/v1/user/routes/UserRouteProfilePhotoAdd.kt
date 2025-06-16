@@ -160,7 +160,7 @@ fun Application.configureUserRouteProfilePhotoAdd() {
           val nUserGender = UserMongo::gender.name
           val nUserAboutMe = UserMongo::aboutMe.name
           val nUserPhotos = UserMongo::photos.name
-          val nUserUpdated = UserMongo::updated.name
+          val nUserUpdated = UserMongo::updatedAt.name
           
           val nPhotoId = UserProfilePhotoMetadataMongo::id.name
           val nPhotoIndex = UserProfilePhotoMetadataMongo::index.name
