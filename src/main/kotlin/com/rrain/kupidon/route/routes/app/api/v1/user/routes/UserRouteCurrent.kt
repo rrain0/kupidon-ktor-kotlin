@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.routes.app.api.v1.user
+package com.rrain.kupidon.route.routes.app.api.v1.user.routes
 
 import com.mongodb.client.model.Filters
 import com.rrain.kupidon.plugin.getUserId
@@ -9,6 +9,8 @@ import com.rrain.kupidon.service.db.mongo.model.UserDataType
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
 import com.rrain.kupidon.service.db.mongo.mongo
+import com.rrain.kupidon.route.routes.app.api.v1.user.UserRoutes
+import com.rrain.kupidon.service.db.mongo.model.projectUserMongo
 import com.rrain.`util-ktor`.request.getHostPort
 import com.rrain.util.uuid.toUuid
 import io.ktor.server.application.*
@@ -40,7 +42,7 @@ fun Application.configureUserRouteCurrent() {
         
         val userById = m.db.coll<UserMongo>("users")
           .find(Filters.eq(nUserId, userUuid))
-          .projection(Document("$nUserPhotos.$nPhotoBinData", false))
+          .projectUserMongo()
           .limit(1)
           .firstOrNull()
         

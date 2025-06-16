@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.routes.app.api.v1.user
+package com.rrain.kupidon.route.routes.app.api.v1.user.routes
 
 import com.mongodb.client.model.Aggregates
 import com.rrain.kupidon.route.`response-errors`.respondInvalidParams
@@ -7,6 +7,7 @@ import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
 import com.rrain.kupidon.service.db.mongo.mongo
+import com.rrain.kupidon.route.routes.app.api.v1.user.UserRoutes
 import com.rrain.util.url.urlSinglePathSegmentPattern
 import com.rrain.util.uuid.toUuid
 import io.ktor.http.*

@@ -10,7 +10,6 @@ mongo-kotlin-coroutine-version = "5.4.0"
 slf4j-version = "2.0.17"
 logback-version = "1.5.18"
 apache-email = "1.6.0"
-sslcontext-kickstart = "9.1.0"
 
 
 

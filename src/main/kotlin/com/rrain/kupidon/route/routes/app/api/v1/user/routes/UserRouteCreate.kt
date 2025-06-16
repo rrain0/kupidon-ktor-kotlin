@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.routes.app.api.v1.user
+package com.rrain.kupidon.route.routes.app.api.v1.user.routes
 
 import com.mongodb.client.model.Filters
 import com.rrain.kupidon.model.Gender
@@ -15,6 +15,7 @@ import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
 import com.rrain.kupidon.service.db.mongo.useTransaction
 import com.rrain.kupidon.service.lang.Lang
 import com.rrain.kupidon.`mini-libs`.`ui-text`.pickUiValue
+import com.rrain.kupidon.route.routes.app.api.v1.user.UserRoutes
 import com.rrain.kupidon.service.db.mongo.model.UserDataType
 import com.rrain.kupidon.service.db.mongo.mongo
 import com.rrain.`util-ktor`.request.getHostPort
@@ -91,6 +92,7 @@ fun Application.configureUserRouteCreate() {
         )
       }
       
+      // TODO birthDate
       val nowWithUserZone = zonedNow()
         .withZoneSameInstant(userToCreate.birthDate.zone)
         .withHour(0)

@@ -1,5 +1,6 @@
 package com.rrain.kupidon.service.db.mongo.model
 
+import com.mongodb.kotlin.client.coroutine.FindFlow
 import com.rrain.kupidon.model.Gender
 import com.rrain.kupidon.model.Role
 import com.rrain.util.`date-time`.getAge
@@ -40,13 +41,13 @@ data class UserMongo(
   val photos: List<UserProfilePhotoMetadataMongo>,
   
   val transactions: Document?,
-){
+) {
   
   fun convertToSend(
     userType: UserDataType = UserDataType.Other,
     host: String,
     port: Int,
-  ): MutableMap<String, Any?> {
+  ): Map<String, Any?> {
     val lvl = when (userType) {
       UserDataType.Full -> 2
       UserDataType.Current -> 1
@@ -79,4 +80,15 @@ data class UserMongo(
     return data
   }
   
+}
+
+
+
+
+
+
+fun FindFlow<UserMongo>.projectUserMongo(): FindFlow<UserMongo> {
+  val nUserPhotos = UserMongo::photos.name
+  val nPhotoBinData = UserProfilePhotoMongo::binData.name
+  return projection(Document("$nUserPhotos.$nPhotoBinData", false))
 }

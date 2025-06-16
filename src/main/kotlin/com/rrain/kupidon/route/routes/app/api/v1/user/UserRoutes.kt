@@ -4,6 +4,12 @@ import com.mongodb.client.model.Filters
 import com.rrain.kupidon.route.routes.app.api.v1.ApiV1Routes
 import com.rrain.kupidon.route.`response-errors`.respondInvalidParams
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
+import com.rrain.kupidon.route.routes.app.api.v1.user.routes.configureUserRouteCreate
+import com.rrain.kupidon.route.routes.app.api.v1.user.routes.configureUserRouteCurrent
+import com.rrain.kupidon.route.routes.app.api.v1.user.routes.configureUserRouteEmailInitialVerify
+import com.rrain.kupidon.route.routes.app.api.v1.user.routes.configureUserRouteProfilePhotoAdd
+import com.rrain.kupidon.route.routes.app.api.v1.user.routes.configureUserRouteProfilePhotoGet
+import com.rrain.kupidon.route.routes.app.api.v1.user.routes.configureUserRouteUpdate
 import com.rrain.kupidon.service.db.mongo.coll
 import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.model.UserDataType

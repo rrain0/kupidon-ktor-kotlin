@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.routes.app.api.v1.user
+package com.rrain.kupidon.route.routes.app.api.v1.user.routes
 
 import io.ktor.server.application.*
 import io.ktor.server.routing.*

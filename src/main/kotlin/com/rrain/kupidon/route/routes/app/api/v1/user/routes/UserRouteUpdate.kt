@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.routes.app.api.v1.user
+package com.rrain.kupidon.route.routes.app.api.v1.user.routes
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
@@ -22,6 +22,7 @@ import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMetadataMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
 import com.rrain.kupidon.service.db.mongo.mongo
 import com.rrain.kupidon.service.db.mongo.useTransaction
+import com.rrain.kupidon.route.routes.app.api.v1.user.UserRoutes
 import com.rrain.`util-ktor`.request.getHostPort
 import com.rrain.util.`date-time`.toZonedDateTime
 import com.rrain.util.`date-time`.zonedDateTimePattern

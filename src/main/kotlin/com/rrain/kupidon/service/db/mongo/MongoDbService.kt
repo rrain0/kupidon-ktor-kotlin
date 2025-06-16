@@ -4,6 +4,8 @@ import com.mongodb.*
 import com.mongodb.kotlin.client.coroutine.ClientSession
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
+import com.rrain.kupidon.service.db.mongo.model.UserMongo
+import com.rrain.kupidon.service.db.mongo.model.UserToUserLikeMongo
 import com.rrain.`util-ktor`.application.appConfig
 import com.rrain.`util-ktor`.application.get
 import com.rrain.util.`date-time`.toTimestamp
@@ -163,6 +165,9 @@ inline fun <reified T : Any> MongoDatabase.coll(collName : String) = (
   this.getCollection<T>(collName)
 )
 
+
+fun collUsers() = mongo().db.coll<UserMongo>("users")
+fun collUserToUserLikes() = mongo().db.coll<UserToUserLikeMongo>("userToUserLikes")
 
 
 
