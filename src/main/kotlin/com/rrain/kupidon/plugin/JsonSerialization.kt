@@ -1,8 +1,5 @@
 package com.rrain.kupidon.plugin
 
-//import io.ktor.serialization.kotlinx.json.*
-//import com.google.gson.*
-//import io.ktor.serialization.gson.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.rrain.util.json.configureJson
 import io.ktor.serialization.jackson.*
@@ -14,71 +11,18 @@ lateinit var JacksonObjectMapper: ObjectMapper
 
 
 
-// plugin to serialize response objects as json
-// and to deserialize request json to objects
+// Plugin to serialize response body object to json
+// and to deserialize request body from json to objects
 fun Application.configureJsonSerialization() {
   
   
   
   install(ContentNegotiation) {
     
-    // install Jackson serialization
+    // Install Jackson serialization
     jackson {
       JacksonObjectMapper = this.configureJson()
     }
-    
-    
-    // install kotlinx-serialization
-    //json()
-    
-    // install gson serialization
-    /*gson() {
-      
-      serializeNulls()
-      setPrettyPrinting()
-      
-      registerTypeAdapter(
-        ZonedDateTime::class.java,
-        object : JsonSerializer<ZonedDateTime>, JsonDeserializer<ZonedDateTime> {
-          override fun serialize(
-            src: ZonedDateTime,
-            typeOfSrc: Type,
-            context: JsonSerializationContext
-          ): JsonElement {
-            return JsonPrimitive(src.format(zonedDateTimeFormat))
-          }
-          override fun deserialize(
-            json: JsonElement,
-            typeOfT: Type,
-            context: JsonDeserializationContext
-          ): ZonedDateTime {
-            return ZonedDateTime.parse(json.asString, zonedDateTimeFormat)
-          }
-        }
-      )
-      
-      registerTypeAdapter(
-        LocalDate::class.java,
-        object : JsonSerializer<LocalDate>, JsonDeserializer<LocalDate> {
-          override fun serialize(
-            src: LocalDate,
-            typeOfSrc: Type,
-            context: JsonSerializationContext
-          ): JsonElement {
-            return JsonPrimitive(src.format(localDateFormat))
-          }
-          override fun deserialize(
-            json: JsonElement,
-            typeOfT: Type,
-            context: JsonDeserializationContext
-          ): LocalDate {
-            return LocalDate.parse(json.asString, localDateFormat)
-          }
-        }
-      )
-      
-    }*/
-    
     
   }
   

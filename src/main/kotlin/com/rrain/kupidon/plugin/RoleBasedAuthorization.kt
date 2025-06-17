@@ -1,5 +1,6 @@
 package com.rrain.kupidon.plugin
 
+import com.rrain.kupidon.model.Permission
 import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.service.JwtService
 import com.rrain.util.logger.logger
@@ -25,10 +26,9 @@ import io.ktor.server.routing.*
     например проверка подлинности пользователя путем сравнения введенного им пароля с паролем,
     сохраненным в базе данных.
   
-● Авторизация — проверка ролей пользователя
+● Авторизация — проверка ролей и разрешений пользователя
   — HTTP Error: 403 Forbidden
-  — предоставление определенному лицу или группе лиц прав
-    на выполнение определенных действий.
+  — предоставление определенному лицу или группе лиц прав на выполнение определенных действий.
 */
 
 private fun getRoleFromCall(call: ApplicationCall): Set<Role> {
@@ -42,7 +42,7 @@ private fun getRoleFromCall(call: ApplicationCall): Set<Role> {
 
 
 class RoleBasedAuthorizationPluginConfiguration {
-  var roles: Set<Role> = emptySet()
+  var permissions: Set<Permission> = emptySet()
   var callToRoles: (ApplicationCall) -> Set<Role> = ::getRoleFromCall
 }
 
@@ -52,20 +52,21 @@ val RoleBasedAuthorizationPlugin = createRouteScopedPlugin(
   createConfiguration = ::RoleBasedAuthorizationPluginConfiguration
 ) {
   val logger = logger()
-  val roles = pluginConfig.roles
   
   pluginConfig.apply {
     on(AuthenticationChecked) { call ->
-      val tokenRoles = pluginConfig.callToRoles(call)
+      val endpointPermissions = permissions
+      val tokenRoles = callToRoles(call)
+      val tokenPermissions = tokenRoles.flatMap { it.permissions }.toSet()
       
-      // No need roles or has at least 1 demanded role
-      val authorized = roles.isEmpty() || tokenRoles.intersect(roles).isNotEmpty()
+      val authorized = tokenPermissions.containsAll(endpointPermissions)
+      
       if (!authorized) {
-        val msg = "User must have at least one of these roles: ${roles.joinToString()}"
+        val msg = "User must have all these permissions: ${endpointPermissions.joinToString()}"
         logger.debug("Authorization failed for ${call.request.path()}. $msg")
         call.respond(HttpStatusCode.Forbidden, object {
-          val code = "LACK_OF_ROLE"
-          val needAnyOfRoles = roles
+          val code = "LACK_OF_PERMISSION"
+          val requiredPermissions = endpointPermissions
           val msg = msg
         })
       }
@@ -73,9 +74,9 @@ val RoleBasedAuthorizationPlugin = createRouteScopedPlugin(
   }
 }
 
-fun Route.authorized(vararg roles: Role, build: Route.() -> Unit) {
+fun Route.authorize(vararg permissions: Permission, build: Route.() -> Unit) {
   install(RoleBasedAuthorizationPlugin) {
-    this.roles = roles.toSet()
+    this.permissions = permissions.toSet()
   }
   build()
 }

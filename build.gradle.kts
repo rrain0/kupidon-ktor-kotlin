@@ -1,4 +1,4 @@
-
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val kotlinV = "2.1.21"
 val kotlinCoroutinesV = "1.10.2"
@@ -26,6 +26,13 @@ application {
   
   val isDevelopment: Boolean = project.ext.has("development")
   applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
+}
+
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.compilerOptions {
+  freeCompilerArgs.set(listOf(
+    "-Xmulti-dollar-interpolation", // enable experimental multi dollar interpolation: $$"aaa$aaa$$variable"
+  ))
 }
 
 repositories {
