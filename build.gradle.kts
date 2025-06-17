@@ -1,15 +1,28 @@
 
+
+val kotlinV = "2.1.21"
+val kotlinCoroutinesV = "1.10.2"
+val kotlinDateTimeV = "0.6.2"
+val ktorV = "3.2.0"
+val jacksonV = "2.19.0"
+val mongoKotlinCoroutineDriverV = "5.5.1"
+val slf4jV = "2.0.17"
+val logbackV = "1.5.18"
+val apacheEmail = "1.6.0"
 plugins {
-  alias(libs.plugins.kotlin.jvm)
-  alias(libs.plugins.ktor)
-  alias(libs.plugins.kotlin.plugin.serialization)
+  val kotlinV = "2.1.21"
+  val ktorV = "3.2.0"
+  
+  kotlin("jvm") version kotlinV
+  kotlin("plugin.serialization") version kotlinV
+  id("io.ktor.plugin") version ktorV
 }
 
 group = "com.rrain.kupidon"
 version = "0.0.1"
 
 application {
-  mainClass.set("io.ktor.server.jetty.jakarta.EngineMain")
+  mainClass = "io.ktor.server.jetty.jakarta.EngineMain"
   
   val isDevelopment: Boolean = project.ext.has("development")
   applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
@@ -20,50 +33,64 @@ repositories {
 }
 
 dependencies {
-  // Kotlin
+  // Kotlin Coroutines
   // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
-  implementation(libs.kotlin.coroutines.core)
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesV")
+  // Kotlin DateTime
   // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-datetime
-  implementation(libs.kotlin.datetime)
+  implementation("org.jetbrains.kotlinx:kotlinx-datetime:$kotlinDateTimeV")
   
-  // Ktor server
-  implementation(libs.ktor.server.core)
-  implementation(libs.ktor.server.jetty.jakarta)
+  // Ktor server core
+  implementation("io.ktor:ktor-server-core")
+  // Ktor server core JVM
+  implementation("io.ktor:ktor-server-core-jvm")
+  // Ktor server engine
+  implementation("io.ktor:ktor-server-jetty-jakarta")
+  // To be removed in the future, now it can be necessary for some plugins
+  implementation("io.ktor:ktor-server-host-common")
   
-  // SLF4J - Simple Logging Facade for Java
-  implementation(libs.slf4j.api)
-  implementation(libs.jcl.over.slf4j)
-  implementation(libs.logback.core)
-  implementation(libs.logback.classic)
-  
-  // Content negotiation & Jackson
-  implementation(libs.ktor.server.content.negotiation)
-  implementation(libs.ktor.serialization.jackson)
+  // Ktor server - Content negotiation (response body serialization, request body deserialization, ...)
+  implementation("io.ktor:ktor-server-content-negotiation")
+  // Ktor serialization via Jackson
+  implementation("io.ktor:ktor-serialization-jackson")
   // Kotlin Jackson Support
   // https://github.com/FasterXML/jackson-module-kotlin
-  implementation(libs.jackson.module.kotlin)
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonV")
   // Java Time Jackson Support
   // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
-  implementation(libs.jackson.java.time)
-  
-  // Auth
-  implementation(libs.ktor.server.auth)
-  implementation(libs.ktor.server.auth.jwt)
-  
-  // Other ktor plugins
-  implementation(libs.ktor.websocket)
-  // Use proxy server forwarded & x-forwarded headers
-  implementation(libs.ktor.forwarded.headers)
-  implementation(libs.ktor.caching.headers)
-  implementation(libs.ktor.auto.head.response)
-  implementation(libs.ktor.status.pages)
-  implementation(libs.ktor.call.id)
-  implementation(libs.ktor.call.logging)
+  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonV")
   
   // Kotlin coroutine MongoDB driver
-  implementation(libs.mongodb.driver.kotlin.coroutine)
-  implementation(libs.mongodb.bson.kotlinx)
+  // BOM - Bill of Materials - organizes dependency versions
+  implementation(platform("org.mongodb:mongodb-driver-bom:$mongoKotlinCoroutineDriverV"))
+  implementation("org.mongodb:mongodb-driver-kotlin-coroutine")
+  implementation("org.mongodb:bson-kotlinx")
+  
+  // SLF4J - Simple Logging Facade for Java
+  implementation("org.slf4j:slf4j-api:$slf4jV")
+  // Транзитивная зависимость без которой в рантайме может не найтись класс
+  implementation("org.slf4j:jcl-over-slf4j:$slf4jV")
+  // Транзитивная зависимость без которой в рантайме может не найтись класс
+  implementation("ch.qos.logback:logback-core:$logbackV")
+  // Транзитивная зависимость без которой в рантайме может не найтись класс
+  implementation("ch.qos.logback:logback-classic:$logbackV")
+  
+  
+  // Other ktor plugins
+  // Ktor server - Auth
+  implementation("io.ktor:ktor-server-auth")
+  // Ktor server - JWT auth
+  implementation("io.ktor:ktor-server-auth-jwt")
+  // Ktor server - Websocket
+  implementation("io.ktor:ktor-server-websockets")
+  // Use proxy server forwarded & x-forwarded headers
+  implementation("io.ktor:ktor-server-forwarded-header")
+  implementation("io.ktor:ktor-server-caching-headers")
+  implementation("io.ktor:ktor-server-auto-head-response")
+  implementation("io.ktor:ktor-server-status-pages")
+  implementation("io.ktor:ktor-server-call-id")
+  implementation("io.ktor:ktor-server-call-logging")
   
   // Mail sending
-  implementation(libs.apache.email)
+  implementation("org.apache.commons:commons-email:$apacheEmail")
 }
