@@ -19,8 +19,7 @@ private fun getZeroTwoImgStream() = FileU.getResourceAsStream(
 )
 
 
-fun Application.configureImgTestRoutes() {
-  
+fun Application.addImgTestRoutes() {
   routing {
     
     // http://localhost:40019/test/image/ban.jpg
@@ -29,8 +28,8 @@ fun Application.configureImgTestRoutes() {
       
       call.caching = CachingOptions(CacheControl.NoStore(null))
       call.respondOutputStream(
+        status = HttpStatusCode.OK,
         contentType = ContentType.parse("image/jpg"),
-        status = HttpStatusCode.OK
       ) { banImgStream.transferTo(this) }
     }
     // http://localhost:40019/test/image/zerotwo.jpg
@@ -39,8 +38,8 @@ fun Application.configureImgTestRoutes() {
       
       call.caching = CachingOptions(CacheControl.NoStore(null))
       call.respondOutputStream(
+        status = HttpStatusCode.OK,
         contentType = ContentType.parse("image/jpg"),
-        status = HttpStatusCode.OK
       ) { banImgStream.transferTo(this) }
     }
     
@@ -55,7 +54,7 @@ fun Application.configureImgTestRoutes() {
       if (imgError) {
         return@get call.respond(
           HttpStatusCode.InternalServerError,
-          "Image error enabled"
+          "Image error enabled",
         )
       }
       
@@ -63,8 +62,8 @@ fun Application.configureImgTestRoutes() {
       
       call.caching = CachingOptions(CacheControl.NoStore(null))
       call.respondOutputStream(
+        status = HttpStatusCode.OK,
         contentType = ContentType.parse("image/jpg"),
-        status = HttpStatusCode.OK
       ) { banImgStream.transferTo(this) }
     }
     
@@ -90,8 +89,8 @@ fun Application.configureImgTestRoutes() {
       
       call.caching = CachingOptions(CacheControl.NoStore(null))
       call.respondOutputStream(
+        status = HttpStatusCode.OK,
         contentType = ContentType.parse("image/jpg"),
-        status = HttpStatusCode.OK
       ) { banImgStream.transferTo(this) }
     }
     
@@ -110,5 +109,4 @@ fun Application.configureImgTestRoutes() {
     
     
   }
-  
 }

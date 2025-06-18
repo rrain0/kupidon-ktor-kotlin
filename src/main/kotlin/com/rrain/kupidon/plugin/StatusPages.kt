@@ -14,14 +14,14 @@ fun Application.configureStatusPages() {
     // Configure responses from exceptions
     // Will be configured in specific route handlers
     exception<Throwable> { call, cause ->
-      when (cause){
-        /*is AuthenticationException -> call.respond(
-          HttpStatusCode.Unauthorized,
-          object {
-            val code = cause.code
-            val msg = cause.message
-          }
-        )*/
+      when (cause) {
+        // is AuthenticationException -> call.respond(
+        //   HttpStatusCode.Unauthorized,
+        //   mapOf(
+        //     "code" to cause.code,
+        //     "msg" to cause.message,
+        //   ),
+        // )
         
         else -> {
           call.respondText(
@@ -35,7 +35,7 @@ fun Application.configureStatusPages() {
     
     // Configure responses from status codes
     status(HttpStatusCode.NotFound) { call, status ->
-      call.respondText(text = "404 Not Found", status = status)
+      call.respondText(status = status, text = "404 Not Found")
     }
     
     /*

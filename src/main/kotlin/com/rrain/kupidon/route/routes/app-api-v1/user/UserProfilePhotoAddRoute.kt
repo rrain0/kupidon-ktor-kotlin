@@ -1,19 +1,18 @@
-package com.rrain.kupidon.route.routes.app.api.v1.user.routes
+package com.rrain.kupidon.route.routes.`app-api-v1`.user
 
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
-import com.rrain.kupidon.plugin.getUserId
+import com.rrain.kupidon.plugin.authUserUuid
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
-import com.rrain.kupidon.service.db.mongo.coll
-import com.rrain.kupidon.service.db.mongo.db
+import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
+import com.rrain.kupidon.service.db.mongo.collUsers
 import com.rrain.kupidon.service.db.mongo.model.UserDataType
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMetadataMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
-import com.rrain.kupidon.service.db.mongo.mongo
-import com.rrain.kupidon.service.db.mongo.useTransaction
-import com.rrain.kupidon.route.routes.app.api.v1.user.UserRoutes
+import com.rrain.kupidon.service.db.mongo.model.projectionUserMongo
+import com.rrain.kupidon.service.db.mongo.useMongoTransaction
 import com.rrain.`util-ktor`.request.getHostPort
 import com.rrain.util.uuid.toUuid
 import io.ktor.http.content.*
@@ -32,14 +31,11 @@ import java.util.UUID
 
 
 
-fun Application.configureUserRouteProfilePhotoAdd() {
-  
-  
-  
+fun Application.addUserProfilePhotoAddRoute() {
   routing {
     authenticate {
-      post(UserRoutes.postProfilePhoto) {
-        val userUuid = call.getUserId().toUuid()
+      post(ApiV1Routes.userProfilePhoto) {
+        val userUuid = authUserUuid
         
         val multipart = call.receiveMultipart()
         
@@ -103,8 +99,12 @@ fun Application.configureUserRouteProfilePhotoAdd() {
           }
         }
         
-        if (unknownPropError != null) return@post call.respondInvalidBody(unknownPropError)
-        if (invalidParamError != null) return@post call.respondInvalidBody(invalidParamError)
+        if (unknownPropError != null) {
+          return@post call.respondInvalidBody(unknownPropError)
+        }
+        if (invalidParamError != null) {
+          return@post call.respondInvalidBody(invalidParamError)
+        }
         if (partialPhoto.index == null) return@post call.respondInvalidBody(
           "field 'index' must exist and its type must be Int"
         )
@@ -142,17 +142,16 @@ fun Application.configureUserRouteProfilePhotoAdd() {
         /*if (photo.mimeType!="image/webp") return@post call.respondInvalidBody(
           "photo mimeType must be 'image/webp'"
         )*/
-        if (photo.binData.data.size > 0.4 * 1024 * 1024)
+        if (photo.binData.data.size > 0.4 * 1024 * 1024) {
           return@post call.respondInvalidBody(
             "photo bytes max size must be 0.4MB, " +
               "but yours is ${photo.binData} bytes"
           )
+        }
         
         
         
-        
-        val m = mongo()
-        val updatedUser = m.useTransaction { session ->
+        val updatedUser = useMongoTransaction { session ->
           val nUserId = UserMongo::id.name
           val nUserPwd = UserMongo::pwd.name
           val nUserName = UserMongo::name.name
@@ -167,10 +166,9 @@ fun Application.configureUserRouteProfilePhotoAdd() {
           val nPhotoBinData = UserProfilePhotoMongo::binData.name
           
           
-          val userById = m.db.coll<UserMongo>("users")
+          val userById = collUsers()
             .find(session, Filters.eq(nUserId, userUuid))
-            .projection(Document("$nUserPhotos.$nPhotoBinData", false))
-            .limit(1)
+            .projectionUserMongo()
             .firstOrNull()
           
           if (userById == null) {
@@ -196,29 +194,29 @@ fun Application.configureUserRouteProfilePhotoAdd() {
             )
           }
           
-          m.db.coll<UserMongo>("users")
-          .updateOne(session,
-            Filters.eq(nUserId, userUuid),
-            Updates.combine(
-              Updates.pushEach(nUserPhotos, listOf(photo)),
-              Updates.currentDate(nUserUpdated)
+          collUsers()
+            .updateOne(session,
+              Filters.eq(nUserId, userUuid),
+              Updates.combine(
+                Updates.pushEach(nUserPhotos, listOf(photo)),
+                Updates.currentDate(nUserUpdated)
+              )
             )
-          )
           
-          val updatedUser = m.db.coll<UserMongo>("users")
+          val updatedUser = collUsers()
             .find(session, Filters.eq(UserMongo::id.name, userUuid))
-            .projection(Document("$nUserPhotos.$nPhotoBinData", false))
+            .projectionUserMongo()
             .first()
           
           updatedUser
         }
         
-        call.respond(object {
-          val user = run {
+        call.respond(mapOf(
+          "user" to run {
             val (host, port) = call.request.getHostPort()
-            updatedUser.convertToSend(UserDataType.Current, host, port)
-          }
-        })
+            updatedUser.toApi(UserDataType.Current, host, port)
+          },
+        ))
       }
     }
   }

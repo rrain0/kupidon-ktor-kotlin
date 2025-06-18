@@ -10,7 +10,7 @@ import io.ktor.server.routing.*
 
 
 
-fun Application.configureJsonSerializationTestRoutes() {
+fun Application.addJsonSerializationTestRoutes() {
   routing {
     
     get("/test/json/map") {

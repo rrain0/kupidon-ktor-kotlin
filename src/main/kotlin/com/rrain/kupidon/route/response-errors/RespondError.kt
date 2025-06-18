@@ -16,12 +16,14 @@ import io.ktor.server.response.*
  */
 
 
-suspend inline fun ApplicationCall.respondBadRequest(code: String, msg: String) = this.respond(
+suspend inline fun ApplicationCall.respondBadRequest(
+  code: String, msg: String,
+) = this.respond(
   HttpStatusCode.BadRequest,
-  object {
-    val code = code
-    val msg = msg
-  }
+  mapOf(
+    "code" to code,
+    "msg" to msg,
+  ),
 )
 
 
@@ -31,30 +33,43 @@ suspend inline fun ApplicationCall.respondBadRequest(body: Any) = this.respond(
   body
 )
 
+suspend inline fun ApplicationCall.respondNotFound(
+  code: String = "NOT_FOUND", msg: String,
+) = this.respond(
+  HttpStatusCode.NotFound,
+  mapOf(
+    "code" to code,
+    "msg" to msg,
+  ),
+)
 
 
+
+// Некорректный формат тела запроса
+suspend inline fun ApplicationCall.respondInvalidBody(
+  msg: String? = null,
+) = this.respond(
+  HttpStatusCode.BadRequest,
+  mapOf(
+    "code" to ErrInvalidBody.code,
+    "msg" to (msg ?: ErrInvalidBody.msg),
+  ),
+)
+
+// Некорректный формат параметров запроса (query params)
+suspend inline fun ApplicationCall.respondInvalidParams(
+  msg: String? = null,
+) = this.respond(
+  HttpStatusCode.BadRequest,
+  mapOf(
+    "code" to ErrInvalidParams.code,
+    "msg" to (msg ?: ErrInvalidParams.msg),
+  ),
+)
 
 
 // Пользователь не найден
 suspend inline fun ApplicationCall.respondNoUserById() = this.respond(
   HttpStatusCode.BadRequest,
   ErrNoUserById,
-)
-
-// Некорректный формат тела запроса
-suspend inline fun ApplicationCall.respondInvalidBody(msg: String? = null) = this.respond(
-  HttpStatusCode.BadRequest,
-  object {
-    val code = ErrInvalidBody.code
-    val msg = msg ?: ErrInvalidBody.msg
-  }
-)
-
-// Некорректный формат параметров запроса (query params)
-suspend inline fun ApplicationCall.respondInvalidParams(msg: String? = null) = this.respond(
-  HttpStatusCode.BadRequest,
-  object {
-    val code = ErrInvalidParams.code
-    val msg = msg ?: ErrInvalidParams.msg
-  }
 )

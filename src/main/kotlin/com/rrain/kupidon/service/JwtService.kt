@@ -5,7 +5,7 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.rrain.kupidon.model.Role
-import com.rrain.kupidon.route.routes.app.api.v1.auth.AuthRoutes
+import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.`util-ktor`.application.get
 import com.rrain.util.`date-time`.zonedNow
 import com.rrain.`util-ktor`.application.appConfig
@@ -157,7 +157,7 @@ object JwtService {
       value = refreshToken,
       expires = JWT.decode(refreshToken).expiresAtAsInstant.toGMTDate(),
       domain = domain,
-      path = AuthRoutes.base, // only one path can be set
+      path = ApiV1Routes.auth, // only one path can be set
       secure = true,
       httpOnly = true,
     )
@@ -173,7 +173,7 @@ object JwtService {
       value = "",
       maxAge = 0,
       domain = domain,
-      path = AuthRoutes.base, // only one path can be set
+      path = ApiV1Routes.auth, // only one path can be set
       secure = true,
       httpOnly = true,
     )

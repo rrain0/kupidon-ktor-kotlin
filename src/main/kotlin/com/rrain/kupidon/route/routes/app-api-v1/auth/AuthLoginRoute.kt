@@ -5,12 +5,12 @@ import com.rrain.kupidon.service.JwtService
 import com.rrain.kupidon.service.PwdHashService
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
-import com.rrain.kupidon.service.db.mongo.coll
-import com.rrain.kupidon.service.db.mongo.db
+import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
+import com.rrain.kupidon.service.db.mongo.collUsers
 import com.rrain.kupidon.service.db.mongo.model.UserDataType
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
-import com.rrain.kupidon.service.db.mongo.mongo
+import com.rrain.kupidon.service.db.mongo.model.projectionUserMongo
 import com.rrain.`util-ktor`.request.getHostPort
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -22,41 +22,34 @@ import org.bson.Document
 
 
 
-fun Application.configureAuthRouteLogin() {
-  
-  
-  
+fun Application.addAuthLoginRoute() {
   routing {
     
-    
-    
-    data class LoginRequest(
+    data class LoginBodyIn(
       val login: String,
       val pwd: String
     )
-    post(AuthRoutes.login) {
+    
+    post(ApiV1Routes.authLogin) {
       val login =
-        try { call.receive<LoginRequest>() }
-        catch (ex: Exception) {
-          return@post call.respondInvalidBody()
-        }
+        try { call.receive<LoginBodyIn>() }
+        catch (ex: Exception) { return@post call.respondInvalidBody() }
       
-      val m = mongo()
       val nUserEmail = UserMongo::email.name
       val nUserPhotos = UserMongo::photos.name
       val nPhotoBinData = UserProfilePhotoMongo::binData.name
       
-      val user = m.db.coll<UserMongo>("users")
+      val user = collUsers()
         .find(Filters.eq(nUserEmail, login.login))
-        .projection(Document("$nUserPhotos.$nPhotoBinData", false))
-        .limit(1)
+        .projectionUserMongo()
         .firstOrNull()
       
-      if (user == null || !PwdHashService.checkPwd(login.pwd, user.pwd))
+      if (user == null || !PwdHashService.checkPwd(login.pwd, user.pwd)) {
         return@post call.respondBadRequest(
           code = "NO_USER",
           msg = "There is no user with such login-password",
         )
+      }
       
       val id = user.id.toString()
       val roles = user.roles
@@ -71,20 +64,13 @@ fun Application.configureAuthRouteLogin() {
       call.response.cookies.append(
         JwtService.generateRefreshTokenCookie(refreshToken,domain)
       )
-      call.respond(object {
-        val accessToken = accessToken
-        val user = run {
+      call.respond(mapOf(
+        "accessToken" to accessToken,
+        "user" to run {
           val (host, port) = call.request.getHostPort()
-          user.convertToSend(UserDataType.Current, host, port)
+          user.toApi(UserDataType.Current, host, port)
         }
-      })
+      ))
     }
-    
-    
-    
-    
-    
-    
   }
-  
 }

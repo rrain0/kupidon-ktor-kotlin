@@ -1,6 +1,6 @@
 package com.rrain.kupidon.service.db.mongo.model
 
-import com.rrain.kupidon.route.routes.app.api.v1.user.UserRoutes
+import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import io.ktor.http.*
 import java.util.UUID
 
@@ -14,7 +14,7 @@ data class UserProfilePhotoMetadataMongo(
   val mimeType: String,
 ) {
   
-  fun convertToSend(
+  fun toApi(
     userId: UUID,
     host: String,
     port: Int,
@@ -25,9 +25,9 @@ data class UserProfilePhotoMetadataMongo(
       "name" to name,
       "mimeType" to mimeType,
       "url" to run {
-        val path = UserRoutes.getProfilePhoto
-        val userIdParam = UserRoutes.getProfilePhotoParamUserId
-        val photoIdParam = UserRoutes.getProfilePhotoParamPhotoId
+        val path = ApiV1Routes.userProfilePhoto
+        val userIdParam = ApiV1Routes.userProfilePhotoNameParams.userId
+        val photoIdParam = ApiV1Routes.userProfilePhotoNameParams.photoId
         val photoId = it.id
         // TODO save extension in db instead of mime type (maxLen = 20)
         val extension = Regex("""[^/]+/(?<ext>[^/]+)""")

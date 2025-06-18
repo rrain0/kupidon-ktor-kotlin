@@ -6,12 +6,14 @@ import com.auth0.jwt.exceptions.JWTVerificationException
 import com.auth0.jwt.exceptions.SignatureVerificationException
 import com.auth0.jwt.exceptions.TokenExpiredException
 import com.rrain.kupidon.service.*
+import com.rrain.util.uuid.toUuid
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
-
+import io.ktor.server.routing.RoutingContext
+import java.util.UUID
 
 
 
@@ -125,7 +127,9 @@ class MyJWTAuthenticationProvider : AuthenticationProvider(Config()) {
 
 
 
-fun ApplicationCall.getUserId(): String = this.principal<JWTPrincipal>()!!.subject!!
+val RoutingContext.authUserUuid: UUID get() = (
+  this.call.principal<JWTPrincipal>()!!.subject!!.toUuid()
+)
 
 
 

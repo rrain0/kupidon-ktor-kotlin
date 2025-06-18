@@ -17,16 +17,9 @@ import org.bson.types.ObjectId
 import java.util.UUID
 
 
-fun Application.configureMongoTestRoutes(){
-  
-  
-  
-  
+
+fun Application.addMongoTestRoutes() {
   routing {
-    
-    
-    
-    
     
     data class Test2(
       val _id: ObjectId,
@@ -34,7 +27,7 @@ fun Application.configureMongoTestRoutes(){
       val string: String,
       val map: Document?,
     )
-    get("/test/mongo/test/test2/get-all"){
+    get("/test/mongo/test/test2/get-all") {
       val coll = MongoDbService.db("test").coll<Test2>("test2")
       call.respond(coll.find().toList())
     }
@@ -51,7 +44,7 @@ fun Application.configureMongoTestRoutes(){
       val cast: List<String>,
       val type: String,
     )
-    get("/test/mongo/get-all"){
+    get("/test/mongo/get-all") {
       val testDb = MongoDbService.db("test")
       
       //testDb.createView()
@@ -65,7 +58,7 @@ fun Application.configureMongoTestRoutes(){
     }
     
     
-    get("/test/mongo/update-all"){
+    get("/test/mongo/update-all") {
       val movieColl = MongoDbService.db("test").coll<Movie>("movies")
       movieColl.updateMany(
         Filters.empty(),
@@ -76,7 +69,7 @@ fun Application.configureMongoTestRoutes(){
     }
     
     
-    get("/test/mongo/get-all-transaction"){
+    get("/test/mongo/get-all-transaction") {
       MongoDbService.client.useTransaction { session ->
         val movieColl = MongoDbService.db("test").coll<Movie>("movies")
         
@@ -104,7 +97,7 @@ fun Application.configureMongoTestRoutes(){
     }
     
     
-    get("/test/mongo/indexes"){
+    get("/test/mongo/indexes") {
       data class Index(
         val _id: ObjectId,
         val index: Int,
@@ -161,5 +154,4 @@ fun Application.configureMongoTestRoutes(){
     }
     
   }
-  
 }

@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.routes.app.api.v1.user.routes
+package com.rrain.kupidon.route.routes.`app-api-v1`.user
 
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
@@ -6,10 +6,7 @@ import io.ktor.server.routing.*
 
 
 
-fun Application.configureUserRouteEmailInitialVerify() {
-  
-  
-  
+fun Application.addUserEmailInitialVerifyRoute() {
   routing {
     
     
@@ -139,7 +136,4 @@ fun Application.configureUserRouteEmailInitialVerify() {
     
     
   }
-  
-  
-  
 }

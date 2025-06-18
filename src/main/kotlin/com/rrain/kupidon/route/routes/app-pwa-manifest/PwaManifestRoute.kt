@@ -1,26 +1,17 @@
-package com.rrain.kupidon.route.routes.app.`pwa-manifest`
+package com.rrain.kupidon.route.routes.`app-pwa-manifest`
 
+import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlin.collections.get
 
 
 
-object PwaManifestRoute {
-  const val manifest = "/manifest.json"
-}
 
-
-
-fun Application.configurePwaManifestRoute() {
-  
-  
-  
+fun Application.addPwaManifestRoute() {
   routing {
-    
-    
-    
-    get(PwaManifestRoute.manifest) {
+    get(ApiV1Routes.pwaManifest) {
       
       //val headers = call.printHeaders()
       //println("headers: $headers")
@@ -84,7 +75,7 @@ fun Application.configurePwaManifestRoute() {
       )
       
       
-      val searchParams = call.parameters
+      val searchParams = call.request.queryParameters
       
       val baseId = "kupidon-react-pwa"
       val nodeEnvMap = mapOf(
@@ -112,8 +103,5 @@ fun Application.configurePwaManifestRoute() {
       
       call.respond(manifest)
     }
-    
-    
   }
-  
 }

@@ -41,7 +41,7 @@ data class UserMongo(
   val photos: List<UserProfilePhotoMetadataMongo>,
 ) {
   
-  fun convertToSend(
+  fun toApi(
     userType: UserDataType = UserDataType.Other,
     host: String,
     port: Int,
@@ -58,7 +58,7 @@ data class UserMongo(
       "age" to getAge(birthDate),
       "gender" to gender,
       "aboutMe" to aboutMe,
-      "photos" to photos.map { it.convertToSend(id, host, port) },
+      "photos" to photos.map { it.toApi(id, host, port) },
     )
     
     if (lvl >= 1) data.putAll(listOf(
@@ -84,7 +84,7 @@ data class UserMongo(
 
 
 
-fun FindFlow<UserMongo>.projectUserMongo(): FindFlow<UserMongo> {
+fun FindFlow<UserMongo>.projectionUserMongo(): FindFlow<UserMongo> {
   val nUserPhotos = UserMongo::photos.name
   val nPhotoBinData = UserProfilePhotoMongo::binData.name
   return projection(Document("$nUserPhotos.$nPhotoBinData", false))

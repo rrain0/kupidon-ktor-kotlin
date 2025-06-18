@@ -10,13 +10,8 @@ import io.ktor.server.routing.*
 
 
 
-fun Application.configureSendEmailTestRoutes(){
-  
-  
-  
+fun Application.addSendEmailTestRoutes() {
   routing {
-    
-    
     
     data class EmailRequest(val email: String?)
     get("/test/send-email"){
@@ -29,8 +24,5 @@ fun Application.configureSendEmailTestRoutes(){
       call.respond(HttpStatusCode.OK)
     }
     
-    
-    
   }
-  
 }

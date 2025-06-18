@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.routes.app.api.v1.user.routes
+package com.rrain.kupidon.route.routes.`app-api-v1`.user
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
@@ -9,25 +9,23 @@ import com.mongodb.client.model.Updates
 import com.mongodb.client.model.WriteModel
 import com.rrain.kupidon.model.Gender
 import com.rrain.kupidon.plugin.JacksonObjectMapper
-import com.rrain.kupidon.plugin.getUserId
+import com.rrain.kupidon.plugin.authUserUuid
 import com.rrain.kupidon.service.PwdHashService
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
-import com.rrain.kupidon.service.db.mongo.coll
-import com.rrain.kupidon.service.db.mongo.db
+import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
+import com.rrain.kupidon.service.db.mongo.collUsers
 import com.rrain.kupidon.service.db.mongo.model.UserDataType
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMetadataMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
-import com.rrain.kupidon.service.db.mongo.mongo
-import com.rrain.kupidon.service.db.mongo.useTransaction
-import com.rrain.kupidon.route.routes.app.api.v1.user.UserRoutes
+import com.rrain.kupidon.service.db.mongo.model.projectionUserMongo
+import com.rrain.kupidon.service.db.mongo.useMongoTransaction
 import com.rrain.`util-ktor`.request.getHostPort
 import com.rrain.util.`date-time`.toZonedDateTime
 import com.rrain.util.`date-time`.zonedDateTimePattern
 import com.rrain.util.`date-time`.zonedNow
-import com.rrain.util.uuid.toUuid
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -44,9 +42,7 @@ import java.util.UUID
 
 
 
-fun Application.configureUserRouteUpdate() {
-  
-  
+fun Application.addUserUpdateRoute() {
   
   data class ReplacePhoto(
     val id: UUID,
@@ -56,7 +52,6 @@ fun Application.configureUserRouteUpdate() {
     val remove: List<UUID>,
     val replace: List<ReplacePhoto>,
   )
-  
   
   data class PreparedPhotosUpdates(
     val remove: List<UUID>,
@@ -86,16 +81,14 @@ fun Application.configureUserRouteUpdate() {
   
   routing {
     authenticate {
-      put(UserRoutes.user) {
-        val userUuid = call.getUserId().toUuid()
+      put(ApiV1Routes.user) {
+        val userUuid = authUserUuid
         
         val data =
           try { call.receive<JsonNode>() }
-          catch (ex: Exception){
-            return@put call.respondInvalidBody()
-          }
+          catch (ex: Exception) { return@put call.respondInvalidBody() }
         
-        if (!data.isObject){
+        if (!data.isObject) {
           return@put call.respondInvalidBody(
             "Body must be json object"
           )
@@ -112,7 +105,7 @@ fun Application.configureUserRouteUpdate() {
         val update = Update()
         
         
-        data.fields().forEach { (k,v) -> when(k) {
+        data.properties().forEach { (k,v) -> when(k) {
           "name" -> {
             try {
               if (!v.isTextual) throw RuntimeException()
@@ -138,7 +131,7 @@ fun Application.configureUserRouteUpdate() {
                 .withMinute(0)
                 .withSecond(0)
                 .withNano(0)
-              if (ChronoUnit.YEARS.between(birthDate, nowWithUserZone)<18){
+              if (ChronoUnit.YEARS.between(birthDate, nowWithUserZone) < 18){
                 return@put call.respondInvalidBody(
                   "You must be at least 18 years old"
                 )
@@ -245,8 +238,7 @@ fun Application.configureUserRouteUpdate() {
         
         
         
-        val m = mongo()
-        val user = m.useTransaction { session ->
+        val user = useMongoTransaction { session ->
           val nUserId = UserMongo::id.name
           val nUserPwd = UserMongo::pwd.name
           val nUserName = UserMongo::name.name
@@ -261,13 +253,12 @@ fun Application.configureUserRouteUpdate() {
           val nPhotoBinData = UserProfilePhotoMongo::binData.name
           
           
-          val userById = m.db.coll<UserMongo>("users")
+          val userById = collUsers()
             .find(session, Filters.eq(nUserId, userUuid))
-            .projection(Document("$nUserPhotos.$nPhotoBinData", false))
-            .limit(1)
+            .projectionUserMongo()
             .firstOrNull()
           
-          if (userById==null) {
+          if (userById == null) {
             session.abortTransaction()
             return@put call.respondNoUserById()
           }
@@ -277,7 +268,7 @@ fun Application.configureUserRouteUpdate() {
           val writeList = mutableListOf<WriteModel<UserMongo>>()
           
           
-          if (update.newPwdHashed!=null) {
+          if (update.newPwdHashed != null) {
             if (userById.pwd!=update.currentPwdHashed) {
               session.abortTransaction()
               return@put call.respondBadRequest(
@@ -304,7 +295,7 @@ fun Application.configureUserRouteUpdate() {
               if (update::aboutMe.name in update.props)
                 add(Updates.set(nUserAboutMe, update.aboutMe))
             }
-            if (updates.isNotEmpty()){
+            if (updates.isNotEmpty()) {
               writeList += UpdateOneModel(
                 Filters.eq(nUserId, userUuid),
                 updates.let(Updates::combine)
@@ -338,10 +329,10 @@ fun Application.configureUserRouteUpdate() {
                 ))
               )
             }
-            val replaceJson = """
+            val replaceJson = $$"""
               db.users.updateOne(
                 { id: UUID("<user-uuid-as-string>") },
-                { ${'$'}set: { "photos.${'$'}[i].index": <new-photo-index> } },
+                { $set: { "photos.$[i].index": <new-photo-index> } },
                 { arrayFilters: [{ "i.id": UUID("<photo-uuid-as-string>") }] }
               )
             """.trimIndent()
@@ -354,16 +345,16 @@ fun Application.configureUserRouteUpdate() {
             Updates.currentDate(nUserUpdated),
           )
           
-          m.db.coll<UserMongo>("users").bulkWrite(session,writeList)
+          collUsers().bulkWrite(session,writeList)
           
           
-          val updatedUser = m.db.coll<UserMongo>("users")
+          val updatedUser = collUsers()
             .find(session, Filters.eq(UserMongo::id.name, userUuid))
-            .projection(Document("$nUserPhotos.$nPhotoBinData", false))
+            .projectionUserMongo()
             .first()
           
           // check photo indices uniqueness
-          if (updatedUser.photos.size != updatedUser.photos.map { it.index }.toSet().size){
+          if (updatedUser.photos.size != updatedUser.photos.map { it.index }.toSet().size) {
             session.abortTransaction()
             return@put call.respondInvalidBody(
               "Duplicate photo index"
@@ -375,12 +366,12 @@ fun Application.configureUserRouteUpdate() {
         
         
         
-        call.respond(object {
-          val user = run {
+        call.respond(mapOf(
+          "user" to run {
             val (host, port) = call.request.getHostPort()
-            user.convertToSend(UserDataType.Current, host, port)
-          }
-        })
+            user.toApi(UserDataType.Current, host, port)
+          },
+        ))
       }
     }
   }

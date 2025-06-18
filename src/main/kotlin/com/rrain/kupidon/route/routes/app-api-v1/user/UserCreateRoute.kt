@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.routes.app.api.v1.user.routes
+package com.rrain.kupidon.route.routes.`app-api-v1`.user
 
 import com.mongodb.client.model.Filters
 import com.rrain.kupidon.model.Gender
@@ -8,16 +8,14 @@ import com.rrain.kupidon.service.lang.`ui-values`.AppUiText
 import com.rrain.kupidon.service.lang.`ui-values`.EmailInitialVerificationUiText
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
-import com.rrain.kupidon.service.db.mongo.coll
-import com.rrain.kupidon.service.db.mongo.db
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
-import com.rrain.kupidon.service.db.mongo.useTransaction
 import com.rrain.kupidon.service.lang.Lang
 import com.rrain.kupidon.`mini-libs`.`ui-text`.pickUiValue
-import com.rrain.kupidon.route.routes.app.api.v1.user.UserRoutes
+import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
+import com.rrain.kupidon.service.db.mongo.collUsers
 import com.rrain.kupidon.service.db.mongo.model.UserDataType
-import com.rrain.kupidon.service.db.mongo.model.projectUserMongo
-import com.rrain.kupidon.service.db.mongo.mongo
+import com.rrain.kupidon.service.db.mongo.model.projectionUserMongo
+import com.rrain.kupidon.service.db.mongo.useMongoTransaction
 import com.rrain.`util-ktor`.request.getHostPort
 import com.rrain.util.validation.emailPattern
 import com.rrain.util.`date-time`.zonedNow
@@ -35,29 +33,20 @@ import java.util.*
 
 
 
-fun Application.configureUserRouteCreate() {
-  
-  
-  
-  
+fun Application.addUserCreateRoute() {
   routing {
     
-    
-    
-    data class UserCreateReq(
+    data class UserCreateBodyIn(
       val email: String,
       val pwd: String,
       val name: String,
       val gender: Gender,
       val birthDate: ZonedDateTime,
     )
-    post(UserRoutes.user) {
-      val userToCreate = try {
-        call.receive<UserCreateReq>()
-      }
-      catch (ex: Exception) {
-        return@post call.respondInvalidBody()
-      }
+    
+    post(ApiV1Routes.user) {
+      val userToCreate = try { call.receive<UserCreateBodyIn>() }
+      catch (ex: Exception) { return@post call.respondInvalidBody() }
       
       
       if (!userToCreate.email.matches(emailPattern)) {
@@ -123,15 +112,13 @@ fun Application.configureUserRouteCreate() {
       )
       
       
-      val m = mongo()
-      val user = m.useTransaction { session ->
+      val user = useMongoTransaction { session ->
         val nUserId = UserMongo::id.name
         val nUserEmail = UserMongo::email.name
         
-        val userByEmail = m.db.coll<UserMongo>("users")
+        val userByEmail = collUsers()
           .find(session, Filters.eq(nUserEmail, tryUser.email))
-          .projectUserMongo()
-          .limit(1)
+          .projectionUserMongo()
           .firstOrNull()
         
         if (userByEmail != null) return@post call.respondBadRequest(
@@ -139,22 +126,22 @@ fun Application.configureUserRouteCreate() {
           msg = "User with such email already exists",
         )
         
-        m.db.coll<UserMongo>("users")
+        collUsers()
           .insertOne(session, tryUser)
         
-        m.db.coll<UserMongo>("users")
+        collUsers()
           .find(session, Filters.eq(nUserId, tryUser.id))
-          .projectUserMongo()
-          .limit(1)
+          .projectionUserMongo()
           .first()
       }
       
       
       val id = user.id
-      val verificationToken = JwtService
-        .generateVerificationAccessToken(id.toString(), user.email)
+      val verificationToken = JwtService.generateVerificationAccessToken(
+        id.toString(), user.email
+      )
       
-      val langs = call.parameters.getAll("lang")!!.map { Lang.getOrDefault(it) }
+      val langs = call.request.queryParameters.getAll("lang")!!.map { Lang.getOrDefault(it) }
       
       val appName = AppUiText.appName.pickUiValue(langs).value
       val emailTitle = EmailInitialVerificationUiText.emailTitle.pickUiValue(langs).value
@@ -162,8 +149,8 @@ fun Application.configureUserRouteCreate() {
         EmailInitialVerificationUiText.EmailContentParams(
           userName = user.name,
           verificationUrl = call.request.origin.run {
-            val url = "$scheme://$serverHost:$serverPort${UserRoutes.emailInitialVerification}"
-            val query = "${UserRoutes.verifyTokenParamName}=$verificationToken"
+            val url = "$scheme://$serverHost:$serverPort${ApiV1Routes.userVerificationEmailInitial}"
+            val query = "${ApiV1Routes.userVerificationEmailInitialParams.verificationToken}=$verificationToken"
             url + query
           },
         )
@@ -199,13 +186,13 @@ fun Application.configureUserRouteCreate() {
       call.response.cookies.append(
         JwtService.generateRefreshTokenCookie(refreshToken,domain)
       )
-      call.respond(object {
-        val accessToken = accessToken
-        val user = run {
+      call.respond(mapOf(
+        "accessToken" to accessToken,
+        "user" to run {
           val (host, port) = call.request.getHostPort()
-          user.convertToSend(UserDataType.Current, host, port)
-        }
-      })
+          user.toApi(UserDataType.Current, host, port)
+        },
+      ))
     }
     
     

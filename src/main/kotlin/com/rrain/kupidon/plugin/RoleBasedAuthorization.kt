@@ -64,11 +64,11 @@ val RoleBasedAuthorizationPlugin = createRouteScopedPlugin(
       if (!authorized) {
         val msg = "User must have all these permissions: ${endpointPermissions.joinToString()}"
         logger.debug("Authorization failed for ${call.request.path()}. $msg")
-        call.respond(HttpStatusCode.Forbidden, object {
-          val code = "LACK_OF_PERMISSION"
-          val requiredPermissions = endpointPermissions
-          val msg = msg
-        })
+        call.respond(HttpStatusCode.Forbidden, mapOf(
+          "code" to "LACK_OF_PERMISSION",
+          "requiredPermissions" to endpointPermissions,
+          "msg" to msg,
+        ))
       }
     }
   }

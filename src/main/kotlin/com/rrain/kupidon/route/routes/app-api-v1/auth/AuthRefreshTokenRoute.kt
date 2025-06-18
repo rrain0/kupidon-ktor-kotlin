@@ -4,34 +4,25 @@ import com.auth0.jwt.exceptions.*
 import com.mongodb.client.model.Filters
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
+import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.*
 import com.rrain.kupidon.service.JwtService.getUserId
-import com.rrain.kupidon.service.db.mongo.coll
-import com.rrain.kupidon.service.db.mongo.db
+import com.rrain.kupidon.service.db.mongo.collUsers
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
-import com.rrain.kupidon.service.db.mongo.mongo
+import com.rrain.kupidon.service.db.mongo.model.projectionUserMongo
 import com.rrain.util.uuid.toUuid
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.firstOrNull
-import org.bson.Document
 
 
 
-fun Application.configureAuthRouteRefresh() {
-  
-  
-  
-  
+fun Application.addAuthRefreshTokensRoute() {
   routing {
-    
-    
-    
-    
-    get(AuthRoutes.refresh) {
+    get(ApiV1Routes.authRefreshTokens) {
       val refreshToken = call.request.cookies[JwtService.config.refreshTokenCookieName]
       
       refreshToken ?: return@get call.respondBadRequest(
@@ -59,20 +50,15 @@ fun Application.configureAuthRouteRefresh() {
       }
       
       
-      val userUuid = try { decodedRefresh.getUserId().toUuid() }
-      catch (ex: Exception) {
+      val userUuid = decodedRefresh.getUserId().toUuid()
       
-      }
-      
-      val m = mongo()
       val nUserId = UserMongo::id.name
       val nUserPhotos = UserMongo::photos.name
       val nPhotoBinData = UserProfilePhotoMongo::binData.name
       
-      val user = m.db.coll<UserMongo>("users")
+      val user = collUsers()
         .find(Filters.eq(nUserId, userUuid))
-        .projection(Document("$nUserPhotos.$nPhotoBinData", false))
-        .limit(1)
+        .projectionUserMongo()
         .firstOrNull()
       
       user ?: return@get call.respondNoUserById()
@@ -89,13 +75,9 @@ fun Application.configureAuthRouteRefresh() {
       call.response.cookies.append(
         JwtService.generateRefreshTokenCookie(newRefreshToken,domain)
       )
-      call.respond(object {
-        val accessToken = newAccessToken
-      })
+      call.respond(mapOf(
+        "accessToken" to newAccessToken
+      ))
     }
-    
-    
-    
   }
-  
 }

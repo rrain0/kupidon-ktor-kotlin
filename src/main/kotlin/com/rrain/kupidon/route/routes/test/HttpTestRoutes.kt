@@ -1,6 +1,7 @@
 package com.rrain.kupidon.route.routes.test
 
 import com.rrain.`util-ktor`.application.printHeaders
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
@@ -9,46 +10,88 @@ import io.ktor.server.routing.*
 
 
 
-fun Application.configureHttpTestRoutes() {
-  
+// https://ktor.io/docs/server-routing.html#match_url
+
+//  /user/{login} - url with 'login' path parameter segment
+//  /user/* - url with any path segment
+//  /user/{...} - url with any rest path
+//  /user/{param...} - url with 'param' rest path
+//  Regex("""/.+/hello""") - we can match url against regex
+
+fun Application.addHttpTestRoutes() {
   routing {
     
-    get("/test/url-path-params") {
+    
+    //  Example: /test/url/url/*/8
+    //  Result: {
+    //    "url": "/test/url/url/*/8"
+    //  }
+    get("/test/url/url/{...}") {
       val url = call.request.uri
-      println("url (path & params): $url")
-      // example: "url (path & params): /test/url-path-params?name=a"
-      call.respond(object {
-        val urlPathParams = url
-      })
+      call.respond(mapOf("url" to url))
     }
     
     
-    get("/test/params") {
+    // Example: /test/url/path-params/some-type/any/some-id/888/aa8
+    // Result: {
+    //   "type": "some-type",
+    //   "id": "some-id",
+    //   "restAt0": "888",
+    //   "rest": ["888", "aa8"],
+    // }
+    get("/test/url/path-params/{type}/*/{id}/{rest...}") {
+      val type = call.request.pathVariables["type"]
+      val id = call.request.pathVariables["id"]
       // get only first occurrence
-      val param = call.parameters["param"]
+      val restAt0 = call.request.pathVariables["rest"]
       // get all occurrences as list
-      val arrayParam = call.parameters.getAll("arrayParam")
-      call.respond(object {
-        val param = param
-        val arrayParam = arrayParam
-      })
-      /*
-      Example: /test/params?param=sdf,j&param=h,hh&arrayParam=firs,t&arrayParam=second
-      Result: {
-        "param" : "sdf,j",
-        "arrayParam" : [ "firs,t", "second" ]
-      }
-      */
+      val rest = call.request.pathVariables.getAll("rest")
+      call.respond(mapOf(
+        "type" to type,
+        "id" to id,
+        "restAt0" to restAt0,
+        "rest" to rest,
+      ))
     }
+    
+    
+    // Example: /test/url/regex-path-params/aaa/bbbccc/end
+    // Result: {
+    //   "part": "aaa/bbbc"
+    // }
+    get(Regex("""/test/url/regex-path-params/(?<part>.*)cc/end""")) {
+      val part = call.request.pathVariables["part"]
+      call.respond(mapOf(
+        "part" to part,
+      ))
+    }
+    
+    
+    // Example: /test/url/query-params?param=sdf,j&param=h,hh&arrayParam=firs,t&arrayParam=second
+    // Result: {
+    //   "param": "sdf,j",
+    //   "arrayParam": ["firs,t", "second"]
+    // }
+    get("/test/url/query-params") {
+      // get only first occurrence
+      val param = call.request.queryParameters["param"]
+      // get all occurrences as list
+      val arrayParam = call.request.queryParameters.getAll("arrayParam")
+      call.respond(mapOf(
+        "param" to param,
+        "arrayParam" to arrayParam,
+      ))
+    }
+    
     
     get("/test/http/headers") {
       val headers = call.printHeaders()
       call.respond(headers)
       
-      
       // Set headers: https://ktor.io/docs/responses.html#file
       //call.response.header(HttpHeaders.ContentType, "application/json")
     }
+    
     
     get("/test/http/proxy-info") {
       // /manifest.json?lang=ru-RU
@@ -94,5 +137,4 @@ fun Application.configureHttpTestRoutes() {
     }
     
   }
-  
 }

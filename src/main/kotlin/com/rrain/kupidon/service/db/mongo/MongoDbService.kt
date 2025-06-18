@@ -4,6 +4,8 @@ import com.mongodb.*
 import com.mongodb.kotlin.client.coroutine.ClientSession
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
+import com.rrain.kupidon.service.db.mongo.model.ChatMessageMongo
+import com.rrain.kupidon.service.db.mongo.model.ChatMongo
 import com.rrain.kupidon.service.db.mongo.model.UserMongo
 import com.rrain.kupidon.service.db.mongo.model.UserToUserLikeMongo
 import com.rrain.`util-ktor`.application.appConfig
@@ -42,30 +44,9 @@ fun Application.configureMongoDbService() {
   val caCert = appConfig["db.connection.mongo.caCert"]
   
   
-  
-  val codecRegistry = CodecRegistries.fromRegistries(
-    //CodecRegistries.fromCodecs(IntegerCodec(), PowerStatusCodec()),
-    //CodecRegistries.fromProviders(MonolightCodecProvider()),
-    
-    CodecRegistries.fromCodecs(
-      object : Codec<ZonedDateTime> {
-        override fun getEncoderClass() = ZonedDateTime::class.java
-        override fun encode(writer: BsonWriter, value: ZonedDateTime, encoderContext: EncoderContext) {
-          writer.writeDateTime(value.toTimestamp())
-        }
-        override fun decode(reader: BsonReader, decoderContext: DecoderContext): ZonedDateTime {
-          return reader.readDateTime().toZonedDateTime()
-        }
-      }
-    ),
-    
-    MongoClientSettings.getDefaultCodecRegistry()
-  )
-  
-  
   val connectionString = URLBuilder(
-    "mongodb://$host:$port/" +
-      "?replicaSet=$rs&tls=true&authSource=${'$'}external&authMechanism=MONGODB-X509"
+    $$"mongodb://$$host:$$port/" +
+      $$"?replicaSet=$$rs&tls=true&authSource=$external&authMechanism=MONGODB-X509"
   ).buildString()
   
   
@@ -75,10 +56,10 @@ fun Application.configureMongoDbService() {
     .applyConnectionString(ConnectionString(connectionString))
     .applyToSslSettings { builder ->
       builder.enabled(true)
-      builder.context(getSslContext(backendClientCert, caCert))
+      builder.context(getMongoSslContext(backendClientCert, caCert))
     }
     .uuidRepresentation(UuidRepresentation.STANDARD)
-    .codecRegistry(codecRegistry)
+    .codecRegistry(getMongoCodecRegisty())
     .build()
   
   // Reuse Your Client
@@ -96,8 +77,28 @@ fun Application.configureMongoDbService() {
 
 
 
+fun getMongoCodecRegisty() = CodecRegistries.fromRegistries(
+  //CodecRegistries.fromCodecs(IntegerCodec(), PowerStatusCodec()),
+  //CodecRegistries.fromProviders(MonolightCodecProvider()),
+  
+  CodecRegistries.fromCodecs(
+    object : Codec<ZonedDateTime> {
+      override fun getEncoderClass() = ZonedDateTime::class.java
+      override fun encode(writer: BsonWriter, value: ZonedDateTime, encoderContext: EncoderContext) {
+        writer.writeDateTime(value.toTimestamp())
+      }
+      override fun decode(reader: BsonReader, decoderContext: DecoderContext): ZonedDateTime {
+        return reader.readDateTime().toZonedDateTime()
+      }
+    },
+  ),
+  
+  MongoClientSettings.getDefaultCodecRegistry(),
+)
 
-fun getSslContext(backendClientCert: String, caCert: String) = run {
+
+
+fun getMongoSslContext(backendClientCert: String, caCert: String) = run {
   val pkcs12CertPwd = "0000".toCharArray()
   val keyStore = KeyStore.getInstance("PKCS12").apply {
     FileInputStream(backendClientCert).use {
@@ -168,6 +169,8 @@ inline fun <reified T : Any> MongoDatabase.coll(collName : String) = (
 
 fun collUsers() = mongo().db.coll<UserMongo>("users")
 fun collUserToUserLikes() = mongo().db.coll<UserToUserLikeMongo>("userToUserLikes")
+fun collChats() = mongo().db.coll<ChatMongo>("chats")
+fun collChatsMessages() = mongo().db.coll<ChatMessageMongo>("chatsMessages")
 
 
 
@@ -199,3 +202,10 @@ suspend inline fun <T> MongoClient.useTransaction(
     result
   }
 }
+
+
+suspend inline fun <T> useMongoTransaction(
+  block: (session: ClientSession) -> T,
+): T = (
+  mongo().useTransaction(block)
+)

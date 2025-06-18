@@ -16,7 +16,7 @@ data class UserToUserLikeMongo(
   val createdAt: ZonedDateTime,
 ) {
   
-  fun convertToSend(): Map<String, Any?> {
+  fun toApi(): Map<String, Any?> {
     return mutableMapOf(
       "fromUserId" to fromUserId,
       "toUserId" to toUserId,

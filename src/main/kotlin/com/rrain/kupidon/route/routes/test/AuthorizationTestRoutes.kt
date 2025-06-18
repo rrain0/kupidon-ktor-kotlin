@@ -9,8 +9,7 @@ import io.ktor.server.routing.*
 
 
 
-fun Application.configureAuthorizationTestRoutes() {
-  
+fun Application.addAuthorizationTestRoutes() {
   routing {
     
     authenticate {
@@ -22,5 +21,4 @@ fun Application.configureAuthorizationTestRoutes() {
     }
     
   }
-  
 }

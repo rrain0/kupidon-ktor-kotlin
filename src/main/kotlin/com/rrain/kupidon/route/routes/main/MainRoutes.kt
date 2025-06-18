@@ -8,8 +8,7 @@ import io.ktor.server.routing.*
 
 
 
-fun Application.configureMainRoutes() {
-  
+fun Application.addMainRoutes() {
   routing {
     
     get("/ktor/hello") {
@@ -17,5 +16,4 @@ fun Application.configureMainRoutes() {
     }
     
   }
-  
 }

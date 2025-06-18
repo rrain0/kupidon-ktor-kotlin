@@ -7,9 +7,8 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.application.*
 
 
+
 lateinit var JacksonObjectMapper: ObjectMapper
-
-
 
 // Plugin to serialize response body object to json
 // and to deserialize request body from json to objects
@@ -21,6 +20,7 @@ fun Application.configureJsonSerialization() {
     
     // Install Jackson serialization
     jackson {
+      println("Create Jackson")
       JacksonObjectMapper = this.configureJson()
     }
     

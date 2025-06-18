@@ -1,25 +1,64 @@
 package com.rrain.kupidon.route
 
-import com.rrain.kupidon.route.routes.app.api.v1.auth.configureAuthRoutes
-import com.rrain.kupidon.route.routes.app.api.v1.`user-action`.configureUserActionRoutes
-import com.rrain.kupidon.route.routes.main.configureMainRoutes
-import com.rrain.kupidon.route.routes.app.`pwa-manifest`.configurePwaManifestRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.auth.addAuthOtherRoutes
+import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`.addChatMessageRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-messages`.addChatMessagesRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.users.addUsersMutualLikedRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.`user-to-user`.addUserToUserLikeRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserCreateRoute
+import com.rrain.kupidon.route.routes.main.addMainRoutes
+import com.rrain.kupidon.route.routes.`app-pwa-manifest`.addPwaManifestRoute
 import com.rrain.kupidon.route.routes.test.*
-import com.rrain.kupidon.route.routes.app.api.v1.user.configureUserRoutes
-import com.rrain.kupidon.route.routes.app.api.v1.`users-list`.configureUsersListRoutes
+import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserCurrentRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserEmailInitialVerifyRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserIdIdRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserUpdateRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserProfilePhotoAddRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserProfilePhotoGetRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.users.addUsersRoute
+import com.rrain.kupidon.route.routes.app.api.v1.auth.addAuthLoginRoute
+import com.rrain.kupidon.route.routes.app.api.v1.auth.addAuthRefreshTokensRoute
 import io.ktor.server.application.*
+import io.ktor.server.routing.IgnoreTrailingSlash
 
 
 
 fun Application.configureRouting() {
   
-  configureTestRoutes()
-  configureMainRoutes()
-  configurePwaManifestRoute()
-  configureAuthRoutes()
-  configureUserRoutes()
-  configureUsersListRoutes()
-  configureUserActionRoutes()
+  install(IgnoreTrailingSlash)
+  
+  
+  addMainRoutes()
+  
+  addAuthorizationTestRoutes()
+  addHttpTestRoutes()
+  addImgTestRoutes()
+  addJsonSerializationTestRoutes()
+  addMongoTestRoutes()
+  addSendEmailTestRoutes()
+  
+  
+  addPwaManifestRoute()
+  
+  addAuthLoginRoute()
+  addAuthRefreshTokensRoute()
+  addAuthOtherRoutes()
+  
+  addUserCurrentRoute()
+  addUserCreateRoute()
+  addUserUpdateRoute()
+  addUserIdIdRoute()
+  addUserProfilePhotoAddRoute()
+  addUserProfilePhotoGetRoute()
+  addUserEmailInitialVerifyRoute()
+  
+  addUserToUserLikeRoute()
+  
+  addUsersRoute()
+  addUsersMutualLikedRoute()
+  
+  addChatMessageRoute()
+  addChatMessagesRoute()
   
 }
 
