@@ -4,11 +4,12 @@ import com.mongodb.client.model.Filters
 import com.rrain.kupidon.plugin.authUserUuid
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
-import com.rrain.kupidon.service.db.mongo.collUsers
-import com.rrain.kupidon.service.db.mongo.model.UserDataType
-import com.rrain.kupidon.service.db.mongo.model.UserMongo
-import com.rrain.kupidon.service.db.mongo.model.projectionUserMongo
-import com.rrain.`util-ktor`.request.getHostPort
+import com.rrain.kupidon.service.mongo.collUsers
+import com.rrain.kupidon.service.mongo.model.UserDataType
+import com.rrain.kupidon.service.mongo.model.UserMongo
+import com.rrain.kupidon.service.mongo.model.projectionUserMongo
+import com.rrain.`util-ktor`.call.host
+import com.rrain.`util-ktor`.call.port
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
@@ -26,7 +27,7 @@ fun Application.addUserCurrentRoute() {
         
         val nUserId = UserMongo::id.name
         
-        val userById = collUsers()
+        val userById = collUsers
           .find(Filters.eq(nUserId, userUuid))
           .projectionUserMongo()
           .firstOrNull()
@@ -34,10 +35,7 @@ fun Application.addUserCurrentRoute() {
         userById ?: return@get call.respondNoUserById()
         
         call.respond(mapOf(
-          "user" to run {
-            val (host, port) = call.request.getHostPort()
-            userById.toApi(UserDataType.Current, host, port)
-          },
+          "user" to userById.toApi(UserDataType.Current, call.host, call.port),
         ))
       }
     }

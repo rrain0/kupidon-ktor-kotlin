@@ -67,17 +67,21 @@ fun Application.addHttpTestRoutes() {
     }
     
     
-    // Example: /test/url/query-params?param=sdf,j&param=h,hh&arrayParam=firs,t&arrayParam=second
+    // Example: /test/url/query-params?boolParam&param=s,j&param=h&arrayParam=firs,t&arrayParam=second
     // Result: {
-    //   "param": "sdf,j",
+    //   "boolParam": "",
+    //   "param": "s,j",
     //   "arrayParam": ["firs,t", "second"]
     // }
     get("/test/url/query-params") {
+      // ?boolParam => "", ?boolParam= => ""
+      val boolParam = call.request.queryParameters["boolParam"]
       // get only first occurrence
       val param = call.request.queryParameters["param"]
       // get all occurrences as list
       val arrayParam = call.request.queryParameters.getAll("arrayParam")
       call.respond(mapOf(
+        "boolParam" to boolParam,
         "param" to param,
         "arrayParam" to arrayParam,
       ))

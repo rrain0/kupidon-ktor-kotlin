@@ -20,7 +20,6 @@ fun Application.configureJsonSerialization() {
     
     // Install Jackson serialization
     jackson {
-      println("Create Jackson")
       JacksonObjectMapper = this.configureJson()
     }
     

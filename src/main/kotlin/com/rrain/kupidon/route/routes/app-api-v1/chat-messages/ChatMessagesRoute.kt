@@ -5,12 +5,11 @@ import com.rrain.kupidon.plugin.authUserUuid
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.`response-errors`.respondInvalidParams
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
-import com.rrain.kupidon.service.db.mongo.collChats
-import com.rrain.kupidon.service.db.mongo.collChatsMessages
-import com.rrain.kupidon.service.db.mongo.useTransaction
-import com.rrain.kupidon.service.db.mongo.mongo
-import com.rrain.kupidon.service.db.mongo.model.ChatMessageMongo
-import com.rrain.kupidon.service.db.mongo.model.ChatMongo
+import com.rrain.kupidon.service.mongo.collChats
+import com.rrain.kupidon.service.mongo.collChatsMessages
+import com.rrain.kupidon.service.mongo.model.ChatMessageMongo
+import com.rrain.kupidon.service.mongo.model.ChatMongo
+import com.rrain.kupidon.service.mongo.useSingleDocTransaction
 import com.rrain.util.uuid.toUuid
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
@@ -20,6 +19,9 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 
 
+
+// TODO put sort into db flow
+// TODO put mapToApi into flow
 
 fun Application.addChatMessagesRoute() {
   routing {
@@ -34,11 +36,10 @@ fun Application.addChatMessagesRoute() {
         
         
         
-        val m = mongo()
-        val chats = collChats()
-        val chatsMessages = collChatsMessages()
+        val chats = collChats
+        val chatsMessages = collChatsMessages
         
-        val messages = m.useTransaction { session ->
+        val messages = useSingleDocTransaction { session ->
           val nParticipantsIds = ChatMongo::participantsIds.name
           
           val nMessageChatId = ChatMessageMongo::chatId.name

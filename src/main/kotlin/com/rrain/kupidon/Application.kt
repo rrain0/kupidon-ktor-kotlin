@@ -8,7 +8,7 @@ import com.rrain.kupidon.plugin.configureStatusPages
 import com.rrain.kupidon.service.configureEmailService
 import com.rrain.kupidon.service.configureJwtService
 import com.rrain.kupidon.service.configurePwdHashing
-import com.rrain.kupidon.service.db.mongo.configureMongoDbService
+import com.rrain.kupidon.service.mongo.configureMongoDbService
 
 
 fun main(args: Array<String>) {

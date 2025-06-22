@@ -8,15 +8,16 @@ import com.rrain.kupidon.service.lang.`ui-values`.AppUiText
 import com.rrain.kupidon.service.lang.`ui-values`.EmailInitialVerificationUiText
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
-import com.rrain.kupidon.service.db.mongo.model.UserMongo
+import com.rrain.kupidon.service.mongo.model.UserMongo
 import com.rrain.kupidon.service.lang.Lang
 import com.rrain.kupidon.`mini-libs`.`ui-text`.pickUiValue
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
-import com.rrain.kupidon.service.db.mongo.collUsers
-import com.rrain.kupidon.service.db.mongo.model.UserDataType
-import com.rrain.kupidon.service.db.mongo.model.projectionUserMongo
-import com.rrain.kupidon.service.db.mongo.useMongoTransaction
-import com.rrain.`util-ktor`.request.getHostPort
+import com.rrain.kupidon.service.mongo.collUsers
+import com.rrain.kupidon.service.mongo.model.UserDataType
+import com.rrain.kupidon.service.mongo.model.projectionUserMongo
+import com.rrain.kupidon.service.mongo.useSingleDocTransaction
+import com.rrain.`util-ktor`.call.host
+import com.rrain.`util-ktor`.call.port
 import com.rrain.util.validation.emailPattern
 import com.rrain.util.`date-time`.zonedNow
 import io.ktor.server.application.*
@@ -112,11 +113,11 @@ fun Application.addUserCreateRoute() {
       )
       
       
-      val user = useMongoTransaction { session ->
+      val user = useSingleDocTransaction { session ->
         val nUserId = UserMongo::id.name
         val nUserEmail = UserMongo::email.name
         
-        val userByEmail = collUsers()
+        val userByEmail = collUsers
           .find(session, Filters.eq(nUserEmail, tryUser.email))
           .projectionUserMongo()
           .firstOrNull()
@@ -126,10 +127,10 @@ fun Application.addUserCreateRoute() {
           msg = "User with such email already exists",
         )
         
-        collUsers()
+        collUsers
           .insertOne(session, tryUser)
         
-        collUsers()
+        collUsers
           .find(session, Filters.eq(nUserId, tryUser.id))
           .projectionUserMongo()
           .first()
@@ -188,10 +189,7 @@ fun Application.addUserCreateRoute() {
       )
       call.respond(mapOf(
         "accessToken" to accessToken,
-        "user" to run {
-          val (host, port) = call.request.getHostPort()
-          user.toApi(UserDataType.Current, host, port)
-        },
+        "user" to user.toApi(UserDataType.Current, call.host, call.port),
       ))
     }
     

@@ -27,12 +27,16 @@ object ApiV1Routes {
   }
   
   val users = "$apiV1/users"
-  val usersMutualLiked = "$users/mutual-liked"
+  val usersMutuallyLiked = "$users/mutually-liked"
   
   val userToUser = "$apiV1/user-to-user"
   val userToUserLike = "$userToUser/like"
   
+  val chats = "$apiV1/chats"
+  
   val chatMessage = "$apiV1/chat-message"
+  val chatMessageToUserIdId = "$chatMessage/to-user-id/{id}"
+  val chatMessageToChatIdId = "$chatMessage/to-chat-id/{id}"
   
   val chatMessages = "$apiV1/chat-messages"
 }

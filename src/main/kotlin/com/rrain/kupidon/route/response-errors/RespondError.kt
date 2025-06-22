@@ -25,16 +25,19 @@ suspend inline fun ApplicationCall.respondBadRequest(
     "msg" to msg,
   ),
 )
-
-
-
 suspend inline fun ApplicationCall.respondBadRequest(body: Any) = this.respond(
   HttpStatusCode.BadRequest,
-  body
+  body,
 )
 
+
+
+
+suspend inline fun ApplicationCall.respondNotFound(msg: String) = (
+  respondNotFound("NOT_FOUND", msg)
+)
 suspend inline fun ApplicationCall.respondNotFound(
-  code: String = "NOT_FOUND", msg: String,
+  code: String, msg: String,
 ) = this.respond(
   HttpStatusCode.NotFound,
   mapOf(
@@ -47,29 +50,35 @@ suspend inline fun ApplicationCall.respondNotFound(
 
 // Некорректный формат тела запроса
 suspend inline fun ApplicationCall.respondInvalidBody(
-  msg: String? = null,
+  msg: String = "Invalid request body format",
 ) = this.respond(
   HttpStatusCode.BadRequest,
   mapOf(
-    "code" to ErrInvalidBody.code,
-    "msg" to (msg ?: ErrInvalidBody.msg),
+    "code" to "INVALID_INPUT_BODY",
+    "msg" to msg,
   ),
 )
 
 // Некорректный формат параметров запроса (query params)
 suspend inline fun ApplicationCall.respondInvalidParams(
-  msg: String? = null,
+  msg: String = "Invalid request params format",
 ) = this.respond(
   HttpStatusCode.BadRequest,
   mapOf(
-    "code" to ErrInvalidParams.code,
-    "msg" to (msg ?: ErrInvalidParams.msg),
+    "code" to "INVALID_PARAMS",
+    "msg" to msg,
   ),
 )
 
 
+
+
+// TODO refactor
 // Пользователь не найден
 suspend inline fun ApplicationCall.respondNoUserById() = this.respond(
   HttpStatusCode.BadRequest,
-  ErrNoUserById,
+  mapOf(
+    "code" to "NO_USER",
+    "msg" to "No user with such id",
+  ),
 )

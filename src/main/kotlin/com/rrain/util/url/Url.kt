@@ -3,6 +3,4 @@ package com.rrain.util.url
 
 
 
-val urlSinglePathSegmentPattern = (
-  Regex("""(/+([^/]+/*)?)?""")
-)
+val urlSinglePathSegmentPattern = Regex("""(/+([^/]+/*)?)?""")

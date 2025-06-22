@@ -15,14 +15,15 @@ import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
-import com.rrain.kupidon.service.db.mongo.collUsers
-import com.rrain.kupidon.service.db.mongo.model.UserDataType
-import com.rrain.kupidon.service.db.mongo.model.UserMongo
-import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMetadataMongo
-import com.rrain.kupidon.service.db.mongo.model.UserProfilePhotoMongo
-import com.rrain.kupidon.service.db.mongo.model.projectionUserMongo
-import com.rrain.kupidon.service.db.mongo.useMongoTransaction
-import com.rrain.`util-ktor`.request.getHostPort
+import com.rrain.kupidon.service.mongo.collUsers
+import com.rrain.kupidon.service.mongo.model.UserDataType
+import com.rrain.kupidon.service.mongo.model.UserMongo
+import com.rrain.kupidon.service.mongo.model.UserProfilePhotoMetadataMongo
+import com.rrain.kupidon.service.mongo.model.UserProfilePhotoMongo
+import com.rrain.kupidon.service.mongo.model.projectionUserMongo
+import com.rrain.kupidon.service.mongo.useSingleDocTransaction
+import com.rrain.`util-ktor`.call.host
+import com.rrain.`util-ktor`.call.port
 import com.rrain.util.`date-time`.toZonedDateTime
 import com.rrain.util.`date-time`.zonedDateTimePattern
 import com.rrain.util.`date-time`.zonedNow
@@ -238,7 +239,7 @@ fun Application.addUserUpdateRoute() {
         
         
         
-        val user = useMongoTransaction { session ->
+        val user = useSingleDocTransaction { session ->
           val nUserId = UserMongo::id.name
           val nUserPwd = UserMongo::pwd.name
           val nUserName = UserMongo::name.name
@@ -253,7 +254,7 @@ fun Application.addUserUpdateRoute() {
           val nPhotoBinData = UserProfilePhotoMongo::binData.name
           
           
-          val userById = collUsers()
+          val userById = collUsers
             .find(session, Filters.eq(nUserId, userUuid))
             .projectionUserMongo()
             .firstOrNull()
@@ -342,13 +343,13 @@ fun Application.addUserUpdateRoute() {
           
           writeList += UpdateOneModel(
             Filters.eq(nUserId, userUuid),
-            Updates.currentDate(nUserUpdated),
+            Updates.set(nUserUpdated, zonedNow()),
           )
           
-          collUsers().bulkWrite(session,writeList)
+          collUsers.bulkWrite(session,writeList)
           
           
-          val updatedUser = collUsers()
+          val updatedUser = collUsers
             .find(session, Filters.eq(UserMongo::id.name, userUuid))
             .projectionUserMongo()
             .first()
@@ -367,10 +368,7 @@ fun Application.addUserUpdateRoute() {
         
         
         call.respond(mapOf(
-          "user" to run {
-            val (host, port) = call.request.getHostPort()
-            user.toApi(UserDataType.Current, host, port)
-          },
+          "user" to user.toApi(UserDataType.Current, call.host, call.port),
         ))
       }
     }

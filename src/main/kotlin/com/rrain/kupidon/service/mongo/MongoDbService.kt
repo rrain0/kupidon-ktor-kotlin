@@ -1,13 +1,13 @@
-package com.rrain.kupidon.service.db.mongo
+package com.rrain.kupidon.service.mongo
 
 import com.mongodb.*
 import com.mongodb.kotlin.client.coroutine.ClientSession
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
-import com.rrain.kupidon.service.db.mongo.model.ChatMessageMongo
-import com.rrain.kupidon.service.db.mongo.model.ChatMongo
-import com.rrain.kupidon.service.db.mongo.model.UserMongo
-import com.rrain.kupidon.service.db.mongo.model.UserToUserLikeMongo
+import com.rrain.kupidon.service.mongo.model.ChatMessageMongo
+import com.rrain.kupidon.service.mongo.model.ChatMongo
+import com.rrain.kupidon.service.mongo.model.UserMongo
+import com.rrain.kupidon.service.mongo.model.UserToUserLikeMongo
 import com.rrain.`util-ktor`.application.appConfig
 import com.rrain.`util-ktor`.application.get
 import com.rrain.util.`date-time`.toTimestamp
@@ -150,62 +150,101 @@ object MongoDbService {
   lateinit var config: Config
   
   val client get() = config.client
-  val dbName get() = config.dbName
-  
-  val db get() = client.db(dbName)
-  fun db(dbName: String) = client.db(dbName)
+  val appDbName get() = config.dbName
 }
 
-fun mongo() = MongoDbService.client
-
-val MongoClient.db get() = this.getDatabase(MongoDbService.dbName)
+val mongo get() = MongoDbService.client
 
 fun MongoClient.db(dbName: String) = this.getDatabase(dbName)
+val MongoClient.appDb get() = this.getDatabase(MongoDbService.appDbName)
 
 inline fun <reified T : Any> MongoDatabase.coll(collName : String) = (
   this.getCollection<T>(collName)
 )
 
 
-fun collUsers() = mongo().db.coll<UserMongo>("users")
-fun collUserToUserLikes() = mongo().db.coll<UserToUserLikeMongo>("userToUserLikes")
-fun collChats() = mongo().db.coll<ChatMongo>("chats")
-fun collChatsMessages() = mongo().db.coll<ChatMessageMongo>("chatsMessages")
+fun mongoDb(dbName: String) = mongo.db(dbName)
+val mongoAppDb get() = mongo.appDb
+
+object CollNames {
+  val users = "users"
+  val userToUserLikes = "userToUserLikes"
+  val chats = "chats"
+  val chatMessages = "chatsMessages"
+}
+
+val collUsers get() = mongoAppDb.coll<UserMongo>(CollNames.users)
+val collUserToUserLikes get() = mongoAppDb.coll<UserToUserLikeMongo>(CollNames.userToUserLikes)
+val collChats get() = mongoAppDb.coll<ChatMongo>(CollNames.chats)
+val collChatsMessages get() = mongoAppDb.coll<ChatMessageMongo>(CollNames.chatMessages)
 
 
 
-suspend inline fun <T> MongoClient.useTransaction(
+
+
+// READ PREFERENCE
+// https://www.mongodb.com/docs/manual/core/read-preference/#std-label-replica-set-read-preference
+// Read preference describes how MongoDB clients route read operations to the members of a replica set.
+// Useful for balancing consistency vs. latency.
+// `primary`: Reads only from the primary node (default, ensures strong consistency).
+// `primaryPreferred`: Prefers the primary but falls back to a secondary if the primary is unavailable.
+// `secondary`: Reads from secondary nodes (may return slightly stale data but reduces load on the primary).
+// `secondaryPreferred`: Prefers secondaries but falls back to the primary if no secondary is available.
+// `nearest`: Reads from the node with the lowest latency, regardless of primary or secondary.
+
+// READ CONCERN
+// https://www.mongodb.com/docs/manual/reference/read-concern/
+// The readConcern option allows you to control the consistency
+// and isolation properties of the data read from replica sets and replica set shards.
+// Ensures the data read is consistent with the transaction’s requirements.
+// `local`: Sufficient for SINGLE-DOCUMENT operations.
+// Returns the most recent data available on the node (default, may not reflect writes acknowledged by a majority).
+// `majority`: Returns data that has been acknowledged by a majority of replica set members (ensures durability but may be slower).
+// `linearizable`: Ensures reads reflect all successful writes that completed before the read (strong consistency, only for primary reads).
+// `snapshot`: Reads from a consistent snapshot of data at the transaction’s start (ideal for multi-document transactions, MongoDB 4.0+).
+// `available`: Reads the most recent data, even if uncommitted (not typically used in transactions).
+
+// WRITE CONCERN
+// https://www.mongodb.com/docs/manual/reference/write-concern/
+// Write concern describes the level of acknowledgment requested from MongoDB for write operations
+// to a standalone mongod or to Replica sets or to sharded clusters.
+// In sharded clusters, mongos instances will pass the write concern on to the shards.
+// Ensures writes are durable and consistent across the replica set.
+// `w: 1`: Acknowledges the write on the primary node (default, fast but less durable).
+// `w: "majority"`: For CRITICAL transactions. Acknowledges the write after a majority of replica set members replicate it (slower but durable).
+// `w: <number>`: Acknowledges after `<number>` nodes replicate the write.
+// `journal: true`: Ensures writes are written to the journal on disk before acknowledgment (increases durability).
+// `wtimeout: <ms>`: Sets a timeout (in milliseconds) for the write operation to complete, or it fails.
+
+// NOTES
+// Попытка установить то же самое значение полю всё равно вызывает блокировку для других.
+
+// Как использовать:
+// Берём 1 документ через findOneAndUpdate, обновляем updateAt чтобы залочилось.
+// Смотрим документ, производим изменения, делаем updateOne.
+// Если кто-то другой попытается записать в документ, он будет ждать окончания транзакции.
+suspend inline fun <T> useSingleDocTransaction(
   block: (session: ClientSession) -> T,
+): T = (
+  useSingleDocTransaction { session, abort -> block(session) }
+)
+suspend inline fun <T> useSingleDocTransaction(
+  block: (session: ClientSession, abort: suspend () -> Unit) -> T,
 ): T {
-  val session = this.startSession()
-  
   val transactionOpts = TransactionOptions.builder()
-    // Read preference describes how MongoDB clients route read operations
-    // to the members of a replica set.
-    // https://www.mongodb.com/docs/manual/core/read-preference/#std-label-replica-set-read-preference
     .readPreference(ReadPreference.primary())
-    // The readConcern option allows you to control the consistency
-    // and isolation properties of the data read from replica sets and replica set shards.
-    // https://www.mongodb.com/docs/manual/reference/read-concern/
     .readConcern(ReadConcern.LOCAL)
-    // Write concern describes the level of acknowledgment requested from MongoDB for write operations
-    // to a standalone mongod or to Replica sets or to sharded clusters.
-    // In sharded clusters, mongos instances will pass the write concern on to the shards.
-    // https://www.mongodb.com/docs/manual/reference/write-concern/
-    .writeConcern(WriteConcern.MAJORITY)
+    .writeConcern(WriteConcern.MAJORITY.withJournal(true))
     .build()
-  
-  return session.use {
-    it.startTransaction(transactionOpts)
-    val result = block(session)
-    it.commitTransaction()
+  return mongo.startSession().use { session ->
+    var aborted = false
+    suspend fun abort() { session.abortTransaction(); aborted = true }
+    session.startTransaction(transactionOpts)
+    val result = block(session, ::abort)
+    if (aborted) throw TransactionAbortedException()
+    session.commitTransaction()
     result
   }
 }
 
-
-suspend inline fun <T> useMongoTransaction(
-  block: (session: ClientSession) -> T,
-): T = (
-  mongo().useTransaction(block)
-)
+class TransactionAbortedException : IllegalStateException()

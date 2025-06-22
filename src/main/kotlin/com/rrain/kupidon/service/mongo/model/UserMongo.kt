@@ -1,4 +1,4 @@
-package com.rrain.kupidon.service.db.mongo.model
+package com.rrain.kupidon.service.mongo.model
 
 import com.mongodb.kotlin.client.coroutine.FindFlow
 import com.rrain.kupidon.model.Gender
@@ -16,36 +16,36 @@ enum class UserDataType { Full, Current, Other }
 data class UserMongo(
   // string UUID
   // e.g. "4f699e2d-a492-40de-a54f-ed05c42203a4"
-  val id: UUID,
+  var id: UUID,
   
-  val roles: Set<Role>,
+  var roles: Set<Role>,
   
   // login can be email, phone, nickname#subnickname
-  val email: String,
+  var email: String,
   
   // hashed password
-  val pwd: String,
+  var pwd: String,
   
   // "2023-06-04T15:21:18.094+08:00" in string
   // default timezone is UTC+0
-  val createdAt: ZonedDateTime,
-  val updatedAt: ZonedDateTime,
+  var createdAt: ZonedDateTime,
+  var updatedAt: ZonedDateTime,
   
   // имя
-  val name: String,
+  var name: String,
   // "2023-06-29" in string
-  val birthDate: LocalDate,
+  var birthDate: LocalDate,
   // пол: 'MALE' / 'FEMALE'
-  val gender: Gender,
-  val aboutMe: String,
-  val photos: List<UserProfilePhotoMetadataMongo>,
+  var gender: Gender,
+  var aboutMe: String,
+  var photos: List<UserProfilePhotoMetadataMongo>,
 ) {
   
   fun toApi(
     userType: UserDataType = UserDataType.Other,
     host: String,
     port: Int,
-  ): Map<String, Any?> {
+  ): MutableMap<String, Any?> {
     val lvl = when (userType) {
       UserDataType.Full -> 2
       UserDataType.Current -> 1
@@ -82,10 +82,10 @@ data class UserMongo(
 
 
 
-
+val projectionUserMongo = Document(
+  "${UserMongo::photos.name}.${UserProfilePhotoMongo::binData.name}", false
+)
 
 fun FindFlow<UserMongo>.projectionUserMongo(): FindFlow<UserMongo> {
-  val nUserPhotos = UserMongo::photos.name
-  val nPhotoBinData = UserProfilePhotoMongo::binData.name
-  return projection(Document("$nUserPhotos.$nPhotoBinData", false))
+  return projection(projectionUserMongo)
 }

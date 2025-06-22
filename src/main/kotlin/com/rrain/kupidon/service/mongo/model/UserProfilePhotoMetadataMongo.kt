@@ -1,17 +1,18 @@
-package com.rrain.kupidon.service.db.mongo.model
+package com.rrain.kupidon.service.mongo.model
 
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import io.ktor.http.*
 import java.util.UUID
+import kotlin.text.get
 
 
 
 
 data class UserProfilePhotoMetadataMongo(
-  val id: UUID,
-  val index: Int,
-  val name: String,
-  val mimeType: String,
+  var id: UUID,
+  var index: Int,
+  var name: String,
+  var mimeType: String,
 ) {
   
   fun toApi(
