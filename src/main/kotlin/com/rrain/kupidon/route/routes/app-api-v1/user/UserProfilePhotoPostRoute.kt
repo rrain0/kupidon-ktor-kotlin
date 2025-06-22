@@ -18,7 +18,6 @@ import com.rrain.kupidon.service.mongo.useSingleDocTx
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
 import com.rrain.util.`date-time`.now
-import com.rrain.util.`date-time`.toInstant
 import com.rrain.util.uuid.toUuid
 import io.ktor.http.content.*
 import io.ktor.server.application.*
@@ -27,9 +26,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.utils.io.*
-import org.bson.Document
 import org.bson.types.Binary
-import kotlin.time.Duration.Companion.milliseconds
 
 
 
@@ -151,14 +148,13 @@ fun Application.addUserProfilePhotoPostRoute() {
         }
         
         
-        // TODO обработать abort
         val updatedUser = useSingleDocTx { session, abort ->
           val now = now()
           val userById = collUsers
             .findOneAndUpdate(
               session,
               Filters.eq(UserMongo::id.name, userUuid),
-              UpdatesUpdatedAt(UserMongo::updatedAt.name, now),
+              listOf(UpdatesUpdatedAt(UserMongo::updatedAt.name, now)),
               FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER)
                 .projection(projectionUserMongo),
             )

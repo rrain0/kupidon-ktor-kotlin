@@ -25,18 +25,20 @@ fun Application.addUserProfilePhotoGetRoute() {
   routing {
     // https://kupidon.dev.rraindev:40002/api/v1/user/profile-photo?userId=795415da-a2cb-435b-80ee-98af28b3f0d0&photoId=3f5d4807-1112-4cdb-9eab-40c6a4e26217
     get(ApiV1Routes.userProfilePhotoName) {
-      val userUuid = try {
-        call.queryParams[ApiV1Routes.userProfilePhotoNameParams.userId]!!.toUuid()
-      }
-      catch (ex: Exception) {
-        return@get call.respondInvalidParams("'userId' param must be uuid-string")
-      }
-      val photoUuid = try {
-        call.queryParams[ApiV1Routes.userProfilePhotoNameParams.photoId]!!.toUuid()
-      }
-      catch (ex: Exception) {
-        return@get call.respondInvalidParams("'photoId' param must be uuid-string")
-      }
+      val userUuid =
+        try {
+          call.queryParams[ApiV1Routes.userProfilePhotoNameParams.userId]!!.toUuid()
+        }
+        catch (ex: Exception) {
+          return@get call.respondInvalidParams("'userId' param must be uuid-string")
+        }
+      val photoUuid =
+        try {
+          call.queryParams[ApiV1Routes.userProfilePhotoNameParams.photoId]!!.toUuid()
+        }
+        catch (ex: Exception) {
+          return@get call.respondInvalidParams("'photoId' param must be uuid-string")
+        }
       
       val photo = collUsers
         .aggregate<UserProfilePhotoMongo>(listOf(

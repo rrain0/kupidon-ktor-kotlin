@@ -1,6 +1,6 @@
 package com.rrain.kupidon.service.mongo.model
 
-import java.time.ZonedDateTime
+import kotlinx.datetime.Instant
 import java.util.UUID
 
 
@@ -24,8 +24,8 @@ data class ChatMessageMongo(
   var fromUserId: UUID,
   
   // "2023-06-04T15:21:18.094Z" in string
-  var createdAt: ZonedDateTime,
-  var updatedAt: ZonedDateTime,
+  var createdAt: Instant,
+  var updatedAt: Instant,
   
   var content: ChatMessageContentMongo,
 ) {

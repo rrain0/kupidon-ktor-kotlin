@@ -7,7 +7,7 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.model.UserToUserLikeMongo
 import com.rrain.kupidon.service.mongo.collUserToUserLikes
 import com.rrain.kupidon.service.mongo.useSingleDocTx
-import com.rrain.util.`date-time`.zonedNow
+import com.rrain.util.`date-time`.now
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.*
@@ -37,8 +37,7 @@ fun Application.addUserToUserLikeRoute() {
         val tryUserLike = UserToUserLikeMongo(
           fromUserId = userUuid,
           toUserId = userLikeReq.toUserId,
-          // TODO DateTime
-          createdAt = zonedNow(),
+          createdAt = now(),
         )
         
         

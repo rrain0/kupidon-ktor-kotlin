@@ -7,16 +7,16 @@ import com.auth0.jwt.interfaces.DecodedJWT
 import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.`util-ktor`.application.get
-import com.rrain.util.`date-time`.zonedNow
 import com.rrain.`util-ktor`.application.appConfig
+import com.rrain.util.`date-time`.now
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.util.*
+import kotlinx.datetime.toJavaInstant
 import java.security.SecureRandom
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.time.Duration
-import kotlin.time.toJavaDuration
 
 
 
@@ -103,7 +103,7 @@ object JwtService {
     val lifetime = config.accessTokenLifetime
     
     val accessToken = JWT.create()
-      .withExpiresAt(zonedNow().plus(lifetime.toJavaDuration()).toInstant())
+      .withExpiresAt(now().plus(lifetime).toJavaInstant())
       // Determines user
       .withSubject(id)
       // Describes the recipient of the token (instead of subject)
@@ -124,7 +124,7 @@ object JwtService {
     val lifetime = config.emailVerifyAccessTokenLifetime
     
     val accessToken = JWT.create()
-      .withExpiresAt(zonedNow().plus(lifetime.toJavaDuration()).toInstant())
+      .withExpiresAt(now().plus(lifetime).toJavaInstant())
       .withSubject(id)
       .withClaim("type", AccessTokenType.EMAIL_VERIFICATION.name)
       .withClaim("email", email)
@@ -138,7 +138,7 @@ object JwtService {
     val lifetime = config.refreshTokenLifetime
     
     val refreshToken = JWT.create()
-      .withExpiresAt(zonedNow().plus(lifetime.toJavaDuration()).toInstant())
+      .withExpiresAt(now().plus(lifetime).toJavaInstant())
       .withSubject(id) // determines user
       //.withAudience(refreshJwt.audience)
       //.withIssuer(refreshJwt.issuer)

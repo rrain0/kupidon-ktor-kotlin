@@ -1,6 +1,6 @@
 package com.rrain.kupidon.service.mongo.model
 
-import java.time.ZonedDateTime
+import kotlinx.datetime.Instant
 import java.util.UUID
 
 
@@ -13,7 +13,7 @@ data class UserToUserLikeMongo(
   var toUserId: UUID,
   
   // "2023-06-04T15:21:18.094Z" in string
-  var createdAt: ZonedDateTime,
+  var createdAt: Instant,
 ) {
   
   fun toApi(): MutableMap<String, Any?> {

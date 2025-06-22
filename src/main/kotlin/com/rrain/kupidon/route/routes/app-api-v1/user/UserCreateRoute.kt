@@ -22,7 +22,6 @@ import com.rrain.`util-ktor`.call.queryParams
 import com.rrain.util.`date-time`.now
 import com.rrain.util.`date-time`.toZonedInstant
 import com.rrain.util.validation.emailPattern
-import com.rrain.util.`date-time`.zonedNow
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
@@ -99,7 +98,7 @@ fun Application.addUserCreateRoute() {
       }
       
       
-      val nowZoned = zonedNow()
+      val nowZoned = now()
       val tryUser = UserMongo(
         id = UUID.randomUUID(),
         roles = setOf(),

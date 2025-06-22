@@ -13,7 +13,7 @@ import com.rrain.kupidon.service.mongo.model.ChatMessageMongo
 import com.rrain.kupidon.service.mongo.model.ChatMongo
 import com.rrain.kupidon.service.mongo.mongoUniqueViolationRetry
 import com.rrain.`util-ktor`.call.pathParams
-import com.rrain.util.`date-time`.zonedNow
+import com.rrain.util.`date-time`.now
 import com.rrain.util.uuid.toUuid
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
@@ -38,7 +38,7 @@ fun Application.addChatMessageToUserIdIdPostRoute() {
         val msgReq = try { call.receive<ChatMessageBodyIn>() }
         catch (ex: Exception) { return@post call.respondInvalidBody() }
         
-        val now = zonedNow()
+        val now = now()
         val participantsIds = listOf(userUuid, toUserUuid)
         
         var chat = ChatMongo(

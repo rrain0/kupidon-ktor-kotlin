@@ -52,9 +52,9 @@ inline fun <reified T : Any> T.toUpdatesSetAllProps(): List<Bson> = (
 
 
 
+// Этот апдейт должен быть частью aggregation pipeline, то есть лежать в массиве (listOf).
 fun UpdatesUpdatedAt(fieldName: String, updateTime: Instant) = (
-  // Без обёртки в массив (listOf) не работает.
-  listOf(Updates.set(
+  Updates.set(
     fieldName,
     Document($$"$cond", Document()
       .append("if", Document(
@@ -65,5 +65,5 @@ fun UpdatesUpdatedAt(fieldName: String, updateTime: Instant) = (
       .append("then", updateTime + 1.milliseconds)
       .append("else", updateTime)
     )
-  ))
+  )
 )

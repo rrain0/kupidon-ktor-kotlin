@@ -1,7 +1,7 @@
 package com.rrain.kupidon.service.mongo.model
 
 import com.rrain.kupidon.model.ChatType
-import java.time.ZonedDateTime
+import kotlinx.datetime.Instant
 import java.util.UUID
 
 
@@ -16,8 +16,8 @@ data class ChatMongo(
   var participantsIds: List<UUID>,
   
   // "2023-06-04T15:21:18.094Z" in string
-  var createdAt: ZonedDateTime,
-  var updatedAt: ZonedDateTime,
+  var createdAt: Instant,
+  var updatedAt: Instant,
 ) {
   
   fun toApi(): MutableMap<String, Any?> {

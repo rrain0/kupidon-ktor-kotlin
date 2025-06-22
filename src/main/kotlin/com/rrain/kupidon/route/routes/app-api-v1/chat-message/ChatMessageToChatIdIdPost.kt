@@ -1,7 +1,6 @@
 package com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`
 
 import com.mongodb.client.model.Filters
-import com.rrain.kupidon.model.ChatType
 import com.rrain.kupidon.plugin.authUserUuid
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.`response-errors`.respondNotFound
@@ -14,7 +13,7 @@ import com.rrain.kupidon.service.mongo.model.ChatMessageMongo
 import com.rrain.kupidon.service.mongo.model.ChatMongo
 import com.rrain.kupidon.service.mongo.mongoUniqueViolationRetry
 import com.rrain.`util-ktor`.call.pathParams
-import com.rrain.util.`date-time`.zonedNow
+import com.rrain.util.`date-time`.now
 import com.rrain.util.uuid.toUuid
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
@@ -37,11 +36,11 @@ fun Application.addChatMessageToChatIdIdPostRoute() {
       post(ApiV1Routes.chatMessageToChatIdId) {
         val userUuid = authUserUuid
         val toChatUuid = call.pathParams["id"]!!.toUuid()
-        val msgBodyIn = try { call.receive<ChatMessageBodyIn>() }
-        catch (ex: Exception) { return@post call.respondInvalidBody() }
+        val msgBodyIn =
+          try { call.receive<ChatMessageBodyIn>() }
+          catch (ex: Exception) { return@post call.respondInvalidBody() }
         
-        val now = zonedNow()
-        val participantsIds = listOf(userUuid, toChatUuid)
+        val now = now()
         
         val chat = collChats
           .find(Filters.eq(ChatMongo::id.name, toChatUuid))

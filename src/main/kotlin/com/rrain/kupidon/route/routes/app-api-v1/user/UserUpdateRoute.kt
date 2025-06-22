@@ -27,11 +27,8 @@ import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
 import com.rrain.`util-ktor`.call.queryParams
 import com.rrain.util.`date-time`.now
-import com.rrain.util.`date-time`.toInstant
 import com.rrain.util.`date-time`.toLocalDate
 import com.rrain.util.`date-time`.toZonedInstant
-import com.rrain.util.`date-time`.zonedDateTimePattern
-import com.rrain.util.`date-time`.zonedNow
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -339,7 +336,7 @@ fun Application.addUserUpdateRoute() {
           
           writeList += UpdateOneModel(
             Filters.eq(nUserId, userUuid),
-            UpdatesUpdatedAt(UserMongo::updatedAt.name, now),
+            listOf(UpdatesUpdatedAt(UserMongo::updatedAt.name, now)),
           )
           
           collUsers.bulkWrite(session,writeList)

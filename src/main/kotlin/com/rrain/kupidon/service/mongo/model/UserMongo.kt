@@ -4,10 +4,10 @@ import com.mongodb.kotlin.client.coroutine.FindFlow
 import com.rrain.kupidon.model.Gender
 import com.rrain.kupidon.model.Role
 import com.rrain.util.`date-time`.getAge
+import kotlinx.datetime.Instant
 import org.bson.Document
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
-import java.time.ZonedDateTime
 import java.util.UUID
 
 
@@ -27,10 +27,9 @@ data class UserMongo(
   // hashed password
   var pwd: String,
   
-  // "2023-06-04T15:21:18.094+08:00" in string
-  // default timezone is UTC+0
-  var createdAt: ZonedDateTime,
-  var updatedAt: ZonedDateTime,
+  // "2023-06-04T15:21:18.094Z" in string
+  var createdAt: Instant,
+  var updatedAt: Instant,
   
   // имя
   var name: String,

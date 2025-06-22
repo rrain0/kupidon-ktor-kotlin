@@ -5,6 +5,8 @@ import com.mongodb.client.model.FindOneAndUpdateOptions
 import com.mongodb.client.model.ReturnDocument
 import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoClient
+import com.rrain.kupidon.service.mongo.model.UserMongo
+import com.rrain.util.`date-time`.now
 import com.rrain.util.uuid.randomUUID
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.datetime.Clock
@@ -80,15 +82,37 @@ private suspend fun MongoClient.findOneAndUpdate(): TestItem? {
 // Find one and update.
 // Find one, update it, return it. If not found, then return null.
 // 1️⃣ Single document operation.
-// ⚛️ Atomic operation.
+// ⚛️ Atomic transaction.
 // ⏳ Awaits transactions.
 private suspend fun MongoClient.findOneThenProcessThenUpdate(): TestItem? {
   val itemUpdate = TestItem()
-  val item = collTestItems()
-    .findOneAndUpdate(
-      Filters.eq(TestItem::id.name, itemUpdate.id),
-      Updates.combine(itemUpdate.toUpdatesSetAllProps()),
-      FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER),
-    )
-  return item
+  val updatedItem = useSingleDocTx { session, abort ->
+    val now = now()
+    // Lock item by changing updatedAt
+    var item = collTestItems()
+      .findOneAndUpdate(
+        session,
+        Filters.eq(TestItem::id.name, itemUpdate.id),
+        listOf(UpdatesUpdatedAt(TestItem::updatedAt.name, now)),
+        FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER),
+      )
+    
+    // Do some checks and updates
+    if (item == null) {
+      abort()
+      throw RuntimeException("Item not found")
+    }
+    if (item.integer < 200) item.integer++
+    
+    item = collTestItems()
+      .findOneAndUpdate(
+        session,
+        Filters.eq(TestItem::id.name, itemUpdate.id),
+        item.toUpdatesSetAllProps(),
+        FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER),
+      )!!
+    
+    item
+  }
+  return updatedItem
 }

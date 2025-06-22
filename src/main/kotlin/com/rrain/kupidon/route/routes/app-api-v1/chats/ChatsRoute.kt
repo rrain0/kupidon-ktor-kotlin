@@ -19,7 +19,7 @@ import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import java.time.ZonedDateTime
+import kotlinx.datetime.Instant
 import java.util.UUID
 
 
@@ -36,8 +36,8 @@ fun Application.addChatsRoute() {
       data class ChatBodyOut(
         val id: UUID,
         val participantsIds: List<UUID>,
-        val createdAt: ZonedDateTime,
-        val updatedAt: ZonedDateTime,
+        val createdAt: Instant,
+        val updatedAt: Instant,
         val companionUser: MutableMap<String, Any?>? = null,
         val lastMessage: MutableMap<String, Any?>? = null,
       )
