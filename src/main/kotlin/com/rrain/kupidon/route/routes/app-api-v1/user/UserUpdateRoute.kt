@@ -15,16 +15,21 @@ import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
+import com.rrain.kupidon.service.mongo.UpdatesUpdatedAt
 import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.service.mongo.model.UserDataType
 import com.rrain.kupidon.service.mongo.model.UserMongo
 import com.rrain.kupidon.service.mongo.model.UserProfilePhotoMetadataMongo
 import com.rrain.kupidon.service.mongo.model.UserProfilePhotoMongo
 import com.rrain.kupidon.service.mongo.model.projectionUserMongo
-import com.rrain.kupidon.service.mongo.useSingleDocTransaction
+import com.rrain.kupidon.service.mongo.useSingleDocTx
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
-import com.rrain.util.`date-time`.toZonedDateTime
+import com.rrain.`util-ktor`.call.queryParams
+import com.rrain.util.`date-time`.now
+import com.rrain.util.`date-time`.toInstant
+import com.rrain.util.`date-time`.toLocalDate
+import com.rrain.util.`date-time`.toZonedInstant
 import com.rrain.util.`date-time`.zonedDateTimePattern
 import com.rrain.util.`date-time`.zonedNow
 import io.ktor.server.application.*
@@ -34,11 +39,12 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.yearsUntil
 import org.bson.Document
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 import java.util.UUID
-
+import kotlin.time.Duration.Companion.milliseconds
 
 
 
@@ -88,11 +94,10 @@ fun Application.addUserUpdateRoute() {
         val data =
           try { call.receive<JsonNode>() }
           catch (ex: Exception) { return@put call.respondInvalidBody() }
+        val timeZone = call.queryParams["timeZone"].let { TimeZone.of(it ?: "UTC+0") }
         
         if (!data.isObject) {
-          return@put call.respondInvalidBody(
-            "Body must be json object"
-          )
+          return@put call.respondInvalidBody("Body must be json object")
         }
         /*run {
           val allowedFields = setOf("name", "birthDate","gender","aboutMe","currentPwd","pwd","photos")
@@ -103,6 +108,7 @@ fun Application.addUserUpdateRoute() {
           }
         }*/
         
+        val now = now()
         val update = Update()
         
         
@@ -115,7 +121,7 @@ fun Application.addUserUpdateRoute() {
               if (name.length>100) throw RuntimeException()
               update.name = name
             }
-            catch (ex: Exception){
+            catch (ex: Exception) {
               return@put call.respondInvalidBody(
                 "Name must be string and must not be empty and name max length is 100"
               )
@@ -125,24 +131,17 @@ fun Application.addUserUpdateRoute() {
           "birthDate" -> {
             try {
               if (!v.isTextual) throw RuntimeException()
-              val birthDate = v.asText().toZonedDateTime()
-              val nowWithUserZone = zonedNow()
-                .withZoneSameInstant(birthDate.zone)
-                .withHour(0)
-                .withMinute(0)
-                .withSecond(0)
-                .withNano(0)
-              if (ChronoUnit.YEARS.between(birthDate, nowWithUserZone) < 18){
-                return@put call.respondInvalidBody(
-                  "You must be at least 18 years old"
-                )
+              val birthDate = v.asText().toLocalDate()
+              if (birthDate.toZonedInstant(timeZone)
+                  .yearsUntil(now, timeZone) < 18
+              ) {
+                return@put call.respondInvalidBody("You must be 18+ years old")
               }
-              update.birthDate = birthDate.toLocalDate()
+              update.birthDate = birthDate
             }
             catch (ex: Exception){
               return@put call.respondInvalidBody(
-                "'birthDate' must be string '$zonedDateTimePattern'" +
-                  ", for example '2005-11-10T00:00:00.000+08:00'"
+                "'birthDate' must be string 'yyyy-MM-dd', e.g. '2005-01-01'"
               )
             }
           }
@@ -228,9 +227,7 @@ fun Application.addUserUpdateRoute() {
           }
           
           else -> {
-            return@put call.respondInvalidBody(
-              "Unknown property '$k'"
-            )
+            return@put call.respondInvalidBody("Unknown property '$k'")
           }
         } }
         
@@ -239,7 +236,7 @@ fun Application.addUserUpdateRoute() {
         
         
         
-        val user = useSingleDocTransaction { session ->
+        val user = useSingleDocTx { session ->
           val nUserId = UserMongo::id.name
           val nUserPwd = UserMongo::pwd.name
           val nUserName = UserMongo::name.name
@@ -340,10 +337,9 @@ fun Application.addUserUpdateRoute() {
             
           }
           
-          
           writeList += UpdateOneModel(
             Filters.eq(nUserId, userUuid),
-            Updates.set(nUserUpdated, zonedNow()),
+            UpdatesUpdatedAt(UserMongo::updatedAt.name, now),
           )
           
           collUsers.bulkWrite(session,writeList)
@@ -357,9 +353,7 @@ fun Application.addUserUpdateRoute() {
           // check photo indices uniqueness
           if (updatedUser.photos.size != updatedUser.photos.map { it.index }.toSet().size) {
             session.abortTransaction()
-            return@put call.respondInvalidBody(
-              "Duplicate photo index"
-            )
+            return@put call.respondInvalidBody("Duplicate photo index")
           }
           
           updatedUser
@@ -368,7 +362,7 @@ fun Application.addUserUpdateRoute() {
         
         
         call.respond(mapOf(
-          "user" to user.toApi(UserDataType.Current, call.host, call.port),
+          "user" to user.toApi(UserDataType.Current, call.host, call.port, timeZone),
         ))
       }
     }

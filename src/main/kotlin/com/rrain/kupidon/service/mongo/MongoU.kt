@@ -6,8 +6,10 @@ import com.mongodb.client.model.ReturnDocument
 import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoCollection
 import com.rrain.util.any.objectPrimaryPropsToMap
+import kotlinx.datetime.Instant
 import org.bson.Document
 import org.bson.conversions.Bson
+import kotlin.time.Duration.Companion.milliseconds
 
 
 
@@ -44,6 +46,24 @@ suspend fun <T : Any> MongoCollection<T>.findOneOrInsert(
 
 
 
-inline fun <reified T : Any> T.fullUpdatesSet(): List<Bson> = (
+inline fun <reified T : Any> T.toUpdatesSetAllProps(): List<Bson> = (
   this.objectPrimaryPropsToMap().map { (key, value) -> Updates.set(key, value) }
+)
+
+
+
+fun UpdatesUpdatedAt(fieldName: String, updateTime: Instant) = (
+  // Без обёртки в массив (listOf) не работает.
+  listOf(Updates.set(
+    fieldName,
+    Document($$"$cond", Document()
+      .append("if", Document(
+        $$"$eq", listOf($$"$$${fieldName}", updateTime)
+      ))
+      // Чтобы заблокировать документ для записи для других,
+      // нужно 100% установить новое значение, а не такое же.
+      .append("then", updateTime + 1.milliseconds)
+      .append("else", updateTime)
+    )
+  ))
 )

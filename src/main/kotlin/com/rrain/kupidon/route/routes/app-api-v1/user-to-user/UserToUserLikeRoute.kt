@@ -6,7 +6,7 @@ import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.model.UserToUserLikeMongo
 import com.rrain.kupidon.service.mongo.collUserToUserLikes
-import com.rrain.kupidon.service.mongo.useSingleDocTransaction
+import com.rrain.kupidon.service.mongo.useSingleDocTx
 import com.rrain.util.`date-time`.zonedNow
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
@@ -44,7 +44,7 @@ fun Application.addUserToUserLikeRoute() {
         
         val userToUserLikes = collUserToUserLikes
         
-        val userLike = useSingleDocTransaction { session ->
+        val userLike = useSingleDocTx { session ->
           val nFromUserId = UserToUserLikeMongo::fromUserId.name
           val nToUserId = UserToUserLikeMongo::toUserId.name
           
@@ -61,7 +61,7 @@ fun Application.addUserToUserLikeRoute() {
           
           val userLikeExisted = find()
           
-          if (userLikeExisted != null) return@useSingleDocTransaction userLikeExisted
+          if (userLikeExisted != null) return@useSingleDocTx userLikeExisted
           
           userToUserLikes.insertOne(session, tryUserLike)
           

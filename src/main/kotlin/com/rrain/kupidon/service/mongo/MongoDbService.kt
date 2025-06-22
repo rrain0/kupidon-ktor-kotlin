@@ -1,7 +1,6 @@
 package com.rrain.kupidon.service.mongo
 
 import com.mongodb.*
-import com.mongodb.kotlin.client.coroutine.ClientSession
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
 import com.rrain.kupidon.service.mongo.model.ChatMessageMongo
@@ -10,10 +9,15 @@ import com.rrain.kupidon.service.mongo.model.UserMongo
 import com.rrain.kupidon.service.mongo.model.UserToUserLikeMongo
 import com.rrain.`util-ktor`.application.appConfig
 import com.rrain.`util-ktor`.application.get
+import com.rrain.util.`date-time`.asTimestampToInstant
+import com.rrain.util.`date-time`.toLocalDateInUtc
 import com.rrain.util.`date-time`.toTimestamp
+import com.rrain.util.`date-time`.toUtcInstant
 import com.rrain.util.`date-time`.toZonedDateTime
 import io.ktor.http.*
 import io.ktor.server.application.*
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
 import org.bson.BsonReader
 import org.bson.BsonWriter
 import org.bson.UuidRepresentation
@@ -78,10 +82,26 @@ fun Application.configureMongoDbService() {
 
 
 fun getMongoCodecRegisty() = CodecRegistries.fromRegistries(
-  //CodecRegistries.fromCodecs(IntegerCodec(), PowerStatusCodec()),
-  //CodecRegistries.fromProviders(MonolightCodecProvider()),
-  
+  // !!! Earlier declarations have higher priority
   CodecRegistries.fromCodecs(
+    object : Codec<Instant> {
+      override fun getEncoderClass() = Instant::class.java
+      override fun encode(writer: BsonWriter, value: Instant, encoderContext: EncoderContext) {
+        writer.writeDateTime(value.toTimestamp())
+      }
+      override fun decode(reader: BsonReader, decoderContext: DecoderContext): Instant {
+        return reader.readDateTime().asTimestampToInstant()
+      }
+    },
+    object : Codec<LocalDate> {
+      override fun getEncoderClass() = LocalDate::class.java
+      override fun encode(writer: BsonWriter, value: LocalDate, encoderContext: EncoderContext) {
+        writer.writeDateTime(value.toUtcInstant().toTimestamp())
+      }
+      override fun decode(reader: BsonReader, decoderContext: DecoderContext): LocalDate {
+        return reader.readDateTime().asTimestampToInstant().toLocalDateInUtc()
+      }
+    },
     object : Codec<ZonedDateTime> {
       override fun getEncoderClass() = ZonedDateTime::class.java
       override fun encode(writer: BsonWriter, value: ZonedDateTime, encoderContext: EncoderContext) {
@@ -92,7 +112,6 @@ fun getMongoCodecRegisty() = CodecRegistries.fromRegistries(
       }
     },
   ),
-  
   MongoClientSettings.getDefaultCodecRegistry(),
 )
 
@@ -178,73 +197,3 @@ val collUserToUserLikes get() = mongoAppDb.coll<UserToUserLikeMongo>(CollNames.u
 val collChats get() = mongoAppDb.coll<ChatMongo>(CollNames.chats)
 val collChatsMessages get() = mongoAppDb.coll<ChatMessageMongo>(CollNames.chatMessages)
 
-
-
-
-
-// READ PREFERENCE
-// https://www.mongodb.com/docs/manual/core/read-preference/#std-label-replica-set-read-preference
-// Read preference describes how MongoDB clients route read operations to the members of a replica set.
-// Useful for balancing consistency vs. latency.
-// `primary`: Reads only from the primary node (default, ensures strong consistency).
-// `primaryPreferred`: Prefers the primary but falls back to a secondary if the primary is unavailable.
-// `secondary`: Reads from secondary nodes (may return slightly stale data but reduces load on the primary).
-// `secondaryPreferred`: Prefers secondaries but falls back to the primary if no secondary is available.
-// `nearest`: Reads from the node with the lowest latency, regardless of primary or secondary.
-
-// READ CONCERN
-// https://www.mongodb.com/docs/manual/reference/read-concern/
-// The readConcern option allows you to control the consistency
-// and isolation properties of the data read from replica sets and replica set shards.
-// Ensures the data read is consistent with the transaction’s requirements.
-// `local`: Sufficient for SINGLE-DOCUMENT operations.
-// Returns the most recent data available on the node (default, may not reflect writes acknowledged by a majority).
-// `majority`: Returns data that has been acknowledged by a majority of replica set members (ensures durability but may be slower).
-// `linearizable`: Ensures reads reflect all successful writes that completed before the read (strong consistency, only for primary reads).
-// `snapshot`: Reads from a consistent snapshot of data at the transaction’s start (ideal for multi-document transactions, MongoDB 4.0+).
-// `available`: Reads the most recent data, even if uncommitted (not typically used in transactions).
-
-// WRITE CONCERN
-// https://www.mongodb.com/docs/manual/reference/write-concern/
-// Write concern describes the level of acknowledgment requested from MongoDB for write operations
-// to a standalone mongod or to Replica sets or to sharded clusters.
-// In sharded clusters, mongos instances will pass the write concern on to the shards.
-// Ensures writes are durable and consistent across the replica set.
-// `w: 1`: Acknowledges the write on the primary node (default, fast but less durable).
-// `w: "majority"`: For CRITICAL transactions. Acknowledges the write after a majority of replica set members replicate it (slower but durable).
-// `w: <number>`: Acknowledges after `<number>` nodes replicate the write.
-// `journal: true`: Ensures writes are written to the journal on disk before acknowledgment (increases durability).
-// `wtimeout: <ms>`: Sets a timeout (in milliseconds) for the write operation to complete, or it fails.
-
-// NOTES
-// Попытка установить то же самое значение полю всё равно вызывает блокировку для других.
-
-// Как использовать:
-// Берём 1 документ через findOneAndUpdate, обновляем updateAt чтобы залочилось.
-// Смотрим документ, производим изменения, делаем updateOne.
-// Если кто-то другой попытается записать в документ, он будет ждать окончания транзакции.
-suspend inline fun <T> useSingleDocTransaction(
-  block: (session: ClientSession) -> T,
-): T = (
-  useSingleDocTransaction { session, abort -> block(session) }
-)
-suspend inline fun <T> useSingleDocTransaction(
-  block: (session: ClientSession, abort: suspend () -> Unit) -> T,
-): T {
-  val transactionOpts = TransactionOptions.builder()
-    .readPreference(ReadPreference.primary())
-    .readConcern(ReadConcern.LOCAL)
-    .writeConcern(WriteConcern.MAJORITY.withJournal(true))
-    .build()
-  return mongo.startSession().use { session ->
-    var aborted = false
-    suspend fun abort() { session.abortTransaction(); aborted = true }
-    session.startTransaction(transactionOpts)
-    val result = block(session, ::abort)
-    if (aborted) throw TransactionAbortedException()
-    session.commitTransaction()
-    result
-  }
-}
-
-class TransactionAbortedException : IllegalStateException()

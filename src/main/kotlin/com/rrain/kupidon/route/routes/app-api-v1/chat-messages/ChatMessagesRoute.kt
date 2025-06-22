@@ -9,7 +9,7 @@ import com.rrain.kupidon.service.mongo.collChats
 import com.rrain.kupidon.service.mongo.collChatsMessages
 import com.rrain.kupidon.service.mongo.model.ChatMessageMongo
 import com.rrain.kupidon.service.mongo.model.ChatMongo
-import com.rrain.kupidon.service.mongo.useSingleDocTransaction
+import com.rrain.kupidon.service.mongo.useSingleDocTx
 import com.rrain.util.uuid.toUuid
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
@@ -39,7 +39,7 @@ fun Application.addChatMessagesRoute() {
         val chats = collChats
         val chatsMessages = collChatsMessages
         
-        val messages = useSingleDocTransaction { session ->
+        val messages = useSingleDocTx { session ->
           val nParticipantsIds = ChatMongo::participantsIds.name
           
           val nMessageChatId = ChatMessageMongo::chatId.name

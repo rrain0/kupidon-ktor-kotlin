@@ -5,7 +5,8 @@ import com.rrain.kupidon.model.Gender
 import com.rrain.kupidon.model.Role
 import com.rrain.util.`date-time`.getAge
 import org.bson.Document
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -45,6 +46,8 @@ data class UserMongo(
     userType: UserDataType = UserDataType.Other,
     host: String,
     port: Int,
+    // TODO pass timeZone query param for each user or try get from user agent string
+    timeZone: TimeZone = TimeZone.UTC,
   ): MutableMap<String, Any?> {
     val lvl = when (userType) {
       UserDataType.Full -> 2
@@ -55,7 +58,7 @@ data class UserMongo(
       "id" to id,
       "name" to name,
       "birthDate" to birthDate, // TODO replace by age
-      "age" to getAge(birthDate),
+      "age" to getAge(birthDate, timeZone),
       "gender" to gender,
       "aboutMe" to aboutMe,
       "photos" to photos.map { it.toApi(id, host, port) },

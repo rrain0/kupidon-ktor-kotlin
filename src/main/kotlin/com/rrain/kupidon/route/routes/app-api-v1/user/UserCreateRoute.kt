@@ -15,9 +15,12 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.service.mongo.model.UserDataType
 import com.rrain.kupidon.service.mongo.model.projectionUserMongo
-import com.rrain.kupidon.service.mongo.useSingleDocTransaction
+import com.rrain.kupidon.service.mongo.useSingleDocTx
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
+import com.rrain.`util-ktor`.call.queryParams
+import com.rrain.util.`date-time`.now
+import com.rrain.util.`date-time`.toZonedInstant
 import com.rrain.util.validation.emailPattern
 import com.rrain.util.`date-time`.zonedNow
 import io.ktor.server.application.*
@@ -27,8 +30,9 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.yearsUntil
 import java.util.*
 
 
@@ -42,12 +46,15 @@ fun Application.addUserCreateRoute() {
       val pwd: String,
       val name: String,
       val gender: Gender,
-      val birthDate: ZonedDateTime,
+      val birthDate: LocalDate,
     )
     
     post(ApiV1Routes.user) {
-      val userToCreate = try { call.receive<UserCreateBodyIn>() }
-      catch (ex: Exception) { return@post call.respondInvalidBody() }
+      val userToCreate =
+        try { call.receive<UserCreateBodyIn>() }
+        catch (ex: Exception) { return@post call.respondInvalidBody() }
+      val langs = call.queryParams.getAll("lang")!!.map { Lang.getOrDefault(it) }
+      val timeZone = call.queryParams["timeZone"].let { TimeZone.of(it ?: "UTC+0") }
       
       
       if (!userToCreate.email.matches(emailPattern)) {
@@ -83,37 +90,32 @@ fun Application.addUserCreateRoute() {
         )
       }
       
-      // TODO birthDate
-      val nowWithUserZone = zonedNow()
-        .withZoneSameInstant(userToCreate.birthDate.zone)
-        .withHour(0)
-        .withMinute(0)
-        .withSecond(0)
-        .withNano(0)
-      if (ChronoUnit.YEARS.between(userToCreate.birthDate, nowWithUserZone) < 18){
-        return@post call.respondInvalidBody(
-          "You must be at least 18 years old"
-        )
+      
+      val now = now()
+      if (userToCreate.birthDate.toZonedInstant(timeZone)
+        .yearsUntil(now, timeZone) < 18
+      ) {
+        return@post call.respondInvalidBody("You must be 18+ years old")
       }
       
       
-      val now = zonedNow()
+      val nowZoned = zonedNow()
       val tryUser = UserMongo(
         id = UUID.randomUUID(),
         roles = setOf(),
         email = userToCreate.email,
         pwd = userToCreate.pwd.let(PwdHashService::generateHash),
-        createdAt = now,
-        updatedAt = now,
+        createdAt = nowZoned,
+        updatedAt = nowZoned,
         name = userToCreate.name,
-        birthDate = userToCreate.birthDate.toLocalDate(),
+        birthDate = userToCreate.birthDate,
         gender = userToCreate.gender,
         aboutMe = "",
         photos = listOf(),
       )
       
       
-      val user = useSingleDocTransaction { session ->
+      val user = useSingleDocTx { session ->
         val nUserId = UserMongo::id.name
         val nUserEmail = UserMongo::email.name
         
@@ -142,7 +144,6 @@ fun Application.addUserCreateRoute() {
         id.toString(), user.email
       )
       
-      val langs = call.request.queryParameters.getAll("lang")!!.map { Lang.getOrDefault(it) }
       
       val appName = AppUiText.appName.pickUiValue(langs).value
       val emailTitle = EmailInitialVerificationUiText.emailTitle.pickUiValue(langs).value
@@ -189,7 +190,7 @@ fun Application.addUserCreateRoute() {
       )
       call.respond(mapOf(
         "accessToken" to accessToken,
-        "user" to user.toApi(UserDataType.Current, call.host, call.port),
+        "user" to user.toApi(UserDataType.Current, call.host, call.port, timeZone),
       ))
     }
     

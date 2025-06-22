@@ -8,15 +8,17 @@ import com.rrain.kupidon.plugin.authUserUuid
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
+import com.rrain.kupidon.service.mongo.UpdatesUpdatedAt
 import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.service.mongo.model.UserDataType
 import com.rrain.kupidon.service.mongo.model.UserMongo
 import com.rrain.kupidon.service.mongo.model.UserProfilePhotoMongo
 import com.rrain.kupidon.service.mongo.model.projectionUserMongo
-import com.rrain.kupidon.service.mongo.useSingleDocTransaction
+import com.rrain.kupidon.service.mongo.useSingleDocTx
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
-import com.rrain.util.`date-time`.zonedNow
+import com.rrain.util.`date-time`.now
+import com.rrain.util.`date-time`.toInstant
 import com.rrain.util.uuid.toUuid
 import io.ktor.http.content.*
 import io.ktor.server.application.*
@@ -25,8 +27,9 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.utils.io.*
-import kotlinx.coroutines.flow.firstOrNull
+import org.bson.Document
 import org.bson.types.Binary
+import kotlin.time.Duration.Companion.milliseconds
 
 
 
@@ -148,37 +151,40 @@ fun Application.addUserProfilePhotoPostRoute() {
         }
         
         
-        
-        val updatedUser = useSingleDocTransaction { session ->
+        // TODO обработать abort
+        val updatedUser = useSingleDocTx { session, abort ->
+          val now = now()
           val userById = collUsers
-            .find(session, Filters.eq(UserMongo::id.name, userUuid))
-            .projectionUserMongo()
-            .firstOrNull()
+            .findOneAndUpdate(
+              session,
+              Filters.eq(UserMongo::id.name, userUuid),
+              UpdatesUpdatedAt(UserMongo::updatedAt.name, now),
+              FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER)
+                .projection(projectionUserMongo),
+            )
           
           if (userById == null) {
-            session.abortTransaction()
+            abort()
             return@post call.respondNoUserById()
           }
           if (userById.photos.any { it.index == photo.index }) {
-            session.abortTransaction()
+            abort()
             return@post call.respondInvalidBody("Duplicate photo index: ${photo.index}")
           }
+          // TODO генерировать и возвращать новый id при коллизии
           if (userById.photos.any { it.id == photo.id }) {
-            session.abortTransaction()
+            abort()
             return@post call.respondInvalidBody("Duplicate photo id in single user")
           }
           if (userById.photos.size >= 6) {
-            session.abortTransaction()
+            abort()
             return@post call.respondInvalidBody("Maximum photos count is 6")
           }
           
           val updatedUser = collUsers.findOneAndUpdate(
             session,
             Filters.eq(UserMongo::id.name, userUuid),
-            Updates.combine(
-              Updates.pushEach(UserMongo::photos.name, listOf(photo)),
-              Updates.set(UserMongo::updatedAt.name, zonedNow()),
-            ),
+            Updates.pushEach(UserMongo::photos.name, listOf(photo)),
             FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER)
               .projection(projectionUserMongo),
           )!!
@@ -186,6 +192,7 @@ fun Application.addUserProfilePhotoPostRoute() {
           updatedUser
         }
         
+        // TODO возвращать только новую фотку или массив фоток
         call.respond(mapOf(
           "user" to updatedUser.toApi(UserDataType.Current, call.host, call.port),
         ))

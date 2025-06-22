@@ -10,12 +10,16 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.*
+import com.rrain.util.`date-time`.formatToString
 import com.rrain.util.`date-time`.localDateFormat
+import com.rrain.util.`date-time`.toInstant
+import com.rrain.util.`date-time`.toJavaLocalDate
 import com.rrain.util.`date-time`.toLocalDate
 import com.rrain.util.`date-time`.toZonedDateTime
 import com.rrain.util.`date-time`.zonedDateTimeFormatter
 import com.rrain.util.uuid.toUuid
-import java.time.LocalDate
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -79,7 +83,43 @@ fun ObjectMapper.configureJsonTypes(): ObjectMapper {
   
   registerModule(
     SimpleModule()
-      // ZonedDateTime
+      // kotlinx.datetime.Instant
+      .addSerializer(
+        Instant::class,
+        object : StdSerializer<Instant>(Instant::class.java) {
+          override fun serialize(value: Instant, gen: JsonGenerator, provider: SerializerProvider) {
+            return gen.writeString(value.formatToString())
+          }
+        }
+      )
+      .addDeserializer(
+        Instant::class,
+        object : StdDeserializer<Instant>(Instant::class.java) {
+          override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Instant {
+            return p.valueAsString.toInstant()
+          }
+        }
+      )
+      
+      // kotlinx.datetime.LocalDate
+      .addSerializer(
+        LocalDate::class,
+        object : StdSerializer<LocalDate>(LocalDate::class.java) {
+          override fun serialize(value: LocalDate, gen: JsonGenerator, provider: SerializerProvider) {
+            return gen.writeString(value.formatToString())
+          }
+        }
+      )
+      .addDeserializer(
+        LocalDate::class,
+        object : StdDeserializer<LocalDate>(LocalDate::class.java) {
+          override fun deserialize(p: JsonParser, ctxt: DeserializationContext): LocalDate {
+            return p.valueAsString.toLocalDate()
+          }
+        }
+      )
+      
+      // java.time.ZonedDateTime
       .addSerializer(
         ZonedDateTime::class,
         object : StdSerializer<ZonedDateTime>(ZonedDateTime::class.java) {
@@ -97,20 +137,20 @@ fun ObjectMapper.configureJsonTypes(): ObjectMapper {
         }
       )
       
-      // LocalDate
+      // java.time.LocalDate
       .addSerializer(
-        LocalDate::class,
-        object : StdSerializer<LocalDate>(LocalDate::class.java) {
-          override fun serialize(value: LocalDate, gen: JsonGenerator, provider: SerializerProvider) {
+        java.time.LocalDate::class,
+        object : StdSerializer<java.time.LocalDate>(java.time.LocalDate::class.java) {
+          override fun serialize(value: java.time.LocalDate, gen: JsonGenerator, provider: SerializerProvider) {
             return gen.writeString(value.format(localDateFormat))
           }
         }
       )
       .addDeserializer(
-        LocalDate::class,
-        object : StdDeserializer<LocalDate>(LocalDate::class.java) {
-          override fun deserialize(p: JsonParser, ctxt: DeserializationContext): LocalDate {
-            return p.valueAsString.toLocalDate()
+        java.time.LocalDate::class,
+        object : StdDeserializer<java.time.LocalDate>(java.time.LocalDate::class.java) {
+          override fun deserialize(p: JsonParser, ctxt: DeserializationContext): java.time.LocalDate {
+            return p.valueAsString.toJavaLocalDate()
           }
         }
       )
