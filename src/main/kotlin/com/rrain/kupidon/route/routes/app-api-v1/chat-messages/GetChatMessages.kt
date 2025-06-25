@@ -4,7 +4,7 @@ import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Sorts
 import com.rrain.kupidon.plugin.authUserUuid
 import com.rrain.kupidon.route.`response-errors`.respondInvalidParams
-import com.rrain.kupidon.route.`response-errors`.respondNotFound
+import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collChats
 import com.rrain.kupidon.service.mongo.collChatMessages
@@ -41,7 +41,7 @@ fun Application.addRouteGetChatMessages() {
               ))
               .firstOrNull()
             
-            chat ?: return@get call.respondNotFound(
+            chat ?: return@get call.respondBadRequest(
               "NO_CHAT",
               "No chat with id $toChatUuid or user with id $userUuid is not member of this chat"
             )
@@ -55,7 +55,7 @@ fun Application.addRouteGetChatMessages() {
               .find(Filters.all(ChatM::memberIds.name, memberIds))
               .firstOrNull()
             
-            chat ?: return@get call.respondNotFound(
+            chat ?: return@get call.respondBadRequest(
               "NO_CHAT", "No chat between users with ids $memberIds"
             )
             

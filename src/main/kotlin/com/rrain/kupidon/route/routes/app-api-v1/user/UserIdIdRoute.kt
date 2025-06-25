@@ -3,7 +3,7 @@ package com.rrain.kupidon.route.routes.`app-api-v1`.user
 import com.mongodb.client.model.Filters
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.route.`response-errors`.respondInvalidParams
-import com.rrain.kupidon.route.`response-errors`.respondNotFound
+import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.service.mongo.model.UserDataType
 import com.rrain.kupidon.service.mongo.model.UserM
@@ -32,7 +32,7 @@ fun Application.addUserIdIdRoute() {
         .projectionUserM()
         .firstOrNull()
       
-      userById ?: return@get call.respondNotFound(
+      userById ?: return@get call.respondBadRequest(
         "NO_USER", "User with id '$userUuid' not found"
       )
       

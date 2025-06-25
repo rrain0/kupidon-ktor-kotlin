@@ -3,7 +3,7 @@ package com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`
 import com.mongodb.client.model.Filters
 import com.rrain.kupidon.plugin.authUserUuid
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
-import com.rrain.kupidon.route.`response-errors`.respondNotFound
+import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collChats
 import com.rrain.kupidon.service.mongo.collChatMessages
@@ -42,17 +42,17 @@ fun Application.addRoutePostChatMessageToChatIdId() {
         
         val now = now()
         
-        val chat = collChats
+        val foundChat = collChats
           .find(Filters.eq(ChatM::id.name, toChatUuid))
           .firstOrNull()
         
-        chat ?: return@post call.respondNotFound(
+        foundChat ?: return@post call.respondBadRequest(
           "NO_CHAT", "Chat with id '$toChatUuid' not found"
         )
         
         var message = ChatMessageM(
           id = UUID.randomUUID(),
-          chatId = chat.id,
+          chatId = foundChat.id,
           fromUserId = userUuid,
           createdAt = now,
           updatedAt = now,

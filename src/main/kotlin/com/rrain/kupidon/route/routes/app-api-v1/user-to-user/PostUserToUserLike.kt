@@ -4,7 +4,6 @@ import com.mongodb.client.model.Filters
 import com.rrain.kupidon.plugin.authUserUuid
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
-import com.rrain.kupidon.route.`response-errors`.respondNotFound
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.model.UserToUserLikeM
 import com.rrain.kupidon.service.mongo.collUserToUserLikes
@@ -52,7 +51,7 @@ fun Application.addUserToUserLikeRoute() {
           .find(Filters.eq(UserM::id.name, like.fromUserId))
           .firstOrNull()
         
-        foundFromUser ?: return@post call.respondNotFound(
+        foundFromUser ?: return@post call.respondBadRequest(
           "NO_FROM_USER", ""
         )
         
@@ -60,7 +59,7 @@ fun Application.addUserToUserLikeRoute() {
           .find(Filters.eq(UserM::id.name, like.toUserId))
           .firstOrNull()
         
-        foundToUser ?: return@post call.respondNotFound(
+        foundToUser ?: return@post call.respondBadRequest(
           "NO_TO_USER", ""
         )
         

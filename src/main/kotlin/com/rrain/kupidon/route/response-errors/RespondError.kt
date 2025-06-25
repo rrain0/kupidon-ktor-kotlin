@@ -16,13 +16,10 @@ import io.ktor.server.response.*
 
 suspend inline fun ApplicationCall.respondBadRequest(
   code: String,
-  msg: String
+  msg: String = ""
 ) = respond(
   HttpStatusCode.BadRequest,
-  mapOf(
-    "code" to code,
-    "message" to msg,
-  ),
+  CodeMsg(code, msg)
 )
 suspend inline fun ApplicationCall.respondBadRequest(
   codeMsg: CodeMsg
@@ -36,15 +33,9 @@ suspend inline fun ApplicationCall.respondBadRequest(
 
 // Запрос сформирован правильно, но ресурса не существует.
 // Например если не существует чего-то по id.
-suspend inline fun ApplicationCall.respondNotFound(
-  code: String,
-  msg: String = ""
-) = respond(
-  HttpStatusCode.NotFound,
-  mapOf(
-    "code" to code,
-    "message" to msg,
-  ),
+// У ошибки 404 не может быть тела.
+suspend inline fun ApplicationCall.respondNotFound() = respond(
+  HttpStatusCode.NotFound
 )
 
 
@@ -54,10 +45,7 @@ suspend inline fun ApplicationCall.respondInvalidBody(
   msg: String = "Invalid request body format",
 ) = this.respond(
   HttpStatusCode.BadRequest,
-  mapOf(
-    "code" to "INVALID_INPUT_BODY",
-    "message" to msg,
-  ),
+  CodeMsg("INVALID_INPUT_BODY", msg)
 )
 
 // TODO а оно мне вообще надо?
@@ -66,10 +54,7 @@ suspend inline fun ApplicationCall.respondInvalidParams(
   msg: String = "Invalid request params format",
 ) = this.respond(
   HttpStatusCode.BadRequest,
-  mapOf(
-    "code" to "INVALID_PARAMS",
-    "message" to msg,
-  ),
+  CodeMsg("INVALID_PARAMS", msg)
 )
 
 
@@ -79,8 +64,5 @@ suspend inline fun ApplicationCall.respondInvalidParams(
 // Пользователь не найден
 suspend inline fun ApplicationCall.respondNoUserById() = respond(
   HttpStatusCode.BadRequest,
-  mapOf(
-    "code" to "NO_USER",
-    "message" to "No user with such id",
-  ),
+  CodeMsg("NO_USER", "No user with such id")
 )
