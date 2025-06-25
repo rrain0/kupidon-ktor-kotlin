@@ -120,7 +120,7 @@ fun Application.addChatItemsGetRoute() {
         println("chatItems 1: $chatItems")
         
         chatItems.onEach {
-          if (it.type === ChatType.PERSONAL) {
+          if (it.type == ChatType.PERSONAL) {
             it.profile = collUsers
               .find(Filters.eq(
                 UserM::id.name,

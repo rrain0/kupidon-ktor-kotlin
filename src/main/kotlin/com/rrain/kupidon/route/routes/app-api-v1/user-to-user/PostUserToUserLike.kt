@@ -43,7 +43,7 @@ fun Application.addUserToUserLikeRoute() {
           createdAt = now(),
         )
         
-        if (like.fromUserId === like.toUserId) return@post call.respondBadRequest(
+        if (like.fromUserId == like.toUserId) return@post call.respondBadRequest(
           "CANNOT_LIKE_YOURSELF", ""
         )
         
