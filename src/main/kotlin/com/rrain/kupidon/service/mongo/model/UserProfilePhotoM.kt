@@ -6,7 +6,7 @@ import java.util.UUID
 
 
 
-data class UserProfilePhotoMongo(
+data class UserProfilePhotoM(
   var id: UUID,
   var index: Int,
   var name: String,

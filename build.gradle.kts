@@ -1,6 +1,5 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val kotlinV = "2.1.21"
+val kotlinV = "2.2.0"
 val kotlinCoroutinesV = "1.10.2"
 val kotlinDateTimeV = "0.6.2"
 val ktorV = "3.2.0"
@@ -10,7 +9,7 @@ val slf4jV = "2.0.17"
 val logbackV = "1.5.18"
 val apacheEmail = "1.6.0"
 plugins {
-  val kotlinV = "2.1.21"
+  val kotlinV = "2.2.0"
   val ktorV = "3.2.0"
   
   kotlin("jvm") version kotlinV
@@ -28,12 +27,6 @@ application {
   applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.compilerOptions {
-  freeCompilerArgs.set(listOf(
-    "-Xmulti-dollar-interpolation", // enable experimental multi dollar interpolation: $$"aaa$aaa$$variable"
-  ))
-}
 
 repositories {
   mavenCentral()

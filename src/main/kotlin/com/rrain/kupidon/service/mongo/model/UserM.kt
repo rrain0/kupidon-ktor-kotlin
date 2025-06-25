@@ -14,7 +14,7 @@ import java.util.UUID
 enum class UserDataType { Full, Current, Other }
 
 
-data class UserMongo(
+data class UserM(
   // string UUID
   // e.g. "4f699e2d-a492-40de-a54f-ed05c42203a4"
   var id: UUID,
@@ -38,7 +38,7 @@ data class UserMongo(
   // пол: 'MALE' / 'FEMALE'
   var gender: Gender,
   var aboutMe: String,
-  var photos: List<UserProfilePhotoMetadataMongo>,
+  var photos: List<UserProfilePhotoMetadataM>,
 ) {
   
   fun toApi(
@@ -84,10 +84,10 @@ data class UserMongo(
 
 
 
-val projectionUserMongo = Document(
-  "${UserMongo::photos.name}.${UserProfilePhotoMongo::binData.name}", false
+val projectionUserM = Document(
+  "${UserM::photos.name}.${UserProfilePhotoM::binData.name}", false
 )
 
-fun FindFlow<UserMongo>.projectionUserMongo(): FindFlow<UserMongo> {
-  return projection(projectionUserMongo)
+fun FindFlow<UserM>.projectionUserM(): FindFlow<UserM> {
+  return projection(projectionUserM)
 }

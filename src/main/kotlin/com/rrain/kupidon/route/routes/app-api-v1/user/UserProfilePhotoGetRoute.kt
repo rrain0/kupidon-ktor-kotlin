@@ -5,8 +5,8 @@ import com.rrain.kupidon.route.`response-errors`.respondInvalidParams
 import com.rrain.kupidon.route.`response-errors`.respondNotFound
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collUsers
-import com.rrain.kupidon.service.mongo.model.UserMongo
-import com.rrain.kupidon.service.mongo.model.UserProfilePhotoMongo
+import com.rrain.kupidon.service.mongo.model.UserM
+import com.rrain.kupidon.service.mongo.model.UserProfilePhotoM
 import com.rrain.`util-ktor`.call.queryParams
 import com.rrain.util.uuid.toUuid
 import io.ktor.http.*
@@ -41,19 +41,19 @@ fun Application.addUserProfilePhotoGetRoute() {
         }
       
       val photo = collUsers
-        .aggregate<UserProfilePhotoMongo>(listOf(
-          Aggregates.match(Document(UserMongo::id.name, userUuid)),
-          Aggregates.unwind("$${UserMongo::photos.name}"),
+        .aggregate<UserProfilePhotoM>(listOf(
+          Aggregates.match(Document(UserM::id.name, userUuid)),
+          Aggregates.unwind("$${UserM::photos.name}"),
           Aggregates.match(Document(
-            "${UserMongo::photos.name}.${UserProfilePhotoMongo::id.name}", photoUuid
+            "${UserM::photos.name}.${UserProfilePhotoM::id.name}", photoUuid
           )),
-          Aggregates.replaceRoot("$${UserMongo::photos.name}"),
+          Aggregates.replaceRoot("$${UserM::photos.name}"),
           Aggregates.limit(1),
         ))
         .firstOrNull()
       
       photo ?: return@get call.respondNotFound(
-        "Photo with such userId=$userUuid & photoId=$photoUuid was not found",
+        "NO_PHOTO", "Photo with such userId=$userUuid & photoId=$photoUuid was not found",
       )
       
       // Unique images have unique URL so can be cached indefinitely

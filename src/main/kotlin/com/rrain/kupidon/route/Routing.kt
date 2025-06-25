@@ -1,11 +1,11 @@
 package com.rrain.kupidon.route
 
 import com.rrain.kupidon.route.routes.`app-api-v1`.auth.addAuthOtherRoutes
-import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`.addChatMessageToChatIdIdPostRoute
-import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`.addChatMessageToUserIdIdPostRoute
-import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-messages`.addChatMessagesRoute
-import com.rrain.kupidon.route.routes.`app-api-v1`.chats.addChatsRoute
-import com.rrain.kupidon.route.routes.`app-api-v1`.users.addUsersMutuallyLikedRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`.addRoutePostChatMessageToChatIdId
+import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`.addRoutePostChatMessageToUserIdId
+import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-messages`.addRouteGetChatMessages
+import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-items`.addChatItemsGetRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.users.addRouteGetUsersMutuallyLiked
 import com.rrain.kupidon.route.routes.`app-api-v1`.`user-to-user`.addUserToUserLikeRoute
 import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserCreateRoute
 import com.rrain.kupidon.route.routes.main.addMainRoutes
@@ -57,14 +57,14 @@ fun Application.configureRouting() {
   addUserToUserLikeRoute()
   
   addUsersRoute()
-  addUsersMutuallyLikedRoute()
+  addRouteGetUsersMutuallyLiked()
   
-  addChatsRoute()
+  addChatItemsGetRoute()
   
-  addChatMessageToUserIdIdPostRoute()
-  addChatMessageToChatIdIdPostRoute()
+  addRoutePostChatMessageToUserIdId()
+  addRoutePostChatMessageToChatIdId()
   
-  addChatMessagesRoute()
+  addRouteGetChatMessages()
   
 }
 

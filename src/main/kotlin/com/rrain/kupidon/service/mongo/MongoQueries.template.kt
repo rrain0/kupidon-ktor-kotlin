@@ -3,16 +3,29 @@ package com.rrain.kupidon.service.mongo
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.FindOneAndUpdateOptions
 import com.mongodb.client.model.ReturnDocument
-import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoClient
-import com.rrain.kupidon.service.mongo.model.UserMongo
+import com.rrain.kupidon.service.mongo.model.ChatMessageM
+import com.rrain.`util-bson`.toBJson
+import com.rrain.`util-bson`.toDoc
 import com.rrain.util.`date-time`.now
-import com.rrain.util.uuid.randomUUID
+import com.rrain.util.`delegated-prop`.getIt
+import com.rrain.util.uuid.randomUuid
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.util.UUID
 import kotlin.random.Random
+
+
+/*
+Operators:
+
+🔶 $eq
+Checks if stored-value == value or stored-array-value contains value.
+{ fieldName: { $eq: value } }
+Filters.eq(fieldName, value)
+
+ */
 
 
 
@@ -32,10 +45,31 @@ private fun MongoClient.collTestItems() = getDatabase("testItemsDb").coll<TestIt
 // ⚛️ Atomic operation.
 // ⚡️ Immediate. Impossible to block by writings or transactions.
 private suspend fun MongoClient.findOne(): TestItem? {
-  val idToFind = randomUUID()
+  val idToFind = randomUuid()
   val item = collTestItems()
     .find(Filters.eq(TestItem::id.name, idToFind))
     .firstOrNull()
+  return item
+}
+
+
+// Insert one (and get inserted document).
+// 1️⃣ Single document operation.
+// ⚛️ Atomic operation.
+// ⚡️ Immediate. Impossible to block by writings or transactions.
+private suspend fun MongoClient.insertOneAndGetIt(): TestItem {
+  var item = TestItem()
+  mongoUniqueViolationRetry(
+    {
+      item = collTestItems().findOneOrInsert(
+        // Condition that always matches none to guarantee insertion.
+        // Because UUID id is not string and not empty string.
+        Filters.eq(ChatMessageM::id.name, ""),
+        item,
+      )
+    },
+    { item.id = UUID.randomUUID() },
+  )
   return item
 }
 
@@ -48,6 +82,8 @@ private suspend fun MongoClient.findOne(): TestItem? {
 // 🔄 If there is a unique index for data to insert and data already in db,
 // then this handles exception and retires with your new provided data.
 private suspend fun MongoClient.findOneOrInsert(): TestItem {
+  val i by lazy { 1 }
+  val ii by getIt { 1 }
   var item = TestItem()
   mongoUniqueViolationRetry(
     {
@@ -56,7 +92,7 @@ private suspend fun MongoClient.findOneOrInsert(): TestItem {
         item,
       )
     },
-    { item.id = randomUUID() },
+    { item.id = randomUuid() },
   )
   return item
 }
@@ -72,7 +108,7 @@ private suspend fun MongoClient.findOneAndUpdate(): TestItem? {
   val item = collTestItems()
     .findOneAndUpdate(
       Filters.eq(TestItem::id.name, itemUpdate.id),
-      Updates.combine(itemUpdate.toUpdatesSetAllProps()),
+      $$"{ $set: $${itemUpdate.toBJson()} }".toDoc(),
       FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER),
     )
   return item
@@ -108,7 +144,7 @@ private suspend fun MongoClient.findOneThenProcessThenUpdate(): TestItem? {
       .findOneAndUpdate(
         session,
         Filters.eq(TestItem::id.name, itemUpdate.id),
-        item.toUpdatesSetAllProps(),
+        $$"{ $set: $${item.toBJson()} }".toDoc(),
         FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER),
       )!!
     

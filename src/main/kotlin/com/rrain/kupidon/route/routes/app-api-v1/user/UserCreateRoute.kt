@@ -8,13 +8,13 @@ import com.rrain.kupidon.service.lang.`ui-values`.AppUiText
 import com.rrain.kupidon.service.lang.`ui-values`.EmailInitialVerificationUiText
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
-import com.rrain.kupidon.service.mongo.model.UserMongo
+import com.rrain.kupidon.service.mongo.model.UserM
 import com.rrain.kupidon.service.lang.Lang
 import com.rrain.kupidon.`mini-libs`.`ui-text`.pickUiValue
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.service.mongo.model.UserDataType
-import com.rrain.kupidon.service.mongo.model.projectionUserMongo
+import com.rrain.kupidon.service.mongo.model.projectionUserM
 import com.rrain.kupidon.service.mongo.useSingleDocTx
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
@@ -99,7 +99,7 @@ fun Application.addUserCreateRoute() {
       
       
       val nowZoned = now()
-      val tryUser = UserMongo(
+      val tryUser = UserM(
         id = UUID.randomUUID(),
         roles = setOf(),
         email = userToCreate.email,
@@ -115,12 +115,12 @@ fun Application.addUserCreateRoute() {
       
       
       val user = useSingleDocTx { session ->
-        val nUserId = UserMongo::id.name
-        val nUserEmail = UserMongo::email.name
+        val nUserId = UserM::id.name
+        val nUserEmail = UserM::email.name
         
         val userByEmail = collUsers
           .find(session, Filters.eq(nUserEmail, tryUser.email))
-          .projectionUserMongo()
+          .projectionUserM()
           .firstOrNull()
         
         if (userByEmail != null) return@post call.respondBadRequest(
@@ -133,7 +133,7 @@ fun Application.addUserCreateRoute() {
         
         collUsers
           .find(session, Filters.eq(nUserId, tryUser.id))
-          .projectionUserMongo()
+          .projectionUserM()
           .first()
       }
       

@@ -18,10 +18,10 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.UpdatesUpdatedAt
 import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.service.mongo.model.UserDataType
-import com.rrain.kupidon.service.mongo.model.UserMongo
-import com.rrain.kupidon.service.mongo.model.UserProfilePhotoMetadataMongo
-import com.rrain.kupidon.service.mongo.model.UserProfilePhotoMongo
-import com.rrain.kupidon.service.mongo.model.projectionUserMongo
+import com.rrain.kupidon.service.mongo.model.UserM
+import com.rrain.kupidon.service.mongo.model.UserProfilePhotoMetadataM
+import com.rrain.kupidon.service.mongo.model.UserProfilePhotoM
+import com.rrain.kupidon.service.mongo.model.projectionUserM
 import com.rrain.kupidon.service.mongo.useSingleDocTx
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
@@ -41,7 +41,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.yearsUntil
 import org.bson.Document
 import java.util.UUID
-import kotlin.time.Duration.Companion.milliseconds
 
 
 
@@ -234,23 +233,23 @@ fun Application.addUserUpdateRoute() {
         
         
         val user = useSingleDocTx { session ->
-          val nUserId = UserMongo::id.name
-          val nUserPwd = UserMongo::pwd.name
-          val nUserName = UserMongo::name.name
-          val nUserBirthDate = UserMongo::birthDate.name
-          val nUserGender = UserMongo::gender.name
-          val nUserAboutMe = UserMongo::aboutMe.name
-          val nUserPhotos = UserMongo::photos.name
-          val nUserUpdated = UserMongo::updatedAt.name
+          val nUserId = UserM::id.name
+          val nUserPwd = UserM::pwd.name
+          val nUserName = UserM::name.name
+          val nUserBirthDate = UserM::birthDate.name
+          val nUserGender = UserM::gender.name
+          val nUserAboutMe = UserM::aboutMe.name
+          val nUserPhotos = UserM::photos.name
+          val nUserUpdated = UserM::updatedAt.name
           
-          val nPhotoId = UserProfilePhotoMetadataMongo::id.name
-          val nPhotoIndex = UserProfilePhotoMetadataMongo::index.name
-          val nPhotoBinData = UserProfilePhotoMongo::binData.name
+          val nPhotoId = UserProfilePhotoMetadataM::id.name
+          val nPhotoIndex = UserProfilePhotoMetadataM::index.name
+          val nPhotoBinData = UserProfilePhotoM::binData.name
           
           
           val userById = collUsers
             .find(session, Filters.eq(nUserId, userUuid))
-            .projectionUserMongo()
+            .projectionUserM()
             .firstOrNull()
           
           if (userById == null) {
@@ -260,11 +259,11 @@ fun Application.addUserUpdateRoute() {
           
           
           
-          val writeList = mutableListOf<WriteModel<UserMongo>>()
+          val writeList = mutableListOf<WriteModel<UserM>>()
           
           
           if (update.newPwdHashed != null) {
-            if (userById.pwd!=update.currentPwdHashed) {
+            if (userById.pwd != update.currentPwdHashed) {
               session.abortTransaction()
               return@put call.respondBadRequest(
                 "INVALID_PWD",
@@ -336,15 +335,15 @@ fun Application.addUserUpdateRoute() {
           
           writeList += UpdateOneModel(
             Filters.eq(nUserId, userUuid),
-            listOf(UpdatesUpdatedAt(UserMongo::updatedAt.name, now)),
+            listOf(UpdatesUpdatedAt(UserM::updatedAt.name, now)),
           )
           
           collUsers.bulkWrite(session,writeList)
           
           
           val updatedUser = collUsers
-            .find(session, Filters.eq(UserMongo::id.name, userUuid))
-            .projectionUserMongo()
+            .find(session, Filters.eq(UserM::id.name, userUuid))
+            .projectionUserM()
             .first()
           
           // check photo indices uniqueness

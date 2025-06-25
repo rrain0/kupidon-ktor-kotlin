@@ -3,7 +3,7 @@ package com.rrain.kupidon.route.routes.`app-api-v1`.users
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.service.mongo.model.UserDataType
-import com.rrain.kupidon.service.mongo.model.projectionUserMongo
+import com.rrain.kupidon.service.mongo.model.projectionUserM
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
 import io.ktor.server.application.*
@@ -19,7 +19,7 @@ fun Application.addUsersRoute() {
     get(ApiV1Routes.users) {
       val users = collUsers
         .find()
-        .projectionUserMongo()
+        .projectionUserM()
         .toList()
       
       call.respond(mapOf(

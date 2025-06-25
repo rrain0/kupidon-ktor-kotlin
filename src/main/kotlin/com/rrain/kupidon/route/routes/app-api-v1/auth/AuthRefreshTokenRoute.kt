@@ -8,9 +8,9 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.*
 import com.rrain.kupidon.service.JwtService.getUserId
 import com.rrain.kupidon.service.mongo.collUsers
-import com.rrain.kupidon.service.mongo.model.UserMongo
-import com.rrain.kupidon.service.mongo.model.UserProfilePhotoMongo
-import com.rrain.kupidon.service.mongo.model.projectionUserMongo
+import com.rrain.kupidon.service.mongo.model.UserM
+import com.rrain.kupidon.service.mongo.model.UserProfilePhotoM
+import com.rrain.kupidon.service.mongo.model.projectionUserM
 import com.rrain.util.uuid.toUuid
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -52,13 +52,13 @@ fun Application.addAuthRefreshTokensRoute() {
       
       val userUuid = decodedRefresh.getUserId().toUuid()
       
-      val nUserId = UserMongo::id.name
-      val nUserPhotos = UserMongo::photos.name
-      val nPhotoBinData = UserProfilePhotoMongo::binData.name
+      val nUserId = UserM::id.name
+      val nUserPhotos = UserM::photos.name
+      val nPhotoBinData = UserProfilePhotoM::binData.name
       
       val user = collUsers
         .find(Filters.eq(nUserId, userUuid))
-        .projectionUserMongo()
+        .projectionUserM()
         .firstOrNull()
       
       user ?: return@get call.respondNoUserById()

@@ -5,44 +5,45 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 
 
+
 /*
   {
     code: ... for machines,
-    msg: ... for humans,
-    ... additional fields for machines if necessary,
-    extraCode?: ... for machines,
+    message: ... for humans,
   }
-
  */
 
 
 suspend inline fun ApplicationCall.respondBadRequest(
-  code: String, msg: String,
-) = this.respond(
+  code: String,
+  msg: String
+) = respond(
   HttpStatusCode.BadRequest,
   mapOf(
     "code" to code,
-    "msg" to msg,
+    "message" to msg,
   ),
 )
-suspend inline fun ApplicationCall.respondBadRequest(body: Any) = this.respond(
+suspend inline fun ApplicationCall.respondBadRequest(
+  codeMsg: CodeMsg
+) = respond(
   HttpStatusCode.BadRequest,
-  body,
+  codeMsg,
 )
 
 
 
 
-suspend inline fun ApplicationCall.respondNotFound(msg: String) = (
-  respondNotFound("NOT_FOUND", msg)
-)
+// Запрос сформирован правильно, но ресурса не существует.
+// Например если не существует чего-то по id.
 suspend inline fun ApplicationCall.respondNotFound(
-  code: String, msg: String,
-) = this.respond(
+  code: String,
+  msg: String = ""
+) = respond(
   HttpStatusCode.NotFound,
   mapOf(
     "code" to code,
-    "msg" to msg,
+    "message" to msg,
   ),
 )
 
@@ -55,10 +56,11 @@ suspend inline fun ApplicationCall.respondInvalidBody(
   HttpStatusCode.BadRequest,
   mapOf(
     "code" to "INVALID_INPUT_BODY",
-    "msg" to msg,
+    "message" to msg,
   ),
 )
 
+// TODO а оно мне вообще надо?
 // Некорректный формат параметров запроса (query params)
 suspend inline fun ApplicationCall.respondInvalidParams(
   msg: String = "Invalid request params format",
@@ -66,19 +68,19 @@ suspend inline fun ApplicationCall.respondInvalidParams(
   HttpStatusCode.BadRequest,
   mapOf(
     "code" to "INVALID_PARAMS",
-    "msg" to msg,
+    "message" to msg,
   ),
 )
 
 
 
 
-// TODO refactor
+// TODO refactor to not found code
 // Пользователь не найден
-suspend inline fun ApplicationCall.respondNoUserById() = this.respond(
+suspend inline fun ApplicationCall.respondNoUserById() = respond(
   HttpStatusCode.BadRequest,
   mapOf(
     "code" to "NO_USER",
-    "msg" to "No user with such id",
+    "message" to "No user with such id",
   ),
 )

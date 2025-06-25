@@ -10,12 +10,14 @@ import com.mongodb.client.model.ReturnDocument
 import com.mongodb.client.model.Updates
 import com.rrain.kupidon.service.mongo.coll
 import com.rrain.kupidon.service.mongo.findOneOrInsert
-import com.rrain.kupidon.service.mongo.toUpdatesSetAllProps
 import com.rrain.kupidon.service.mongo.mongoAppDb
 import com.rrain.kupidon.service.mongo.mongoDb
 import com.rrain.kupidon.service.mongo.useSingleDocTx
+import com.rrain.`util-bson`.toBJson
+import com.rrain.`util-bson`.toDoc
 import com.rrain.`util-ktor`.call.boolQueryParams
-import com.rrain.util.any.objectPrimaryPropsToMap
+import com.rrain.util.`date-time`.toInstant
+import com.rrain.util.`delegated-prop`.getIt
 import com.rrain.util.uuid.toUuid
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
@@ -34,7 +36,6 @@ import kotlin.random.Random
 
 
 
-
 fun Application.addMongoTestRoutes() {
   
   data class TestItem(
@@ -46,15 +47,15 @@ fun Application.addMongoTestRoutes() {
     var updatedAt: Instant = Clock.System.now(),
   )
   
-  fun collTestItems() = mongoAppDb.coll<TestItem>("testItems")
+  val collTestItems by getIt { mongoAppDb.coll<TestItem>("testItems") }
   
   val origMainItem = TestItem(
     "f1ca1e3c-e7d2-4f9b-9419-a099636f58e9".toUuid(),
     7000,
     "ORIGINAL",
     0,
-    Instant.parse("2025-06-22T09:39:00.500Z"),
-    Instant.parse("2025-06-22T09:39:00.500Z"),
+    "2025-06-22T09:39:00.500Z".toInstant(),
+    "2025-06-22T09:39:00.500Z".toInstant(),
   )
   val mainItemObjectId = ObjectId("68514f54d72f45c16c63f9c1")
   
@@ -63,8 +64,8 @@ fun Application.addMongoTestRoutes() {
     9999,
     "SECOND",
     -10,
-    Instant.parse("2025-06-22T09:45:04.163Z"),
-    Instant.parse("2025-06-22T09:45:04.163Z"),
+    "2025-06-22T09:45:04.163Z".toInstant(),
+    "2025-06-22T09:45:04.163Z".toInstant(),
   )
   val secondItemObjectId = ObjectId("6857bdfa370538ba20e7a102")
   
@@ -79,16 +80,16 @@ fun Application.addMongoTestRoutes() {
     
     
     get("$testItemsRoute/reset/by-id") {
-      val mainItem = collTestItems()
+      val mainItem = collTestItems
         .findOneAndUpdate(
           Filters.eq(TestItem::id.name, origMainItem.id),
-          Updates.combine(origMainItem.toUpdatesSetAllProps()),
+          $$"{ $set: $${origMainItem.toBJson()} }".toDoc(),
           FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER),
         )
-      val secondItem = collTestItems()
+      val secondItem = collTestItems
         .findOneAndUpdate(
           Filters.eq(TestItem::id.name, origSecondItem.id),
-          Updates.combine(origSecondItem.toUpdatesSetAllProps()),
+          $$"{ $set: $${origSecondItem.toBJson()} }".toDoc(),
           FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER),
         )
       call.respond(mapOf(
@@ -99,7 +100,7 @@ fun Application.addMongoTestRoutes() {
     
     get("$testItemsRoute/add/random") {
       var item = TestItem()
-      item = collTestItems()
+      item = collTestItems
         .findOneOrInsert(
           Filters.eq(TestItem::id.name, item.id),
           item,
@@ -124,7 +125,7 @@ fun Application.addMongoTestRoutes() {
     get("$testItemsRoute/add/duplicate-id") {
       try {
         val duplicateId = origMainItem.id
-        collTestItems().insertOne(TestItem(duplicateId))
+        collTestItems.insertOne(TestItem(duplicateId))
         call.respond(HttpStatusCode.OK)
       }
       catch (ex: MongoWriteException) {
@@ -143,7 +144,7 @@ fun Application.addMongoTestRoutes() {
       for (i in 100 downTo 0) {
         try {
           println("newId: $newId")
-          collTestItems().insertOne(TestItem(newId))
+          collTestItems.insertOne(TestItem(newId))
           break
         }
         catch (ex: MongoWriteException) {
@@ -171,9 +172,9 @@ fun Application.addMongoTestRoutes() {
       for (i in 1..attemptsCnt) {
         try {
           println("i: $i, item: $item")
-          item = collTestItems().findOneAndUpdate(
+          item = collTestItems.findOneAndUpdate(
             Filters.eq(TestItem::number.name, item.number),
-            Updates.setOnInsert(Document(item.objectPrimaryPropsToMap())),
+            $$"{ $setOnInsert: $${item.toBJson()} }".toDoc(),
             FindOneAndUpdateOptions().upsert(true).returnDocument(ReturnDocument.AFTER),
           )!!
           break
@@ -197,7 +198,7 @@ fun Application.addMongoTestRoutes() {
     get("$testItemsRoute/find-one/by-string-original") {
       val duplicateString = origMainItem.string
       
-      val item = collTestItems()
+      val item = collTestItems
         .find(Filters.eq(TestItem::string.name, duplicateString))
         .firstOrNull()
       
@@ -207,7 +208,7 @@ fun Application.addMongoTestRoutes() {
     get("$testItemsRoute/find-one-and-update/by-string-original") {
       val duplicateString = origMainItem.string
       
-      val item = collTestItems()
+      val item = collTestItems
         // .withReadPreference(ReadPreference.primary())
         // .withReadConcern(ReadConcern.LINEARIZABLE)
         // .withWriteConcern(WriteConcern.MAJORITY.withJournal(true))
@@ -222,7 +223,7 @@ fun Application.addMongoTestRoutes() {
     }
     
     get("$testItemsRoute/find-one-and-update/main-item/by-id") {
-      val item = collTestItems()
+      val item = collTestItems
         // .withReadPreference(ReadPreference.primary())
         // .withReadConcern(ReadConcern.LINEARIZABLE)
         // .withWriteConcern(WriteConcern.MAJORITY.withJournal(true))
@@ -237,7 +238,7 @@ fun Application.addMongoTestRoutes() {
     }
     
     get("$testItemsRoute/find-one-and-update/second-item/by-id") {
-      val item = collTestItems()
+      val item = collTestItems
         .findOneAndUpdate(
           Filters.eq(TestItem::id.name, origSecondItem.id),
           Updates.set(TestItem::integer.name, 1),
@@ -251,7 +252,7 @@ fun Application.addMongoTestRoutes() {
     get("$testItemsRoute/find-one-and-update/main-item/transaction/wait/by-string-original") {
       val duplicateString = origMainItem.string
       val item = useSingleDocTx { session, abort ->
-        val item = collTestItems()
+        val item = collTestItems
           .findOneAndUpdate(
             session,
             Filters.eq(TestItem::string.name, duplicateString),
@@ -271,7 +272,7 @@ fun Application.addMongoTestRoutes() {
       val duplicateString = origMainItem.string
       val item = useSingleDocTx { session, abort ->
         val item =
-          collTestItems()
+          collTestItems
             // .withReadPreference(ReadPreference.primary())
             // .withReadConcern(ReadConcern.LINEARIZABLE)
             // .withWriteConcern(WriteConcern.MAJORITY.withJournal(true))

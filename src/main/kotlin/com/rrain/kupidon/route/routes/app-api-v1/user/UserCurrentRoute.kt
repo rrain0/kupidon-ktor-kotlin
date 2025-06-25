@@ -6,8 +6,8 @@ import com.rrain.kupidon.route.`response-errors`.respondNoUserById
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.service.mongo.model.UserDataType
-import com.rrain.kupidon.service.mongo.model.UserMongo
-import com.rrain.kupidon.service.mongo.model.projectionUserMongo
+import com.rrain.kupidon.service.mongo.model.UserM
+import com.rrain.kupidon.service.mongo.model.projectionUserM
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
 import io.ktor.server.application.*
@@ -25,11 +25,11 @@ fun Application.addUserCurrentRoute() {
       get(ApiV1Routes.userCurrent) {
         val userUuid = authUserUuid
         
-        val nUserId = UserMongo::id.name
+        val nUserId = UserM::id.name
         
         val userById = collUsers
           .find(Filters.eq(nUserId, userUuid))
-          .projectionUserMongo()
+          .projectionUserM()
           .firstOrNull()
         
         userById ?: return@get call.respondNoUserById()

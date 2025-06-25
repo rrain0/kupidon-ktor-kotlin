@@ -3,18 +3,22 @@ package com.rrain.kupidon.route.routes.`app-api-v1`.users
 import com.mongodb.client.model.Aggregates
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Variable
+import com.rrain.kupidon.model.ChatType
 import com.rrain.kupidon.plugin.authUserUuid
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.CollNames
-import com.rrain.kupidon.service.mongo.model.UserToUserLikeMongo
+import com.rrain.kupidon.service.mongo.collChats
+import com.rrain.kupidon.service.mongo.model.UserToUserLikeM
 import com.rrain.kupidon.service.mongo.collUserToUserLikes
 import com.rrain.kupidon.service.mongo.collUsers
+import com.rrain.kupidon.service.mongo.model.ChatM
 import com.rrain.kupidon.service.mongo.model.UserDataType
-import com.rrain.kupidon.service.mongo.model.UserMongo
-import com.rrain.kupidon.service.mongo.model.projectionUserMongo
+import com.rrain.kupidon.service.mongo.model.UserM
+import com.rrain.kupidon.service.mongo.model.projectionUserM
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
 import com.rrain.util.print.println
+import com.rrain.util.uuid.uuidComparator
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.*
@@ -29,18 +33,18 @@ import org.bson.Document
 // TODO map to users
 // TODO rename to UsersNewPairsRoute
 
-fun Application.addUsersMutuallyLikedRoute() {
+fun Application.addRouteGetUsersMutuallyLiked() {
   routing {
     authenticate {
       get(ApiV1Routes.usersMutuallyLiked) {
         val userUuid = authUserUuid
         
-        val nFromUserId = UserToUserLikeMongo::fromUserId.name
-        val nToUserId = UserToUserLikeMongo::toUserId.name
+        val nFromUserId = UserToUserLikeM::fromUserId.name
+        val nToUserId = UserToUserLikeM::toUserId.name
         
         
         val userLikesThatAreMutual = collUserToUserLikes
-          .aggregate<UserToUserLikeMongo>(listOf(
+          .aggregate<UserToUserLikeM>(listOf(
             Aggregates.match(Document(nFromUserId, userUuid)),
             // В текущий документ добавляется поле _mutual, содержащее результаты lookup.
             // _mutual - массив приджойненных документов.
@@ -67,14 +71,30 @@ fun Application.addUsersMutuallyLikedRoute() {
         
         
         
-        val mutuallyLikedUsersIds = userLikesThatAreMutual.map { it.toUserId }
+        var mutuallyLikedUserIds = userLikesThatAreMutual.map { it.toUserId }
         
-        println("mutualLikesUserIds", mutuallyLikedUsersIds)
+        val chattedUserIds = collChats
+          .find(Filters.and(
+            Filters.eq(ChatM::type.name, ChatType.PERSONAL),
+            Filters.or(
+              mutuallyLikedUserIds
+                .map { listOf(userUuid, it).sortedWith(uuidComparator) }
+                .map { Filters.all(ChatM::memberIds.name, it) }
+            ),
+          ))
+          .toList()
+          .flatMap { it.memberIds }
+          .toSet()
         
-        val nUserId = UserMongo::id.name
+        mutuallyLikedUserIds = mutuallyLikedUserIds.filter { 
+          it !in chattedUserIds
+        }
+        
+        println("mutualLikesUserIds", mutuallyLikedUserIds)
+        
         val likedUsers = collUsers
-          .find(Filters.`in`(nUserId, mutuallyLikedUsersIds))
-          .projectionUserMongo()
+          .find(Filters.`in`(UserM::id.name, mutuallyLikedUserIds))
+          .projectionUserM()
           .toList()
         
         call.respond(mapOf(

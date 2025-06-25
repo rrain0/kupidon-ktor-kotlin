@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.rrain.kupidon.model.Role
+import com.rrain.kupidon.route.`response-errors`.CodeMsg
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.`util-ktor`.application.get
 import com.rrain.`util-ktor`.application.appConfig
@@ -212,36 +213,36 @@ object JwtService {
 
 
 // Token was encoded by wrong algorithm. Required HMAC256.
-object ErrTokenAlgorithmMismatch {
-  val code = "TOKEN_ALGORITHM_MISMATCH"
-  val msg = "Token was encoded by wrong algorithm, required ${JwtService.config.algorithmName}"
-}
+val ErrTokenAlgorithmMismatch get() = CodeMsg(
+  "TOKEN_ALGORITHM_MISMATCH", 
+  "Token was encoded by wrong algorithm, required ${JwtService.config.algorithmName}"
+)
 // Damaged Token - Токен повреждён и не может быть декодирован
-object ErrTokenDamaged {
-  val code = "TOKEN_DAMAGED"
-  val msg = "Token is damaged - failed to decode JSON token data"
-}
+val ErrTokenDamaged = CodeMsg(
+  "TOKEN_DAMAGED",
+  "Token is damaged - failed to decode JSON token data"
+)
 // Modified Token - Токен умышленно модифицирован (подделан)
-object ErrTokenModified {
-  val code = "TOKEN_MODIFIED"
-  val msg = "Token was modified"
-}
+val ErrTokenModified = CodeMsg(
+  "TOKEN_MODIFIED",
+  "Token was modified"
+)
 // Token has expired
-object ErrTokenExpired {
-  val code = "TOKEN_EXPIRED"
-  val msg = "Token has expired"
-}
-object ErrTokenLacksOfClaim {
-  val code = "TOKEN_LACKS_OF_CLAIM"
-  val msg = "Token lacks some required claims"
-}
-object ErrTokenClaimValueIsIncorrect {
-  val code = "TOKEN_CLAIM_VALUE_IS_INCORRECT"
-  val msg = "Token has incorrect claim value"
-}
+val ErrTokenExpired = CodeMsg(
+  "TOKEN_EXPIRED",
+  "Token has expired"
+)
+val ErrTokenLacksOfClaim = CodeMsg(
+  "TOKEN_LACKS_OF_CLAIM",
+  "Token lacks some required claims"
+)
+val ErrTokenClaimValueIsIncorrect = CodeMsg(
+  "TOKEN_CLAIM_VALUE_IS_INCORRECT",
+  "Token has incorrect claim value"
+)
 // Common Token Verification Exception
-object ErrTokenUnknownVerificationError {
-  val code = "UNKNOWN_VERIFICATION_ERROR"
-  val msg = "Unknown Token Verification Exception"
-}
+val ErrTokenUnknownVerificationError = CodeMsg(
+  "UNKNOWN_VERIFICATION_ERROR",
+  "Unknown Token Verification Exception"
+)
 

@@ -11,9 +11,9 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.UpdatesUpdatedAt
 import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.service.mongo.model.UserDataType
-import com.rrain.kupidon.service.mongo.model.UserMongo
-import com.rrain.kupidon.service.mongo.model.UserProfilePhotoMongo
-import com.rrain.kupidon.service.mongo.model.projectionUserMongo
+import com.rrain.kupidon.service.mongo.model.UserM
+import com.rrain.kupidon.service.mongo.model.UserProfilePhotoM
+import com.rrain.kupidon.service.mongo.model.projectionUserM
 import com.rrain.kupidon.service.mongo.useSingleDocTx
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
@@ -84,7 +84,7 @@ fun Application.addUserProfilePhotoPostRoute() {
         }
         
         val photo = partialPhoto.run {
-          UserProfilePhotoMongo(
+          UserProfilePhotoM(
             id
               .let {
                 it ?: return@post call.respondInvalidBody(
@@ -153,10 +153,10 @@ fun Application.addUserProfilePhotoPostRoute() {
           val userById = collUsers
             .findOneAndUpdate(
               session,
-              Filters.eq(UserMongo::id.name, userUuid),
-              listOf(UpdatesUpdatedAt(UserMongo::updatedAt.name, now)),
+              Filters.eq(UserM::id.name, userUuid),
+              listOf(UpdatesUpdatedAt(UserM::updatedAt.name, now)),
               FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER)
-                .projection(projectionUserMongo),
+                .projection(projectionUserM),
             )
           
           if (userById == null) {
@@ -179,10 +179,10 @@ fun Application.addUserProfilePhotoPostRoute() {
           
           val updatedUser = collUsers.findOneAndUpdate(
             session,
-            Filters.eq(UserMongo::id.name, userUuid),
-            Updates.pushEach(UserMongo::photos.name, listOf(photo)),
+            Filters.eq(UserM::id.name, userUuid),
+            Updates.pushEach(UserM::photos.name, listOf(photo)),
             FindOneAndUpdateOptions().returnDocument(ReturnDocument.AFTER)
-              .projection(projectionUserMongo),
+              .projection(projectionUserM),
           )!!
           
           updatedUser

@@ -59,6 +59,10 @@ val singleDocTxOpts = TransactionOptions.builder()
   .writeConcern(WriteConcern.MAJORITY.withJournal(true))
   .build()
 
+val readManyDocsTxOpts = TransactionOptions.builder()
+  .readConcern(ReadConcern.SNAPSHOT)
+  .build()
+
 class TxAbortedException : IllegalStateException()
 
 suspend inline fun <T> useTx(
@@ -80,19 +84,15 @@ suspend inline fun <T> useTx(
 
 
 
+typealias TxBlock<T> = (session: ClientSession) -> T
+typealias TxBlockWithAbort<T> = (session: ClientSession, abort: suspend () -> Unit) -> T
 
-// Как использовать:
-// Берём 1 документ через findOneAndUpdate, обновляем updateAt чтобы залочилось.
-// Смотрим документ, производим изменения, делаем updateOne.
-// Если кто-то другой попытается записать в документ, он будет ждать окончания транзакции.
-suspend inline fun <T> useSingleDocTx(
-  block: (session: ClientSession) -> T,
-): T = (
+
+
+suspend inline fun <T> useSingleDocTx(block: TxBlock<T>): T = (
   useSingleDocTx { session, abort -> block(session) }
 )
-suspend inline fun <T> useSingleDocTx(
-  block: (session: ClientSession, abort: suspend () -> Unit) -> T,
-): T = (
+suspend inline fun <T> useSingleDocTx(block: TxBlockWithAbort<T>): T = (
   useTx(singleDocTxOpts, block)
 )
 

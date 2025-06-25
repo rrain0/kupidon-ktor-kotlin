@@ -6,8 +6,8 @@ import com.rrain.kupidon.route.`response-errors`.respondInvalidParams
 import com.rrain.kupidon.route.`response-errors`.respondNotFound
 import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.service.mongo.model.UserDataType
-import com.rrain.kupidon.service.mongo.model.UserMongo
-import com.rrain.kupidon.service.mongo.model.projectionUserMongo
+import com.rrain.kupidon.service.mongo.model.UserM
+import com.rrain.kupidon.service.mongo.model.projectionUserM
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.pathParams
 import com.rrain.`util-ktor`.call.port
@@ -28,11 +28,13 @@ fun Application.addUserIdIdRoute() {
       }
       
       val userById = collUsers
-        .find(Filters.eq(UserMongo::id.name, userUuid))
-        .projectionUserMongo()
+        .find(Filters.eq(UserM::id.name, userUuid))
+        .projectionUserM()
         .firstOrNull()
       
-      userById ?: return@get call.respondNotFound("User with id '$userUuid' not found")
+      userById ?: return@get call.respondNotFound(
+        "NO_USER", "User with id '$userUuid' not found"
+      )
       
       return@get call.respond(mapOf(
         "user" to userById.toApi(UserDataType.Current, call.host, call.port),

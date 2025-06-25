@@ -3,35 +3,22 @@ package com.rrain.kupidon.service.mongo
 import com.mongodb.*
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
-import com.rrain.kupidon.service.mongo.model.ChatMessageMongo
-import com.rrain.kupidon.service.mongo.model.ChatMongo
-import com.rrain.kupidon.service.mongo.model.UserMongo
-import com.rrain.kupidon.service.mongo.model.UserToUserLikeMongo
+import com.rrain.kupidon.service.mongo.model.ChatMessageM
+import com.rrain.kupidon.service.mongo.model.ChatM
+import com.rrain.kupidon.service.mongo.model.UserM
+import com.rrain.kupidon.service.mongo.model.UserToUserLikeM
+import com.rrain.`util-bson`.appBsonCodecRegistry
 import com.rrain.`util-ktor`.application.appConfig
 import com.rrain.`util-ktor`.application.get
-import com.rrain.util.`date-time`.asTimestampToInstant
-import com.rrain.util.`date-time`.toLocalDateInUtc
-import com.rrain.util.`date-time`.toTimestamp
-import com.rrain.util.`date-time`.toUtcInstant
-import com.rrain.util.`date-time`.toZonedDateTime
 import io.ktor.http.*
 import io.ktor.server.application.*
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDate
-import org.bson.BsonReader
-import org.bson.BsonWriter
 import org.bson.UuidRepresentation
-import org.bson.codecs.Codec
-import org.bson.codecs.DecoderContext
-import org.bson.codecs.EncoderContext
-import org.bson.codecs.configuration.CodecRegistries
 import java.io.File
 import java.io.FileInputStream
 import java.security.KeyStore
 import java.security.SecureRandom
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
-import java.time.ZonedDateTime
 import javax.net.ssl.*
 
 
@@ -63,7 +50,7 @@ fun Application.configureMongoDbService() {
       builder.context(getMongoSslContext(backendClientCert, caCert))
     }
     .uuidRepresentation(UuidRepresentation.STANDARD)
-    .codecRegistry(getMongoCodecRegisty())
+    .codecRegistry(appBsonCodecRegistry)
     .build()
   
   // Reuse Your Client
@@ -80,40 +67,6 @@ fun Application.configureMongoDbService() {
 }
 
 
-
-fun getMongoCodecRegisty() = CodecRegistries.fromRegistries(
-  // !!! Earlier declarations have higher priority
-  CodecRegistries.fromCodecs(
-    object : Codec<Instant> {
-      override fun getEncoderClass() = Instant::class.java
-      override fun encode(writer: BsonWriter, value: Instant, encoderContext: EncoderContext) {
-        writer.writeDateTime(value.toTimestamp())
-      }
-      override fun decode(reader: BsonReader, decoderContext: DecoderContext): Instant {
-        return reader.readDateTime().asTimestampToInstant()
-      }
-    },
-    object : Codec<LocalDate> {
-      override fun getEncoderClass() = LocalDate::class.java
-      override fun encode(writer: BsonWriter, value: LocalDate, encoderContext: EncoderContext) {
-        writer.writeDateTime(value.toUtcInstant().toTimestamp())
-      }
-      override fun decode(reader: BsonReader, decoderContext: DecoderContext): LocalDate {
-        return reader.readDateTime().asTimestampToInstant().toLocalDateInUtc()
-      }
-    },
-    object : Codec<ZonedDateTime> {
-      override fun getEncoderClass() = ZonedDateTime::class.java
-      override fun encode(writer: BsonWriter, value: ZonedDateTime, encoderContext: EncoderContext) {
-        writer.writeDateTime(value.toTimestamp())
-      }
-      override fun decode(reader: BsonReader, decoderContext: DecoderContext): ZonedDateTime {
-        return reader.readDateTime().toZonedDateTime()
-      }
-    },
-  ),
-  MongoClientSettings.getDefaultCodecRegistry(),
-)
 
 
 
@@ -189,11 +142,16 @@ object CollNames {
   val users = "users"
   val userToUserLikes = "userToUserLikes"
   val chats = "chats"
-  val chatMessages = "chatsMessages"
+  val chatMessages = "chatMessages"
 }
 
-val collUsers get() = mongoAppDb.coll<UserMongo>(CollNames.users)
-val collUserToUserLikes get() = mongoAppDb.coll<UserToUserLikeMongo>(CollNames.userToUserLikes)
-val collChats get() = mongoAppDb.coll<ChatMongo>(CollNames.chats)
-val collChatsMessages get() = mongoAppDb.coll<ChatMessageMongo>(CollNames.chatMessages)
+inline fun <reified T : Any> collUsers() = mongoAppDb.coll<T>(CollNames.users)
+inline fun <reified T : Any> collUserToUserLikes() = mongoAppDb.coll<T>(CollNames.userToUserLikes)
+inline fun <reified T : Any> collChats() = mongoAppDb.coll<T>(CollNames.chats)
+inline fun <reified T : Any> collChatMessages() = mongoAppDb.coll<T>(CollNames.chatMessages)
+
+val collUsers get() = collUsers<UserM>()
+val collUserToUserLikes get() = collUserToUserLikes<UserToUserLikeM>()
+val collChats get() = collChats<ChatM>()
+val collChatMessages get() = collChatMessages<ChatMessageM>()
 

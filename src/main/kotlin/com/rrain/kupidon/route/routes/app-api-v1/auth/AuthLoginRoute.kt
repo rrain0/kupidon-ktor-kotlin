@@ -8,9 +8,9 @@ import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.service.mongo.model.UserDataType
-import com.rrain.kupidon.service.mongo.model.UserMongo
-import com.rrain.kupidon.service.mongo.model.UserProfilePhotoMongo
-import com.rrain.kupidon.service.mongo.model.projectionUserMongo
+import com.rrain.kupidon.service.mongo.model.UserM
+import com.rrain.kupidon.service.mongo.model.UserProfilePhotoM
+import com.rrain.kupidon.service.mongo.model.projectionUserM
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
 import io.ktor.server.application.*
@@ -35,13 +35,13 @@ fun Application.addAuthLoginRoute() {
         try { call.receive<LoginBodyIn>() }
         catch (ex: Exception) { return@post call.respondInvalidBody() }
       
-      val nUserEmail = UserMongo::email.name
-      val nUserPhotos = UserMongo::photos.name
-      val nPhotoBinData = UserProfilePhotoMongo::binData.name
+      val nUserEmail = UserM::email.name
+      val nUserPhotos = UserM::photos.name
+      val nPhotoBinData = UserProfilePhotoM::binData.name
       
       val user = collUsers
         .find(Filters.eq(nUserEmail, login.login))
-        .projectionUserMongo()
+        .projectionUserM()
         .firstOrNull()
       
       if (user == null || !PwdHashService.checkPwd(login.pwd, user.pwd)) {
