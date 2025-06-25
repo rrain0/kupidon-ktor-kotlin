@@ -31,11 +31,9 @@ fun Application.module() {
   configureHttpCachingHeaders()
   configureHttpForwardedHeaders()
   configureHttpAutoHeadResponse()
-  configureStatusPages()
-  
-  configureWebSockets()
   
   configureJwtAuthentication()
-  
+  configureStatusPages()
+  configureWebSockets()
   configureRouting()
 }

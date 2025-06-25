@@ -6,7 +6,7 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`.addRoutePostCh
 import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-messages`.addRouteGetChatMessages
 import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-items`.addChatItemsGetRoute
 import com.rrain.kupidon.route.routes.`app-api-v1`.users.addRouteGetUsersMutuallyLiked
-import com.rrain.kupidon.route.routes.`app-api-v1`.`user-to-user`.addUserToUserLikeRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.`user-to-user`.addRoutePostUserToUserLike
 import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserCreateRoute
 import com.rrain.kupidon.route.routes.main.addMainRoutes
 import com.rrain.kupidon.route.routes.`app-pwa-manifest`.addPwaManifestRoute
@@ -54,12 +54,12 @@ fun Application.configureRouting() {
   addUserProfilePhotoGetRoute()
   addUserEmailInitialVerifyRoute()
   
-  addUserToUserLikeRoute()
+  addRoutePostUserToUserLike()
   
-  addUsersRoute()
-  addRouteGetUsersMutuallyLiked()
+  addUsersRoute() // TODO
+  addRouteGetUsersMutuallyLiked() // TODO
   
-  addChatItemsGetRoute()
+  addChatItemsGetRoute() // TODO
   
   addRoutePostChatMessageToUserIdId()
   addRoutePostChatMessageToChatIdId()

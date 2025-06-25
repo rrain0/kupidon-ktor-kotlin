@@ -37,7 +37,7 @@ fun Application.addRouteGetUsersMutuallyLiked() {
   routing {
     authenticate {
       get(ApiV1Routes.usersMutuallyLiked) {
-        val userUuid = authUserUuid
+        val userId = authUserUuid
         
         val nFromUserId = UserToUserLikeM::fromUserId.name
         val nToUserId = UserToUserLikeM::toUserId.name
@@ -45,7 +45,7 @@ fun Application.addRouteGetUsersMutuallyLiked() {
         
         val userLikesThatAreMutual = collUserToUserLikes
           .aggregate<UserToUserLikeM>(listOf(
-            Aggregates.match(Document(nFromUserId, userUuid)),
+            Aggregates.match(Document(nFromUserId, userId)),
             // В текущий документ добавляется поле _mutual, содержащее результаты lookup.
             // _mutual - массив приджойненных документов.
             Aggregates.lookup(
@@ -78,7 +78,7 @@ fun Application.addRouteGetUsersMutuallyLiked() {
             Filters.eq(ChatM::type.name, ChatType.PERSONAL),
             Filters.or(
               mutuallyLikedUserIds
-                .map { listOf(userUuid, it).sortedWith(uuidComparator) }
+                .map { listOf(userId, it).sortedWith(uuidComparator) }
                 .map { Filters.all(ChatM::memberIds.name, it) }
             ),
           ))

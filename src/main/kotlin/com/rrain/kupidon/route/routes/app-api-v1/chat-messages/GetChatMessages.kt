@@ -3,13 +3,12 @@ package com.rrain.kupidon.route.routes.`app-api-v1`.`chat-messages`
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Sorts
 import com.rrain.kupidon.plugin.authUserUuid
+import com.rrain.kupidon.route.check.checkChatExists
+import com.rrain.kupidon.route.check.checkPersonalChatExists
 import com.rrain.kupidon.route.`response-errors`.respondInvalidParams
-import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
-import com.rrain.kupidon.service.mongo.collChats
 import com.rrain.kupidon.service.mongo.collChatMessages
 import com.rrain.kupidon.service.mongo.model.ChatMessageM
-import com.rrain.kupidon.service.mongo.model.ChatM
 import com.rrain.`util-ktor`.call.queryParams
 import com.rrain.util.uuid.toUuid
 import com.rrain.util.uuid.uuidComparator
@@ -17,7 +16,6 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 
@@ -27,38 +25,19 @@ fun Application.addRouteGetChatMessages() {
   routing {
     authenticate {
       get(ApiV1Routes.chatMessages) {
-        val userUuid = authUserUuid
+        val userId = authUserUuid
         
-        val toUserUuid = call.queryParams["toUserId"]?.toUuid()
-        val toChatUuid = call.queryParams["toChatId"]?.toUuid()
+        val toUserId = call.queryParams["toUserId"]?.toUuid()
+        val toChatId = call.queryParams["toChatId"]?.toUuid()
         
         val chatId = run {
-          if (toChatUuid != null) {
-            val chat = collChats
-              .find(Filters.and(
-                Filters.eq(ChatM::id.name, toChatUuid),
-                Filters.all(ChatM::memberIds.name, userUuid),
-              ))
-              .firstOrNull()
-            
-            chat ?: return@get call.respondBadRequest(
-              "NO_CHAT",
-              "No chat with id $toChatUuid or user with id $userUuid is not member of this chat"
-            )
-            
-            toChatUuid
+          if (toChatId != null) {
+            checkChatExists(call, toChatId, userId) { return@get }
+            toChatId
           }
-          else if (toUserUuid != null) {
-            val memberIds = listOf(userUuid, toUserUuid).sortedWith(uuidComparator)
-            
-            val chat = collChats
-              .find(Filters.all(ChatM::memberIds.name, memberIds))
-              .firstOrNull()
-            
-            chat ?: return@get call.respondBadRequest(
-              "NO_CHAT", "No chat between users with ids $memberIds"
-            )
-            
+          else if (toUserId != null) {
+            val memberIds = listOf(userId, toUserId).sortedWith(uuidComparator)
+            val chat = checkPersonalChatExists(call, memberIds) { return@get }
             chat.id
           }
           else {

@@ -33,10 +33,15 @@ fun Application.configureStatusPages() {
       }
     }
     
-    // Configure responses from status codes
-    status(HttpStatusCode.NotFound) { call, status ->
-      call.respondText(status = status, text = "404 Not Found")
+    unhandled { call ->
+      call.respondText(status = HttpStatusCode.NotFound, text = "404 Not Found")
     }
+    
+    // Configure responses from status codes
+    // !!! This overwrites any local response if status code matches
+    /* status(HttpStatusCode.NotFound) { call, status ->
+      call.respondText(status = status, text = "404 Not Found")
+    } */
     
     /*
     // Send an html page respectively to status code

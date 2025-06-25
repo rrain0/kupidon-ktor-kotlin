@@ -2,7 +2,7 @@ package com.rrain.kupidon.route.routes.`app-api-v1`.user
 
 import com.mongodb.client.model.Aggregates
 import com.rrain.kupidon.route.`response-errors`.respondInvalidParams
-import com.rrain.kupidon.route.`response-errors`.respondBadRequest
+import com.rrain.kupidon.route.`response-errors`.respondNotFound
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.service.mongo.model.UserM
@@ -52,7 +52,7 @@ fun Application.addUserProfilePhotoGetRoute() {
         ))
         .firstOrNull()
       
-      photo ?: return@get call.respondBadRequest(
+      photo ?: return@get call.respondNotFound(
         "NO_PHOTO", "Photo with such userId=$userUuid & photoId=$photoUuid was not found",
       )
       

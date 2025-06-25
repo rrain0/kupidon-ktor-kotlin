@@ -17,9 +17,8 @@ import io.ktor.server.response.*
 suspend inline fun ApplicationCall.respondBadRequest(
   code: String,
   msg: String = ""
-) = respond(
-  HttpStatusCode.BadRequest,
-  CodeMsg(code, msg)
+) = (
+  respondBadRequest(CodeMsg(code, msg))
 )
 suspend inline fun ApplicationCall.respondBadRequest(
   codeMsg: CodeMsg
@@ -30,12 +29,18 @@ suspend inline fun ApplicationCall.respondBadRequest(
 
 
 
-
 // Запрос сформирован правильно, но ресурса не существует.
 // Например если не существует чего-то по id.
-// У ошибки 404 не может быть тела.
-suspend inline fun ApplicationCall.respondNotFound() = respond(
-  HttpStatusCode.NotFound
+suspend inline fun ApplicationCall.respondNotFound(
+  code: String, msg: String = ""
+) = (
+  respondNotFound(CodeMsg(code, msg))
+)
+suspend inline fun ApplicationCall.respondNotFound(
+  codeMsg: CodeMsg
+) = respond(
+  HttpStatusCode.NotFound,
+  codeMsg,
 )
 
 
