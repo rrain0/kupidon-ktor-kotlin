@@ -5,7 +5,7 @@ import com.rrain.kupidon.model.ChatType
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondNotFound
 import com.rrain.kupidon.service.mongo.collChats
-import com.rrain.kupidon.service.mongo.model.ChatM
+import com.rrain.kupidon.model.db.ChatM
 import io.ktor.server.application.ApplicationCall
 import kotlinx.coroutines.flow.firstOrNull
 import java.util.UUID
@@ -38,7 +38,7 @@ suspend inline fun checkChatExists(
 
 
 
-fun filterPersonalChat(memberIds: List<UUID>) = Filters.and(
+fun filterPersonalChats(memberIds: List<UUID>) = Filters.and(
   Filters.eq(ChatM::type.name, ChatType.PERSONAL),
   Filters.eq(ChatM::memberIds.name, memberIds),
 )
@@ -50,7 +50,7 @@ suspend inline fun checkPersonalChatExists(
   onReturn: () -> Unit
 ): ChatM {
   val foundChat = collChats
-    .find(filterPersonalChat(memberIds))
+    .find(filterPersonalChats(memberIds))
     .firstOrNull()
   
   foundChat ?: run {

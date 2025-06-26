@@ -27,7 +27,7 @@ object ApiV1Routes {
   }
   
   val users = "$apiV1/users"
-  val usersMutuallyLiked = "$users/mutually-liked"
+  val usersNewPairs = "$users/new-pairs"
   
   val userToUser = "$apiV1/user-to-user"
   val userToUserLike = "$userToUser/like"

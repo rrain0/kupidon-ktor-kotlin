@@ -5,7 +5,7 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`.addRoutePostCh
 import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`.addRoutePostChatMessageToUserIdId
 import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-messages`.addRouteGetChatMessages
 import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-items`.addChatItemsGetRoute
-import com.rrain.kupidon.route.routes.`app-api-v1`.users.addRouteGetUsersMutuallyLiked
+import com.rrain.kupidon.route.routes.`app-api-v1`.users.addRouteGetUsersNewPairs
 import com.rrain.kupidon.route.routes.`app-api-v1`.`user-to-user`.addRoutePostUserToUserLike
 import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserCreateRoute
 import com.rrain.kupidon.route.routes.main.addMainRoutes
@@ -17,7 +17,7 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserIdIdRoute
 import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserUpdateRoute
 import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserProfilePhotoPostRoute
 import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserProfilePhotoGetRoute
-import com.rrain.kupidon.route.routes.`app-api-v1`.users.addUsersRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.users.addRouteGetUsers
 import com.rrain.kupidon.route.routes.app.api.v1.auth.addAuthLoginRoute
 import com.rrain.kupidon.route.routes.app.api.v1.auth.addAuthRefreshTokensRoute
 import io.ktor.server.application.*
@@ -56,8 +56,8 @@ fun Application.configureRouting() {
   
   addRoutePostUserToUserLike()
   
-  addUsersRoute() // TODO
-  addRouteGetUsersMutuallyLiked() // TODO
+  addRouteGetUsers()
+  addRouteGetUsersNewPairs()
   
   addChatItemsGetRoute() // TODO
   

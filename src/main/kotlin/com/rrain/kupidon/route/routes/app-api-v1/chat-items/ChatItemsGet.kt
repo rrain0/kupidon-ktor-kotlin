@@ -13,9 +13,9 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.CollNames
 import com.rrain.kupidon.service.mongo.collChats
 import com.rrain.kupidon.service.mongo.collUsers
-import com.rrain.kupidon.service.mongo.model.ChatMessageM
-import com.rrain.kupidon.service.mongo.model.ChatM
-import com.rrain.kupidon.service.mongo.model.UserM
+import com.rrain.kupidon.model.db.ChatMessageM
+import com.rrain.kupidon.model.db.ChatM
+import com.rrain.kupidon.model.db.UserM
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
 import io.ktor.server.application.*

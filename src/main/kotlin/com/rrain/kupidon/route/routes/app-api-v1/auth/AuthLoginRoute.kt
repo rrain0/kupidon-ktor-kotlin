@@ -7,10 +7,10 @@ import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collUsers
-import com.rrain.kupidon.service.mongo.model.UserDataType
-import com.rrain.kupidon.service.mongo.model.UserM
-import com.rrain.kupidon.service.mongo.model.UserProfilePhotoM
-import com.rrain.kupidon.service.mongo.model.projectionUserM
+import com.rrain.kupidon.model.db.UserDataType
+import com.rrain.kupidon.model.db.UserM
+import com.rrain.kupidon.model.db.UserProfilePhotoM
+import com.rrain.kupidon.model.db.projectionUserM
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
 import io.ktor.server.application.*

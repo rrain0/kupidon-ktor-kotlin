@@ -8,9 +8,9 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.*
 import com.rrain.kupidon.service.JwtService.getUserId
 import com.rrain.kupidon.service.mongo.collUsers
-import com.rrain.kupidon.service.mongo.model.UserM
-import com.rrain.kupidon.service.mongo.model.UserProfilePhotoM
-import com.rrain.kupidon.service.mongo.model.projectionUserM
+import com.rrain.kupidon.model.db.UserM
+import com.rrain.kupidon.model.db.UserProfilePhotoM
+import com.rrain.kupidon.model.db.projectionUserM
 import com.rrain.util.uuid.toUuid
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*

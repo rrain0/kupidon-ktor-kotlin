@@ -1,4 +1,4 @@
-package com.rrain.kupidon.service.mongo.model
+package com.rrain.kupidon.model.db
 
 import com.mongodb.kotlin.client.coroutine.FindFlow
 import com.rrain.kupidon.model.Gender
@@ -11,7 +11,7 @@ import kotlinx.datetime.TimeZone
 import java.util.UUID
 
 
-enum class UserDataType { Full, Current, Other }
+enum class UserDataType { Full, Current, Other, OtherShort }
 
 
 data class UserM(
@@ -49,28 +49,36 @@ data class UserM(
     timeZone: TimeZone = TimeZone.UTC,
   ): MutableMap<String, Any?> {
     val lvl = when (userType) {
-      UserDataType.Full -> 2
-      UserDataType.Current -> 1
-      UserDataType.Other -> 0
+      UserDataType.Full -> 3
+      UserDataType.Current -> 2
+      UserDataType.Other -> 1
+      UserDataType.OtherShort -> 0
     }
     val data = mutableMapOf<String, Any?>(
       "id" to id,
       "name" to name,
+    )
+    
+    if (userType === UserDataType.OtherShort) data.put(
+      "ava", photos.find { it.index == 0 }?.getUrl(id, host, port) ?: "",
+    )
+    
+    if (lvl >= 1) data.putAll(listOf(
       "birthDate" to birthDate, // TODO replace by age
       "age" to getAge(birthDate, timeZone),
       "gender" to gender,
       "aboutMe" to aboutMe,
       "photos" to photos.map { it.toApi(id, host, port) },
-    )
+    ))
     
-    if (lvl >= 1) data.putAll(listOf(
+    if (lvl >= 2) data.putAll(listOf(
       "roles" to roles,
       "email" to email,
       // todo email
       "emailVerified" to true,
     ))
     
-    if (lvl >= 2) data.putAll(listOf(
+    if (lvl >= 3) data.putAll(listOf(
       "pwd" to pwd, // hashed pwd
       "createdAt" to createdAt,
       "updatedAt" to updatedAt,

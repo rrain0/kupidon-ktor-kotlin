@@ -3,10 +3,10 @@ package com.rrain.kupidon.service.mongo
 import com.mongodb.*
 import com.mongodb.kotlin.client.coroutine.MongoClient
 import com.mongodb.kotlin.client.coroutine.MongoDatabase
-import com.rrain.kupidon.service.mongo.model.ChatMessageM
-import com.rrain.kupidon.service.mongo.model.ChatM
-import com.rrain.kupidon.service.mongo.model.UserM
-import com.rrain.kupidon.service.mongo.model.UserToUserLikeM
+import com.rrain.kupidon.model.db.ChatMessageM
+import com.rrain.kupidon.model.db.ChatM
+import com.rrain.kupidon.model.db.UserM
+import com.rrain.kupidon.model.db.UserToUserLikeM
 import com.rrain.`util-bson`.appBsonCodecRegistry
 import com.rrain.`util-ktor`.application.appConfig
 import com.rrain.`util-ktor`.application.get

@@ -8,7 +8,7 @@ import com.rrain.kupidon.route.check.filterUserToUserLike
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
-import com.rrain.kupidon.service.mongo.model.UserToUserLikeM
+import com.rrain.kupidon.model.db.UserToUserLikeM
 import com.rrain.kupidon.service.mongo.collUserToUserLikes
 import com.rrain.kupidon.service.mongo.findOneOrInsert
 import com.rrain.util.`date-time`.now

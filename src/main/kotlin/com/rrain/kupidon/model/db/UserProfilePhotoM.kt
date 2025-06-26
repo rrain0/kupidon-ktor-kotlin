@@ -1,4 +1,4 @@
-package com.rrain.kupidon.service.mongo.model
+package com.rrain.kupidon.model.db
 
 import org.bson.types.Binary
 import java.util.UUID

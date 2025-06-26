@@ -6,15 +6,15 @@ import com.rrain.kupidon.route.check.checkFromUserExists
 import com.rrain.kupidon.route.check.checkToUserExists
 import com.rrain.kupidon.route.check.checkUserToUserLikeExists
 import com.rrain.kupidon.route.check.filterNone
-import com.rrain.kupidon.route.check.filterPersonalChat
+import com.rrain.kupidon.route.check.filterPersonalChats
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collChats
 import com.rrain.kupidon.service.mongo.collChatMessages
 import com.rrain.kupidon.service.mongo.findOneOrInsert
-import com.rrain.kupidon.service.mongo.model.ChatMessageContentM
-import com.rrain.kupidon.service.mongo.model.ChatMessageM
-import com.rrain.kupidon.service.mongo.model.ChatM
+import com.rrain.kupidon.model.db.ChatMessageContentM
+import com.rrain.kupidon.model.db.ChatMessageM
+import com.rrain.kupidon.model.db.ChatM
 import com.rrain.kupidon.service.mongo.mongoUniqueViolationRetry
 import com.rrain.`util-ktor`.call.pathParams
 import com.rrain.util.`date-time`.now
@@ -57,7 +57,7 @@ fun Application.addRoutePostChatMessageToUserIdId() {
         )
         
         val foundChat = collChats
-          .find(filterPersonalChat(chat.memberIds))
+          .find(filterPersonalChats(chat.memberIds))
           .firstOrNull()
         
         if (foundChat != null) chat = foundChat
@@ -69,7 +69,7 @@ fun Application.addRoutePostChatMessageToUserIdId() {
           mongoUniqueViolationRetry(
             {
               chat = collChats.findOneOrInsert(
-                filterPersonalChat(chat.memberIds),
+                filterPersonalChats(chat.memberIds),
                 chat,
               )
             },

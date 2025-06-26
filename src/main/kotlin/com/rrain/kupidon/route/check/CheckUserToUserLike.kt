@@ -4,7 +4,7 @@ import com.mongodb.client.model.Filters
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondNotFound
 import com.rrain.kupidon.service.mongo.collUserToUserLikes
-import com.rrain.kupidon.service.mongo.model.UserToUserLikeM
+import com.rrain.kupidon.model.db.UserToUserLikeM
 import io.ktor.server.application.ApplicationCall
 import kotlinx.coroutines.flow.firstOrNull
 import java.util.UUID

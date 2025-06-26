@@ -5,8 +5,8 @@ import com.rrain.kupidon.route.`response-errors`.respondInvalidParams
 import com.rrain.kupidon.route.`response-errors`.respondNotFound
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collUsers
-import com.rrain.kupidon.service.mongo.model.UserM
-import com.rrain.kupidon.service.mongo.model.UserProfilePhotoM
+import com.rrain.kupidon.model.db.UserM
+import com.rrain.kupidon.model.db.UserProfilePhotoM
 import com.rrain.`util-ktor`.call.queryParams
 import com.rrain.util.uuid.toUuid
 import io.ktor.http.*

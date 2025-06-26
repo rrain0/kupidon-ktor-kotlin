@@ -8,7 +8,7 @@ import com.rrain.kupidon.route.check.checkPersonalChatExists
 import com.rrain.kupidon.route.`response-errors`.respondInvalidParams
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collChatMessages
-import com.rrain.kupidon.service.mongo.model.ChatMessageM
+import com.rrain.kupidon.model.db.ChatMessageM
 import com.rrain.`util-ktor`.call.queryParams
 import com.rrain.util.uuid.toUuid
 import com.rrain.util.uuid.uuidComparator

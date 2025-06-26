@@ -4,7 +4,7 @@ import com.mongodb.client.model.Filters
 import com.mongodb.client.model.FindOneAndUpdateOptions
 import com.mongodb.client.model.ReturnDocument
 import com.mongodb.kotlin.client.coroutine.MongoClient
-import com.rrain.kupidon.service.mongo.model.ChatMessageM
+import com.rrain.kupidon.model.db.ChatMessageM
 import com.rrain.`util-bson`.toBJson
 import com.rrain.`util-bson`.toDoc
 import com.rrain.util.`date-time`.now
@@ -25,6 +25,16 @@ Checks if stored-value == value or stored-array-value contains value.
 { fieldName: { $eq: value } }
 Filters.eq(fieldName, value)
 
+🔹Operators in expression { $expr: ... }
+🔹Can get field values by $<filedName>.
+🔹Can use local variables by $$<localVariable> in aggregation lookup.
+Operator transformations inside $expr (if operator is supported):
+🔹{ <fieldName>: { $<operator>: <value> } } => { $<operator>: [$<fieldName>, <value>] }
+🔶🔹$eq
+{ fieldName: { $eq: value } } => { $eq: [fieldName, value] }
+❌🔹$all - not supported
+🔶🔹$in
+{ fieldName: { $in: arrayValue } } => { $in: [fieldName, arrayValue] }
  */
 
 
