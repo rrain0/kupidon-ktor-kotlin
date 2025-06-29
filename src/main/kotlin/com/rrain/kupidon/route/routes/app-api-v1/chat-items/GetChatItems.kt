@@ -7,6 +7,8 @@ import com.mongodb.client.model.Field
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Sorts
 import com.mongodb.client.model.UnwindOptions
+import com.rrain.kupidon.model.ChatItem
+import com.rrain.kupidon.model.ChatProfile
 import com.rrain.kupidon.model.ChatType
 import com.rrain.kupidon.plugin.authUserUuid
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
@@ -16,61 +18,21 @@ import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.model.db.ChatMessageM
 import com.rrain.kupidon.model.db.ChatM
 import com.rrain.kupidon.model.db.UserM
+import com.rrain.kupidon.model.db.projectionUserM
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.toList
-import kotlinx.datetime.Instant
 import java.util.UUID
 
 
 
-//enum class ChatProfileType { USER }
 
-data class ChatProfile(
-  val id: UUID,
-  //val type: ChatProfileType,
-  val name: String,
-  val ava: String,
-  // val online
-  // val lastOnlineAt
-)
-
-data class ChatItem(
-  var id: UUID,
-  var type: ChatType,
-  var memberIds: List<UUID>,
-  var createdAt: Instant,
-  var updatedAt: Instant,
-  var profile: ChatProfile? = null,
-  //var companionUser: MutableMap<String, Any?>? = null,
-  var lastMessage: ChatMessageM? = null,
-) {
-  fun toApi(): MutableMap<String, Any?> {
-    return mutableMapOf(
-      "id" to id,
-      "memberIds" to memberIds,
-      "createdAt" to createdAt,
-      "updatedAt" to updatedAt,
-      "profile" to profile,
-      "lastMessage" to lastMessage?.toApi(),
-    )
-  }
-}
-
-
-
-
-// TODO check there is no chat between users
-// TODO sort: first are newest
-// TODO map to users
-// TODO rename to UsersNewPairsRoute
-
-fun Application.addChatItemsGetRoute() {
+fun Application.addRouteGetChatItems() {
   routing {
     authenticate {
       get(ApiV1Routes.chatItems) {
@@ -83,7 +45,7 @@ fun Application.addChatItemsGetRoute() {
               Filters.all(ChatItem::memberIds.name, userUuid)
             ),
             // Lookup to join chatMessages.
-            // For each chat chat.__messages = ChatMessage[]
+            // For each chat: chat.__messages = ChatMessage[]
             Aggregates.lookup(
               CollNames.chatMessages,
               ChatM::id.name,
@@ -97,9 +59,9 @@ fun Application.addChatItemsGetRoute() {
               UnwindOptions().preserveNullAndEmptyArrays(true)
             ),
             // Sort messages by createdAt descending
-            Aggregates.sort(Sorts.orderBy(
+            Aggregates.sort(
               Sorts.descending("__messages.${ChatMessageM::createdAt.name}")
-            )),
+            ),
             // Group by chat ID to get the latest message
             // Группировка теряет все поля, которые мы явно не указали,
             // так что сохраняем весь документ в __doc.
@@ -117,38 +79,34 @@ fun Application.addChatItemsGetRoute() {
           ))
           .toList()
         
-        println("chatItems 1: $chatItems")
+        val companionUserIds = chatItems.mapNotNull {
+          it.takeIf { it.type == ChatType.PERSONAL }
+            ?.memberIds?.find { it != userUuid }
+        }.toSet()
         
-        chatItems.onEach {
-          if (it.type == ChatType.PERSONAL) {
-            it.profile = collUsers
-              .find(Filters.eq(
-                UserM::id.name,
-                it.memberIds
-                  .also { println("memberIds: $it") }
-                  .also { println("userUuid: $userUuid") }
-                  .find { it != userUuid }!!.also { println("companion uuid: $it") }
-              ))
-              .firstOrNull()
-              ?.let {
-                ChatProfile(
-                  id = it.id,
-                  //type = ChatProfileType.USER,
-                  name = it.name,
-                  ava = it.photos
-                    .find { it.index == 0 }
-                    ?.getUrl(it.id, call.host, call.port)
-                    ?: "",
-                )
-              }
-          }
+        val companionUsers = collUsers
+          .find(Filters.`in`(UserM::id.name, companionUserIds))
+          .projectionUserM()
+          .fold(mutableMapOf<UUID, UserM>()) { acc, v -> acc.also { it[v.id] = v } }
+        
+        val chatItemsToApi = chatItems.map { chatItem ->
+          chatItem
+            .takeIf { it.type == ChatType.PERSONAL }
+            ?.memberIds
+            ?.find { it != userUuid }
+            ?.let { companionUsers[it] }
+            ?.let {
+              chatItem.profile = ChatProfile(
+                id = it.id,
+                name = it.name,
+                ava = it.ava(call.host, call.port),
+              )
+            }
+          chatItem.toApi()
         }
         
-        println("chatItems 2: $chatItems")
-        
-        
         call.respond(mapOf(
-          "chatItems" to chatItems,
+          "chatItems" to chatItemsToApi,
         ))
       }
     }

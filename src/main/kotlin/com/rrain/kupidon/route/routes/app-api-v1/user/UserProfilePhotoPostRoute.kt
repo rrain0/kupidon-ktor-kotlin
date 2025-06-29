@@ -91,11 +91,11 @@ fun Application.addUserProfilePhotoPostRoute() {
                   "Field 'id' must exist and must be UUID-string"
                 )
               }
-            .let {
-              try { it.toUuid() }
-              catch (ex: Exception) {
-                return@post call.respondInvalidBody("'id' must be UUID-string")
-              }
+              .let {
+                try { it.toUuid() }
+                catch (ex: Exception) {
+                  return@post call.respondInvalidBody("'id' must be UUID-string")
+                }
             },
             index
               .let {

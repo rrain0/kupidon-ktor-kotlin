@@ -9,10 +9,10 @@ import com.rrain.kupidon.service.mongo.collChatMessages
 import com.rrain.kupidon.service.mongo.findOneOrInsert
 import com.rrain.kupidon.model.db.ChatMessageContentM
 import com.rrain.kupidon.model.db.ChatMessageM
+import com.rrain.kupidon.route.`convert-or-error`.toUuidOr400
 import com.rrain.kupidon.service.mongo.mongoUniqueViolationRetry
 import com.rrain.`util-ktor`.call.pathParams
 import com.rrain.util.`date-time`.now
-import com.rrain.util.uuid.toUuid
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.*
@@ -32,7 +32,7 @@ fun Application.addRoutePostChatMessageToChatIdId() {
     authenticate {
       post(ApiV1Routes.chatMessageToChatIdId) {
         val userId = authUserUuid
-        val toChatId = call.pathParams["id"]!!.toUuid()
+        val toChatId = call.pathParams["id"].toUuidOr400()
         val msgIn =
           try { call.receive<ChatMessageBodyIn>() }
           catch (ex: Exception) { return@post call.respondInvalidBody() }

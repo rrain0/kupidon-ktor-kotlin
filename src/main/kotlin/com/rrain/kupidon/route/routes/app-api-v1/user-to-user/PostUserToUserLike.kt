@@ -47,9 +47,9 @@ fun Application.addRoutePostUserToUserLike() {
           "CANNOT_LIKE_YOURSELF", ""
         )
         
-        checkFromUserExists(call, like.fromUserId) { return@post }
-        checkToUserExists(call, like.toUserId) { return@post }
-        checkUserToUserLikeNotExists(call, like.fromUserId, like.toUserId) { return@post }
+        checkFromUserExists(like.fromUserId)
+        checkToUserExists(like.toUserId)
+        checkUserToUserLikeNotExists(like.fromUserId, like.toUserId)
         
         like = collUserToUserLikes.findOneOrInsert(
           filterUserToUserLike(like.fromUserId, like.toUserId),

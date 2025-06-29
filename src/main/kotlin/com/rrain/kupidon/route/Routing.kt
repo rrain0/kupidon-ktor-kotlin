@@ -1,10 +1,11 @@
 package com.rrain.kupidon.route
 
 import com.rrain.kupidon.route.routes.`app-api-v1`.auth.addAuthOtherRoutes
+import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-item`.addRouteGetChatItem
 import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`.addRoutePostChatMessageToChatIdId
 import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`.addRoutePostChatMessageToUserIdId
 import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-messages`.addRouteGetChatMessages
-import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-items`.addChatItemsGetRoute
+import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-items`.addRouteGetChatItems
 import com.rrain.kupidon.route.routes.`app-api-v1`.users.addRouteGetUsersNewPairs
 import com.rrain.kupidon.route.routes.`app-api-v1`.`user-to-user`.addRoutePostUserToUserLike
 import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserCreateRoute
@@ -59,7 +60,8 @@ fun Application.configureRouting() {
   addRouteGetUsers()
   addRouteGetUsersNewPairs()
   
-  addChatItemsGetRoute() // TODO
+  addRouteGetChatItem() // TODO
+  addRouteGetChatItems()
   
   addRoutePostChatMessageToUserIdId()
   addRoutePostChatMessageToChatIdId()

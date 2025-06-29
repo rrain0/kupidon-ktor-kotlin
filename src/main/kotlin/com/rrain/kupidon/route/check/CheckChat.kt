@@ -7,6 +7,7 @@ import com.rrain.kupidon.route.`response-errors`.respondNotFound
 import com.rrain.kupidon.service.mongo.collChats
 import com.rrain.kupidon.model.db.ChatM
 import io.ktor.server.application.ApplicationCall
+import io.ktor.server.routing.RoutingContext
 import kotlinx.coroutines.flow.firstOrNull
 import java.util.UUID
 
@@ -44,20 +45,18 @@ fun filterPersonalChats(memberIds: List<UUID>) = Filters.and(
 )
 
 
+context(routingContext: RoutingContext)
 suspend inline fun checkPersonalChatExists(
-  call: ApplicationCall,
   memberIds: List<UUID>,
-  onReturn: () -> Unit
 ): ChatM {
   val foundChat = collChats
     .find(filterPersonalChats(memberIds))
     .firstOrNull()
   
   foundChat ?: run {
-    call.respondBadRequest(
+    routingContext.call.respondBadRequest(
       "NO_CHAT", "No personal chat between users"
     )
-    onReturn()
     throw IllegalStateException()
   }
   

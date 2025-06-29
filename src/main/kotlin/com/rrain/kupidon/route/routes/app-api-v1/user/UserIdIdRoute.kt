@@ -8,10 +8,10 @@ import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.model.db.UserDataType
 import com.rrain.kupidon.model.db.UserM
 import com.rrain.kupidon.model.db.projectionUserM
+import com.rrain.kupidon.route.`convert-or-error`.toUuidOr400
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.pathParams
 import com.rrain.`util-ktor`.call.port
-import com.rrain.util.uuid.toUuid
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -22,10 +22,7 @@ import kotlinx.coroutines.flow.firstOrNull
 fun Application.addUserIdIdRoute() {
   routing {
     get(ApiV1Routes.userIdId) {
-      val userUuid = try { call.pathParams["id"]!!.toUuid() }
-      catch (ex: Exception) {
-        return@get call.respondInvalidParams("'id' path param must be UUID-string")
-      }
+      val userUuid = call.pathParams["id"].toUuidOr400()
       
       val userById = collUsers
         .find(Filters.eq(UserM::id.name, userUuid))

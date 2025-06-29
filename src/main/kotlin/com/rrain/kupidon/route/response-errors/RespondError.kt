@@ -45,6 +45,18 @@ suspend inline fun ApplicationCall.respondNotFound(
 
 
 
+
+// Некорректный формат запроса (хоть в path params, хоть в query params, хоть в body)
+suspend inline fun ApplicationCall.respondInvalidRequest(
+  msg: String = "Invalid request format: invalid path param format or invalid query param format or invalid body format",
+) = this.respond(
+  HttpStatusCode.BadRequest,
+  CodeMsg("INVALID_REQUEST_FORMAT", msg)
+)
+
+
+
+
 // Некорректный формат тела запроса
 suspend inline fun ApplicationCall.respondInvalidBody(
   msg: String = "Invalid request body format",

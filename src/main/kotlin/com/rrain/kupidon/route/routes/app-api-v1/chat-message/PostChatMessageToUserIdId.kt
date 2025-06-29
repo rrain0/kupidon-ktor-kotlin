@@ -15,10 +15,10 @@ import com.rrain.kupidon.service.mongo.findOneOrInsert
 import com.rrain.kupidon.model.db.ChatMessageContentM
 import com.rrain.kupidon.model.db.ChatMessageM
 import com.rrain.kupidon.model.db.ChatM
+import com.rrain.kupidon.route.`convert-or-error`.toUuidOr400
 import com.rrain.kupidon.service.mongo.mongoUniqueViolationRetry
 import com.rrain.`util-ktor`.call.pathParams
 import com.rrain.util.`date-time`.now
-import com.rrain.util.uuid.toUuid
 import com.rrain.util.uuid.uuidComparator
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
@@ -40,7 +40,7 @@ fun Application.addRoutePostChatMessageToUserIdId() {
     authenticate {
       post(ApiV1Routes.chatMessageToUserIdId) {
         val userId = authUserUuid
-        val toUserId = call.pathParams["id"]!!.toUuid()
+        val toUserId = call.pathParams["id"].toUuidOr400()
         val msgIn =
           try { call.receive<ChatMessageBodyIn>() }
           catch (ex: Exception) { return@post call.respondInvalidBody() }
@@ -62,9 +62,9 @@ fun Application.addRoutePostChatMessageToUserIdId() {
         
         if (foundChat != null) chat = foundChat
         else {
-          checkUserToUserLikeExists(call, userId, toUserId) { return@post }
-          checkToUserExists(call, toUserId) { return@post }
-          checkFromUserExists(call, userId) { return@post }
+          checkUserToUserLikeExists(userId, toUserId)
+          checkToUserExists(toUserId)
+          checkFromUserExists(userId)
           
           mongoUniqueViolationRetry(
             {

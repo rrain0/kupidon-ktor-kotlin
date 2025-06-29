@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val kotlinV = "2.2.0"
 val kotlinCoroutinesV = "1.10.2"
@@ -25,6 +26,13 @@ application {
   
   val isDevelopment: Boolean = project.ext.has("development")
   applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
+}
+
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.compilerOptions {
+  freeCompilerArgs.set(listOf(
+    "-Xcontext-parameters", // enable experimental context parameters
+  ))
 }
 
 

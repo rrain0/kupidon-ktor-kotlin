@@ -9,8 +9,8 @@ import com.rrain.kupidon.route.`response-errors`.respondInvalidParams
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collChatMessages
 import com.rrain.kupidon.model.db.ChatMessageM
+import com.rrain.kupidon.route.`convert-or-error`.toUuidOr400
 import com.rrain.`util-ktor`.call.queryParams
-import com.rrain.util.uuid.toUuid
 import com.rrain.util.uuid.uuidComparator
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
@@ -27,8 +27,8 @@ fun Application.addRouteGetChatMessages() {
       get(ApiV1Routes.chatMessages) {
         val userId = authUserUuid
         
-        val toUserId = call.queryParams["toUserId"]?.toUuid()
-        val toChatId = call.queryParams["toChatId"]?.toUuid()
+        val toUserId = call.queryParams["toUserId"]?.toUuidOr400()
+        val toChatId = call.queryParams["toChatId"]?.toUuidOr400()
         
         val chatId = run {
           if (toChatId != null) {
@@ -37,7 +37,7 @@ fun Application.addRouteGetChatMessages() {
           }
           else if (toUserId != null) {
             val memberIds = listOf(userId, toUserId).sortedWith(uuidComparator)
-            val chat = checkPersonalChatExists(call, memberIds) { return@get }
+            val chat = checkPersonalChatExists(memberIds)
             chat.id
           }
           else {

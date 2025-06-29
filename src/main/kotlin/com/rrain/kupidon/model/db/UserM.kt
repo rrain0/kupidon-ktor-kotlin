@@ -3,6 +3,8 @@ package com.rrain.kupidon.model.db
 import com.mongodb.kotlin.client.coroutine.FindFlow
 import com.rrain.kupidon.model.Gender
 import com.rrain.kupidon.model.Role
+import com.rrain.`util-ktor`.call.host
+import com.rrain.`util-ktor`.call.port
 import com.rrain.util.`date-time`.getAge
 import kotlinx.datetime.Instant
 import org.bson.Document
@@ -60,7 +62,7 @@ data class UserM(
     )
     
     if (userType === UserDataType.OtherShort) data.put(
-      "ava", photos.find { it.index == 0 }?.getUrl(id, host, port) ?: "",
+      "ava", ava(host, port),
     )
     
     if (lvl >= 1) data.putAll(listOf(
@@ -86,6 +88,13 @@ data class UserM(
     
     return data
   }
+  
+  fun ava(
+    host: String,
+    port: Int,
+  ) = (
+    photos.find { it.index == 0 }?.getUrl(id, host, port) ?: ""
+  )
   
 }
 

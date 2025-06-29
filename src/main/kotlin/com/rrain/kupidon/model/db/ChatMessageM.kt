@@ -5,18 +5,6 @@ import java.util.UUID
 
 
 
-
-data class ChatMessageContentM(
-  var text: String,
-) {
-  fun toApi(): MutableMap<String, Any?> {
-    return mutableMapOf(
-      "text" to text,
-    )
-  }
-}
-
-
 data class ChatMessageM(
   // UUID e.g. "4f699e2d-a492-40de-a54f-ed05c42203a4"
   var id: UUID,
