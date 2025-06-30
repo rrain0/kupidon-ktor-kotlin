@@ -66,7 +66,7 @@ data class UserM(
     )
     
     if (lvl >= 1) data.putAll(listOf(
-      "birthDate" to birthDate, // TODO replace by age
+      "birthDate" to birthDate, // TODO remove from here
       "age" to getAge(birthDate, timeZone),
       "gender" to gender,
       "aboutMe" to aboutMe,
@@ -74,6 +74,7 @@ data class UserM(
     ))
     
     if (lvl >= 2) data.putAll(listOf(
+      "birthDate" to birthDate,
       "roles" to roles,
       "email" to email,
       // todo email
