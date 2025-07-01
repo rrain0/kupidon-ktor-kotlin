@@ -15,6 +15,7 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.model.db.UserDataType
 import com.rrain.kupidon.model.db.projectionUserM
+import com.rrain.kupidon.service.JwtLoginService
 import com.rrain.kupidon.service.mongo.useSingleDocTx
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
@@ -139,8 +140,8 @@ fun Application.addUserCreateRoute() {
       
       
       val id = user.id
-      val verificationToken = JwtService.generateVerificationAccessToken(
-        id.toString(), user.email
+      val verificationToken = JwtService.newVerificationAccessToken(
+        id.toString(), user.email, now,
       )
       
       
@@ -175,20 +176,13 @@ fun Application.addUserCreateRoute() {
         }
       }*/
       
-      val roles = user.roles
-      
-      val domain = call.request.origin.serverHost
-      
-      val accessToken = JwtService.generateAccessToken(id.toString(), roles)
-      val refreshToken = JwtService.generateRefreshToken(id.toString())
-      
-      // сделать позже save refresh token & device info to db as opened session
+      val newSession = JwtLoginService.login(user.id, user.roles)
       
       call.response.cookies.append(
-        JwtService.generateRefreshTokenCookie(refreshToken,domain)
+        JwtService.getRefreshTokenCookie(newSession.refreshToken, call.host)
       )
       call.respond(mapOf(
-        "accessToken" to accessToken,
+        "accessToken" to newSession.accessToken,
         "user" to user.toApi(UserDataType.Current, call.host, call.port, timeZone),
       ))
     }

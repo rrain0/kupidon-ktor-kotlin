@@ -10,13 +10,15 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.`util-ktor`.application.get
 import com.rrain.`util-ktor`.application.appConfig
 import com.rrain.util.`date-time`.now
+import com.rrain.util.uuid.toUuid
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.util.*
+import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import java.security.SecureRandom
+import java.util.UUID.randomUUID
 import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.time.Duration
 
 
@@ -27,13 +29,14 @@ fun main() {
 }
 
 
-@OptIn(ExperimentalEncodingApi::class)
-fun generateJwtSecret(): String = ByteArray(64)
-  .also { SecureRandom().nextBytes(it) }
-  .let { Base64.Default.encode(it) }
+fun generateJwtSecret(): String = (
+  ByteArray(64)
+    .also { SecureRandom().nextBytes(it) }
+    .let { Base64.Default.encode(it) }
+)
 
 
-fun generateCustomAccessToken(): String {
+fun generateCustomAccessToken(): TokenData {
   JwtService.config = JwtService.Config(
     accessTokenSecret =
       "SECRET",
@@ -45,8 +48,8 @@ fun generateCustomAccessToken(): String {
     
     emailVerifyAccessTokenLifetime = Duration.parse("1d"),
   )
-  return JwtService.generateAccessToken(
-    "USER_ID", setOf()
+  return JwtService.newAccessToken(
+    "USER_ID", setOf(), randomUUID().toString(), now(),
   )
 }
 
@@ -97,88 +100,112 @@ object JwtService {
   
   lateinit var config: Config
   
-  fun DecodedJWT.getUserId() = this.subject!!
   
-  fun generateAccessToken(id: String, roles: Set<Role>): String {
+  
+  
+  val DecodedJWT.userIdStr get() = this.subject!!
+  val DecodedJWT.userId get() = this.userIdStr.toUuid()
+  val DecodedJWT.sessionIdStr get() = this.claims["sessionId"]!!.asString()
+  val DecodedJWT.sessionId get() = this.sessionIdStr.toUuid()
+  
+  
+  
+  
+  fun newAccessToken(
+    id: String,
+    roles: Set<Role>,
+    sessionId: String,
+    now: Instant,
+  ): TokenData {
     val secret = config.accessTokenSecret
     val lifetime = config.accessTokenLifetime
+    val expiresAt = now.plus(lifetime)
     
     val accessToken = JWT.create()
-      .withExpiresAt(now().plus(lifetime).toJavaInstant())
-      // Determines user
+      // Determines when token will expire
+      .withExpiresAt(expiresAt.toJavaInstant())
+      // Identifies the principal (user, entity) the JWT represents, e.g., "user123"
       .withSubject(id)
-      // Describes the recipient of the token (instead of subject)
+      // Specifies the intended recipient(s) of the JWT, e.g., "api.example.com"
       //.withAudience(accessJwt.audience)
-      // The entity that issues the token
+      // Who issued the token (source)
       //.withIssuer(accessJwt.issuer)
-      //.withClaim("login", login)
-      // An optional parameter providing additional context or scope
+      // Some additional optional parameter
       //.withClaim("realm", realm)
       .withClaim(config.accessTokenRolesClaimName, roles.map { it.toString() })
+      .withClaim("sessionId", sessionId)
       .sign(config.buildAlgorithm(secret))
-    return accessToken
+    
+    return TokenData(accessToken, expiresAt)
   }
   
   
-  fun generateVerificationAccessToken(id: String, email: String): String {
+  fun newRefreshToken(
+    id: String,
+    sessionId: String,
+    now: Instant,
+  ): TokenData {
+    val secret = config.refreshTokenSecret
+    val lifetime = config.refreshTokenLifetime
+    val expiresAt = now.plus(lifetime)
+    
+    val refreshToken = JWT.create()
+      .withExpiresAt(expiresAt.toJavaInstant())
+      .withSubject(id)
+      .withClaim("sessionId", sessionId)
+      .sign(config.buildAlgorithm(secret))
+    return TokenData(refreshToken, expiresAt)
+  }
+  
+  
+  fun newVerificationAccessToken(
+    id: String,
+    email: String,
+    now: Instant,
+  ): TokenData {
     val secret = config.accessTokenSecret
     val lifetime = config.emailVerifyAccessTokenLifetime
+    val expiresAt = now.plus(lifetime)
     
     val accessToken = JWT.create()
-      .withExpiresAt(now().plus(lifetime).toJavaInstant())
+      .withExpiresAt(expiresAt.toJavaInstant())
       .withSubject(id)
       .withClaim("type", AccessTokenType.EMAIL_VERIFICATION.name)
       .withClaim("email", email)
       .sign(config.buildAlgorithm(secret))
-    return accessToken
-  }
-
-  
-  fun generateRefreshToken(id: String): String {
-    val secret = config.refreshTokenSecret
-    val lifetime = config.refreshTokenLifetime
-    
-    val refreshToken = JWT.create()
-      .withExpiresAt(now().plus(lifetime).toJavaInstant())
-      .withSubject(id) // determines user
-      //.withAudience(refreshJwt.audience)
-      //.withIssuer(refreshJwt.issuer)
-      .sign(config.buildAlgorithm(secret))
-    return refreshToken
+    return TokenData(accessToken, expiresAt)
   }
   
   
-  fun generateRefreshTokenCookie(
+  
+  
+  fun getRefreshTokenCookie(
     refreshToken: String,
     // according to RFC you can specify only domain (without port) for all its ports
     domain: String
-  ): Cookie {
-    return Cookie(
-      name = config.refreshTokenCookieName,
-      value = refreshToken,
-      expires = JWT.decode(refreshToken).expiresAtAsInstant.toGMTDate(),
-      domain = domain,
-      path = ApiV1Routes.auth, // only one path can be set
-      secure = true,
-      httpOnly = true,
-    )
-  }
+  ) = Cookie(
+    name = config.refreshTokenCookieName,
+    value = refreshToken,
+    expires = JWT.decode(refreshToken).expiresAtAsInstant.toGMTDate(),
+    domain = domain,
+    path = ApiV1Routes.auth, // only one path can be set
+    secure = true,
+    httpOnly = true,
+  )
   
   
-  fun generateExpiredRefreshTokenCookie(
+  fun getExpiredRefreshTokenCookie(
     // according to RFC you can specify only domain (without port) for all its ports
     domain: String
-  ): Cookie {
-    return Cookie(
-      name = config.refreshTokenCookieName,
-      value = "",
-      maxAge = 0,
-      domain = domain,
-      path = ApiV1Routes.auth, // only one path can be set
-      secure = true,
-      httpOnly = true,
-    )
-  }
+  ) = Cookie(
+    name = config.refreshTokenCookieName,
+    value = "",
+    maxAge = 0,
+    domain = domain,
+    path = ApiV1Routes.auth, // only one path can be set
+    secure = true,
+    httpOnly = true,
+  )
 
   
   val accessTokenVerifier: JWTVerifier by lazy {
@@ -186,6 +213,14 @@ object JwtService {
       .require(config.buildAlgorithm(config.accessTokenSecret))
       //.withAudience(jwtAudience)
       //.withIssuer(jwtIssuer)
+      .withClaimPresence("sessionId")
+      .build()
+  }
+  
+  val refreshTokenVerifier: JWTVerifier by lazy {
+    JWT
+      .require(config.buildAlgorithm(config.refreshTokenSecret))
+      .withClaimPresence("sessionId")
       .build()
   }
   
@@ -194,20 +229,18 @@ object JwtService {
       .require(config.buildAlgorithm(config.accessTokenSecret))
       .withClaim("type", AccessTokenType.EMAIL_VERIFICATION.name)
       .withClaimPresence("email")
-      //.withAudience(jwtAudience)
-      //.withIssuer(jwtIssuer)
-      .build()
-  }
-  
-  val refreshTokenVerifier: JWTVerifier by lazy {
-    JWT
-      .require(config.buildAlgorithm(config.refreshTokenSecret))
-      //.withAudience(jwtAudience)
-      //.withIssuer(jwtIssuer)
       .build()
   }
 
 }
+
+
+
+
+data class TokenData(
+  val token: String,
+  val expiresAt: Instant,
+)
 
 
 

@@ -2,20 +2,91 @@ package com.rrain.kupidon.plugin
 
 import com.auth0.jwt.exceptions.AlgorithmMismatchException
 import com.auth0.jwt.exceptions.JWTDecodeException
-import com.auth0.jwt.exceptions.JWTVerificationException
+import com.auth0.jwt.exceptions.MissingClaimException
 import com.auth0.jwt.exceptions.SignatureVerificationException
 import com.auth0.jwt.exceptions.TokenExpiredException
 import com.rrain.kupidon.route.`response-errors`.CodeMsg
+import com.rrain.kupidon.route.`response-errors`.respond401Unauthorized
 import com.rrain.kupidon.service.*
 import com.rrain.util.uuid.toUuid
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.RoutingContext
 import java.util.UUID
 
+
+
+
+fun Application.configureJwtAuthentication() {
+  authentication {
+    register(MyJWTAuthenticationProvider())
+  }
+}
+
+
+
+
+val RoutingContext.authUserUuid: UUID get() = (
+  call.principal<JWTPrincipal>()!!.subject!!.toUuid()
+)
+
+
+
+class MyJWTAuthenticationProvider : AuthenticationProvider(Config()) {
+  
+  class Config : AuthenticationProvider.Config(null)
+  
+  override suspend fun onAuthenticate(context: AuthenticationContext) {
+    val call = context.call
+    val authHeader = call.request.headers["Authorization"]
+    if (authHeader == null) {
+      return call.respond401Unauthorized(ErrNoAuthHeader)
+    }
+    if (!authHeader.startsWith("Bearer ")) {
+      return call.respond401Unauthorized(ErrAuthHeaderWrongFormat)
+    }
+    
+    
+    val accessToken = authHeader.substring("Bearer ".length)
+    if (accessToken.isEmpty()) {
+      return call.respond401Unauthorized(ErrEmptyToken)
+    }
+    
+    val verifier = JwtService.accessTokenVerifier
+    val decodedJwt =
+      try { verifier.verify(accessToken) }
+      // Token was encoded by wrong algorithm. Required <algorithm-name>.
+      catch (ex: AlgorithmMismatchException) {
+        return call.respond401Unauthorized(ErrTokenAlgorithmMismatch)
+      }
+      // Damaged Token - Токен повреждён и не может быть декодирован
+      catch (ex: JWTDecodeException) {
+        return call.respond401Unauthorized(ErrTokenDamaged)
+      }
+      // Modified Token - Токен умышленно модифицирован (подделан)
+      catch (ex: SignatureVerificationException) {
+        return call.respond401Unauthorized(ErrTokenModified)
+      }
+      // Token has expired
+      catch (ex: TokenExpiredException) {
+        return call.respond401Unauthorized(ErrTokenExpired)
+      }
+      // Required claim is missing
+      catch (ex: MissingClaimException) {
+        return call.respond401Unauthorized(ErrTokenLacksOfClaim)
+      }
+      // Common Verification Exception
+      catch (ex: Exception) {
+        println("AAAAAAAAA")
+        ex.printStackTrace()
+        return call.respond401Unauthorized(ErrTokenUnknownVerificationError)
+      }
+    
+    context.principal(JWTPrincipal(decodedJwt))
+  }
+  
+}
 
 
 
@@ -30,73 +101,6 @@ val ErrAuthHeaderWrongFormat = CodeMsg(
 val ErrEmptyToken = CodeMsg(
   "EMPTY_TOKEN",
   """"Authorization" header must contain non-empty access-token "Bearer <access-token>""""
-)
-
-
-
-fun Application.configureJwtAuthentication() {
-  authentication {
-    register(MyJWTAuthenticationProvider())
-  }
-}
-
-
-
-
-
-class MyJWTAuthenticationProvider : AuthenticationProvider(Config()) {
-  
-  class Config : AuthenticationProvider.Config(null)
-  
-  override suspend fun onAuthenticate(context: AuthenticationContext) {
-    val authHeader = context.call.request.headers["Authorization"]
-    if (authHeader == null) {
-      return context.call.respond(HttpStatusCode.Unauthorized, ErrNoAuthHeader)
-    }
-    if (!authHeader.startsWith("Bearer ")) {
-      return context.call.respond(HttpStatusCode.Unauthorized, ErrAuthHeaderWrongFormat)
-    }
-    
-    
-    val accessToken = authHeader.substring("Bearer ".length)
-    if (accessToken.isEmpty()) {
-      return context.call.respond(HttpStatusCode.Unauthorized, ErrEmptyToken)
-    }
-    
-    val verifier = JwtService.accessTokenVerifier
-    val decodedJwt =
-      try { verifier.verify(accessToken) }
-      // Token was encoded by wrong algorithm. Required <algorithm-name>.
-      catch (ex: AlgorithmMismatchException) {
-        return context.call.respond(HttpStatusCode.Unauthorized, ErrTokenAlgorithmMismatch)
-      }
-      // Damaged Token - Токен повреждён и не может быть декодирован
-      catch (ex: JWTDecodeException) {
-        return context.call.respond(HttpStatusCode.Unauthorized, ErrTokenDamaged)
-      }
-      // Modified Token - Токен умышленно модифицирован (подделан)
-      catch (ex: SignatureVerificationException) {
-        return context.call.respond(HttpStatusCode.Unauthorized, ErrTokenModified)
-      }
-      // Token has expired
-      catch (ex: TokenExpiredException) {
-        return context.call.respond(HttpStatusCode.Unauthorized, ErrTokenExpired)
-      }
-      // Common Verification Exception
-      catch (ex: JWTVerificationException) {
-        ex.printStackTrace()
-        return context.call.respond(HttpStatusCode.Unauthorized, ErrTokenUnknownVerificationError)
-      }
-    
-    context.principal(JWTPrincipal(decodedJwt))
-  }
-  
-}
-
-
-
-val RoutingContext.authUserUuid: UUID get() = (
-  this.call.principal<JWTPrincipal>()!!.subject!!.toUuid()
 )
 
 

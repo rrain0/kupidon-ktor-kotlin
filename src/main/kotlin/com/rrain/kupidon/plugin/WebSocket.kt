@@ -1,5 +1,6 @@
 package com.rrain.kupidon.plugin
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import io.ktor.server.application.*
@@ -20,14 +21,40 @@ fun Application.configureWebSockets() {
   }
   
   
+  data class WsAppEv(val type: String, val data: Map<String, Any?>?)
+  data class UserIdSessionId(var map: Map<String, Any?>) {
+    val userId: String by map
+    val sessionId: String by map
+  }
+  
+  
   routing {
     webSocket("/ws") { // websocket session
       for (frame in incoming) {
         if (frame is Frame.Text) {
           val text = frame.readText()
-          outgoing.send(Frame.Text("YOU SAID: $text"))
+          
+          println("WebSocket received: $text")
+          
+          /* outgoing.send(Frame.Text("YOU SAID: $text"))
+          
           if (text.equals("bye", ignoreCase = true)) {
             close(CloseReason(CloseReason.Codes.NORMAL, "Client said BYE"))
+          } */
+          
+          try {
+            val ev = JacksonObjectMapper.readValue<WsAppEv>(text)
+            when (ev.type) {
+              "BECAME_ONLINE" -> {
+                println("BECAME_ONLINE: ${UserIdSessionId(ev.data!!)}")
+              }
+              "BECAME_OFFLINE" -> {
+                println("BECAME_OFFLINE: ${UserIdSessionId(ev.data!!)}")
+              }
+            }
+          }
+          catch (ex: Exception) {
+            ex.printStackTrace()
           }
         }
       }

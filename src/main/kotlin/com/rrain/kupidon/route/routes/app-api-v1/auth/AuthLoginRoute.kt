@@ -9,12 +9,11 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.model.db.UserDataType
 import com.rrain.kupidon.model.db.UserM
-import com.rrain.kupidon.model.db.UserProfilePhotoM
 import com.rrain.kupidon.model.db.projectionUserM
+import com.rrain.kupidon.service.JwtLoginService
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
 import io.ktor.server.application.*
-import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -31,41 +30,29 @@ fun Application.addAuthLoginRoute() {
     )
     
     post(ApiV1Routes.authLogin) {
-      val login =
+      val loginIn =
         try { call.receive<LoginBodyIn>() }
         catch (ex: Exception) { return@post call.respondInvalidBody() }
       
-      val nUserEmail = UserM::email.name
-      val nUserPhotos = UserM::photos.name
-      val nPhotoBinData = UserProfilePhotoM::binData.name
-      
       val user = collUsers
-        .find(Filters.eq(nUserEmail, login.login))
+        .find(Filters.eq(UserM::email.name, loginIn.login))
         .projectionUserM()
         .firstOrNull()
       
-      if (user == null || !PwdHashService.checkPwd(login.pwd, user.pwd)) {
+      if (user == null || !PwdHashService.checkPwd(loginIn.pwd, user.pwd)) {
         return@post call.respondBadRequest(
           code = "NO_USER",
-          msg = "There is no user with such pair login-password",
+          msg = "There is no user with such login-password pair",
         )
       }
       
-      val id = user.id.toString()
-      val roles = user.roles
-      
-      val domain = call.request.origin.serverHost
-      
-      val accessToken = JwtService.generateAccessToken(id, roles)
-      val refreshToken = JwtService.generateRefreshToken(id)
-      
-      // сделать позже save refresh token & device info to db as opened session
+      val newSession = JwtLoginService.login(user.id, user.roles)
       
       call.response.cookies.append(
-        JwtService.generateRefreshTokenCookie(refreshToken,domain)
+        JwtService.getRefreshTokenCookie(newSession.refreshToken, call.host)
       )
       call.respond(mapOf(
-        "accessToken" to accessToken,
+        "accessToken" to newSession.accessToken,
         "user" to user.toApi(UserDataType.Current, call.host, call.port)
       ))
     }

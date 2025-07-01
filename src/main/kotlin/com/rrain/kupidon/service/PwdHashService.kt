@@ -9,7 +9,6 @@ import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 
 
 
@@ -41,7 +40,6 @@ fun generateUserPwdHash(pwdToHash: String, config: PwdHashService.Config): Strin
 }
 
 
-@OptIn(ExperimentalEncodingApi::class)
 fun generateRandomPwdSalt(): String = ByteArray(16)
   .also { SecureRandom().nextBytes(it) }
   .let { Base64.Default.encode(it) }
@@ -74,7 +72,6 @@ object PwdHashService {
   
   lateinit var config: PwdHashService.Config
   
-  @OptIn(ExperimentalEncodingApi::class)
   fun generateHash(pwd: String): String {
     val combinedSalt: ByteArray = "${config.secret}".toByteArray(Charsets.UTF_8)
     val factory: SecretKeyFactory = SecretKeyFactory.getInstance(config.algorithm)

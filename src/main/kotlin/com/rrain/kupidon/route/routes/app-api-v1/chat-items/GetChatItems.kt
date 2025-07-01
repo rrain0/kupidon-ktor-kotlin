@@ -19,6 +19,10 @@ import com.rrain.kupidon.model.db.ChatMessageM
 import com.rrain.kupidon.model.db.ChatM
 import com.rrain.kupidon.model.db.UserM
 import com.rrain.kupidon.model.db.projectionUserM
+import com.rrain.kupidon.service.JwtLoginService
+import com.rrain.kupidon.service.sessions.SessionsService
+import com.rrain.kupidon.service.sessions.UserSession
+import com.rrain.kupidon.service.sessions.UserSessions
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
 import io.ktor.server.application.*
@@ -88,6 +92,10 @@ fun Application.addRouteGetChatItems() {
           .find(Filters.`in`(UserM::id.name, companionUserIds))
           .projectionUserM()
           .fold(mutableMapOf<UUID, UserM>()) { acc, v -> acc.also { it[v.id] = v } }
+        
+        companionUsers.forEach { (id) ->
+          SessionsService.userSessions.getOrPut(id) { UserSessions(id) }.onlineStatusSubscribers += id
+        }
         
         val chatItemsToApi = chatItems.map { chatItem ->
           chatItem

@@ -29,6 +29,22 @@ suspend inline fun ApplicationCall.respondBadRequest(
 
 
 
+
+suspend inline fun ApplicationCall.respond401Unauthorized(
+  code: String,
+  msg: String = ""
+) = (
+  respond401Unauthorized(CodeMsg(code, msg))
+)
+suspend inline fun ApplicationCall.respond401Unauthorized(
+  codeMsg: CodeMsg
+) = respond(
+  HttpStatusCode.Unauthorized,
+  codeMsg,
+)
+
+
+
 // Запрос сформирован правильно, но ресурса не существует.
 // Например если не существует чего-то по id.
 suspend inline fun ApplicationCall.respondNotFound(
