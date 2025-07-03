@@ -41,11 +41,11 @@ object WsSessions {
 
 
 
-data class WsEv(val type: String, val data: Map<String, Any?> = mapOf())
+data class WsMsg(val type: String, val data: Map<String, Any?> = mapOf())
 
-data class WsEvToClient (val type: String = "TO_CLIENT", val data: WsEv) {
+data class WsMsgToClient (val type: String = "TO_CLIENT", val data: WsMsg) {
   constructor(type: String, data: Map<String, Any?> = mapOf())
-    : this("TO_CLIENT", WsEv(type, data))
+    : this("TO_CLIENT", WsMsg(type, data))
 }
 
 
@@ -104,7 +104,7 @@ fun Application.configureWebSocketRouting() {
         for (frame in incoming) {
           if (frame is Frame.Text) {
             try {
-              val ev = JacksonObjectMapper.readValue<WsEv>(frame.readText())
+              val ev = JacksonObjectMapper.readValue<WsMsg>(frame.readText())
               println("WebSocket received: $ev")
               val now = now()
               when (ev.type) {
@@ -121,7 +121,7 @@ fun Application.configureWebSocketRouting() {
                   SessionsService.becameOnline(userId, sessionId, sessionExpiresAt).apply {
                     subscribedSessions.forEach {
                       WsSessions.getWsSessions(it)?.forEach {
-                        it.sendSerialized(WsEvToClient(
+                        it.sendSerialized(WsMsgToClient(
                           "USERS_STATUS_UPDATE",
                           mapOf("usersStatus" to listOf(UserStatus(userId, online = true)))
                         ))
@@ -144,7 +144,7 @@ fun Application.configureWebSocketRouting() {
                   SessionsService.becameOffline(userId, sessionId, sessionExpiresAt).apply {
                     subscribedSessions.forEach {
                       WsSessions.getWsSessions(it)?.forEach {
-                        it.sendSerialized(WsEvToClient(
+                        it.sendSerialized(WsMsgToClient(
                           "USERS_STATUS_UPDATE",
                           mapOf("usersStatus" to listOf(UserStatus(userId, online = online)))
                         ))
@@ -177,7 +177,7 @@ fun Application.configureWebSocketRouting() {
                   }
                   
                   WsSessions.getWsSessions(sessionId)?.forEach {
-                    it.sendSerialized(WsEvToClient(
+                    it.sendSerialized(WsMsgToClient(
                       "USERS_STATUS_UPDATE",
                       mapOf("usersStatus" to subscribedUsersStatuses)
                     ))
