@@ -140,7 +140,7 @@ fun Application.addUserCreateRoute() {
       
       
       val id = user.id
-      val verificationToken = JwtService.newVerificationAccessToken(
+      val verificationToken = JwtService.newEmailVerificationAccessToken(
         id.toString(), user.email, now,
       )
       

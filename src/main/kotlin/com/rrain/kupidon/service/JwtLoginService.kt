@@ -4,6 +4,7 @@ import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.service.sessions.SessionsService
 import com.rrain.kupidon.service.sessions.UserSession
 import com.rrain.kupidon.service.sessions.UserSessions
+import com.rrain.util.`date-time`.isExpired
 import com.rrain.util.`date-time`.now
 import com.rrain.util.loop.retryUntil
 import com.rrain.util.uuid.randomUuid
@@ -14,8 +15,8 @@ import java.util.UUID
 
 // TODO
 //  1) Сделать позже - save refresh token & device info to db as opened session
-//  2) При генерации access token генерится и новый refresh token,
-//  а старые рефреши всё ещё валидны
+//  2) При генерации новых токенов старые блочить?
+//     Этого можно достигнуть сравнением sessionExpiresAt из токена.
 
 object JwtLoginService {
   
@@ -26,7 +27,7 @@ object JwtLoginService {
   ): SessionData {
     val sessionId = prevSessionId ?: retryUntil(
       { randomUuid() },
-      { SessionsService.sessions.add(it) }
+      { SessionsService.sessionToUser.putIfAbsent(it, userId) == null }
     )
     val now = now()
     val accessToken = JwtService.newAccessToken(
@@ -35,16 +36,13 @@ object JwtLoginService {
     val refreshToken = JwtService.newRefreshToken(
       userId.toString(), sessionId.toString(), now
     )
-    SessionsService.userSessions
-      .getOrPut(sessionId) { UserSessions(userId, now) }
+    SessionsService.userToSessions
+      .getOrPut(sessionId) { UserSessions(userId) }
       .apply {
         lastStartOnlineAt = now
-        // Clear expired sessions
-        sessions.values.removeIf { (it.expiresAt - now).inWholeMilliseconds <= 0 }
-        sessions.getOrPut(sessionId) { UserSession(userId, now, refreshToken.expiresAt) }
-        onlineStatusSubscribers.forEach {
-          // TODO online - notify user became online
-        }
+        // Clear expired sessions of this user
+        sessions.values.removeIf { it.expiresAt.isExpired(now) }
+        sessions.getOrPut(sessionId) { UserSession(userId, refreshToken.expiresAt, now) }
       }
     return SessionData(sessionId, accessToken.token, refreshToken.token)
   }

@@ -5,8 +5,6 @@ import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.*
-import com.rrain.kupidon.service.JwtService.sessionId
-import com.rrain.kupidon.service.JwtService.userId
 import com.rrain.kupidon.service.mongo.findUserById
 import com.rrain.`util-ktor`.call.host
 import io.ktor.server.application.*
@@ -18,16 +16,15 @@ import io.ktor.server.routing.*
 fun Application.addAuthRefreshTokensRoute() {
   routing {
     get(ApiV1Routes.authRefreshTokens) {
-      val refreshToken = call.request.cookies[JwtService.config.refreshTokenCookieName]
+      val refreshToken = call.refreshTokenCookie
       
       refreshToken ?: return@get call.respondBadRequest(
         code = "NO_REFRESH_TOKEN_COOKIE",
         msg = "No refresh token cookie",
       )
       
-      val verifier = JwtService.refreshTokenVerifier
       val decodedRefresh =
-        try { verifier.verify(refreshToken) }
+        try { RefreshToken(refreshToken) }
         catch (ex: AlgorithmMismatchException) {
           return@get call.respondBadRequest(ErrTokenAlgorithmMismatch)
         }

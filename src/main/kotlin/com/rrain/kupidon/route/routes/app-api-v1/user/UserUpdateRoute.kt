@@ -9,7 +9,7 @@ import com.mongodb.client.model.Updates
 import com.mongodb.client.model.WriteModel
 import com.rrain.kupidon.model.Gender
 import com.rrain.kupidon.plugin.JacksonObjectMapper
-import com.rrain.kupidon.plugin.authUserUuid
+import com.rrain.kupidon.plugin.authUserId
 import com.rrain.kupidon.service.PwdHashService
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
@@ -85,7 +85,7 @@ fun Application.addUserUpdateRoute() {
   routing {
     authenticate {
       put(ApiV1Routes.user) {
-        val userUuid = authUserUuid
+        val userUuid = authUserId
         
         val data =
           try { call.receive<JsonNode>() }

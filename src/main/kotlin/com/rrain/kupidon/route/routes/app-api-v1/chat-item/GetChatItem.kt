@@ -10,7 +10,7 @@ import com.mongodb.client.model.UnwindOptions
 import com.rrain.kupidon.model.ChatItem
 import com.rrain.kupidon.model.ChatProfile
 import com.rrain.kupidon.model.ChatType
-import com.rrain.kupidon.plugin.authUserUuid
+import com.rrain.kupidon.plugin.authUserId
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.CollNames
 import com.rrain.kupidon.service.mongo.collChats
@@ -35,7 +35,7 @@ fun Application.addRouteGetChatItem() {
   routing {
     authenticate {
       get(ApiV1Routes.chatItem) {
-        val userUuid = authUserUuid
+        val userUuid = authUserId
         val chatId = call.pathParams["id"].toUuidOr400()
         
         val chatItem = collChats

@@ -1,6 +1,8 @@
 package com.rrain.kupidon.model
 
 import com.rrain.kupidon.model.db.ChatMessageM
+import com.rrain.kupidon.service.sessions.SessionsService
+import com.rrain.util.any.mapNull
 import kotlinx.datetime.Instant
 import java.util.UUID
 
@@ -18,11 +20,18 @@ data class ChatItem(
   fun toApi(): MutableMap<String, Any?> {
     return mutableMapOf(
       "id" to id,
+      "type" to type,
       "memberIds" to memberIds,
       "createdAt" to createdAt,
       "updatedAt" to updatedAt,
       "profile" to profile?.toApi(),
       "lastMessage" to lastMessage?.toApi(),
+      
+      //"lastStartOnlineAt" to
+      "online" to type.takeIf { it === ChatType.PERSONAL }
+        .let { profile }
+        ?.let { SessionsService.userToSessions[it.id]?.online }
+        .mapNull { false },
     )
   }
 }

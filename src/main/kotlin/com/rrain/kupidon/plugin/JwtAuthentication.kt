@@ -8,9 +8,7 @@ import com.auth0.jwt.exceptions.TokenExpiredException
 import com.rrain.kupidon.route.`response-errors`.CodeMsg
 import com.rrain.kupidon.route.`response-errors`.respond401Unauthorized
 import com.rrain.kupidon.service.*
-import com.rrain.util.uuid.toUuid
 import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.RoutingContext
 import java.util.UUID
@@ -27,9 +25,7 @@ fun Application.configureJwtAuthentication() {
 
 
 
-val RoutingContext.authUserUuid: UUID get() = (
-  call.principal<JWTPrincipal>()!!.subject!!.toUuid()
-)
+val RoutingContext.authUserId: UUID get() = call.principal<AccessToken>()!!.userId
 
 
 
@@ -53,9 +49,8 @@ class MyJWTAuthenticationProvider : AuthenticationProvider(Config()) {
       return call.respond401Unauthorized(ErrEmptyToken)
     }
     
-    val verifier = JwtService.accessTokenVerifier
-    val decodedJwt =
-      try { verifier.verify(accessToken) }
+    val decodedAccess =
+      try { AccessToken(accessToken) }
       // Token was encoded by wrong algorithm. Required <algorithm-name>.
       catch (ex: AlgorithmMismatchException) {
         return call.respond401Unauthorized(ErrTokenAlgorithmMismatch)
@@ -83,7 +78,7 @@ class MyJWTAuthenticationProvider : AuthenticationProvider(Config()) {
         return call.respond401Unauthorized(ErrTokenUnknownVerificationError)
       }
     
-    context.principal(JWTPrincipal(decodedJwt))
+    context.principal(decodedAccess)
   }
   
 }

@@ -9,6 +9,8 @@ import kotlinx.datetime.format.char
 
 
 fun now() = Clock.System.now()
+fun Instant.isExpired(now: Instant = now()) = (this - now).inWholeMilliseconds <= 0
+
 fun Instant.toTimestamp() = toEpochMilliseconds()
 fun Long.asTimestampToInstant() = Instant.fromEpochMilliseconds(this)
 

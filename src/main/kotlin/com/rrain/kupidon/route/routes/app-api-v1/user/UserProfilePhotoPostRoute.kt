@@ -4,7 +4,7 @@ import com.mongodb.client.model.Filters
 import com.mongodb.client.model.FindOneAndUpdateOptions
 import com.mongodb.client.model.ReturnDocument
 import com.mongodb.client.model.Updates
-import com.rrain.kupidon.plugin.authUserUuid
+import com.rrain.kupidon.plugin.authUserId
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
@@ -44,7 +44,7 @@ fun Application.addUserProfilePhotoPostRoute() {
       )
       
       post(ApiV1Routes.userProfilePhoto) {
-        val userUuid = authUserUuid
+        val userUuid = authUserId
         
         val partialPhoto = PartialPhotoBodyIn()
         val propsCnt = 5

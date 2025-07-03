@@ -13,6 +13,6 @@ fun bool(value: Any?): Boolean {
   return true
 }
 fun Any?.toBool() = bool(this)
-val Any?.bool get() = bool(this)
+val Any?.asBool get() = bool(this)
 
 

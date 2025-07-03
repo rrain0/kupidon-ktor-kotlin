@@ -5,6 +5,7 @@ import com.rrain.kupidon.plugin.*
 import com.rrain.kupidon.plugin.configureJsonSerialization
 import com.rrain.kupidon.route.*
 import com.rrain.kupidon.plugin.configureStatusPages
+import com.rrain.kupidon.`route-ws`.configureWebSocketRouting
 import com.rrain.kupidon.service.configureEmailService
 import com.rrain.kupidon.service.configureJwtService
 import com.rrain.kupidon.service.configurePwdHashing
@@ -34,6 +35,6 @@ fun Application.module() {
   
   configureJwtAuthentication()
   configureStatusPages()
-  configureWebSockets()
+  configureWebSocketRouting()
   configureRouting()
 }

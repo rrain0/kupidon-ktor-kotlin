@@ -7,7 +7,7 @@ import com.mongodb.client.model.UnwindOptions
 import com.mongodb.client.model.Variable
 import com.rrain.kupidon.model.ChatType
 import com.rrain.kupidon.model.UserPair
-import com.rrain.kupidon.plugin.authUserUuid
+import com.rrain.kupidon.plugin.authUserId
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.CollNames
 import com.rrain.kupidon.model.db.UserToUserLikeM
@@ -32,7 +32,7 @@ fun Application.addRouteGetUsersNewPairs() {
   routing {
     authenticate {
       get(ApiV1Routes.usersNewPairs) {
-        val userId = authUserUuid
+        val userId = authUserId
         
         val userMutualLikesWithToUserToApi = collUserToUserLikes
           .aggregate<UserPair>(listOf(

@@ -2,7 +2,7 @@ package com.rrain.kupidon.route.routes.`app-api-v1`.`chat-messages`
 
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Sorts
-import com.rrain.kupidon.plugin.authUserUuid
+import com.rrain.kupidon.plugin.authUserId
 import com.rrain.kupidon.route.check.checkChatExists
 import com.rrain.kupidon.route.check.checkPersonalChatExists
 import com.rrain.kupidon.route.`response-errors`.respondInvalidParams
@@ -25,7 +25,7 @@ fun Application.addRouteGetChatMessages() {
   routing {
     authenticate {
       get(ApiV1Routes.chatMessages) {
-        val userId = authUserUuid
+        val userId = authUserId
         
         val toUserId = call.queryParams["toUserId"]?.toUuidOr400()
         val toChatId = call.queryParams["toChatId"]?.toUuidOr400()

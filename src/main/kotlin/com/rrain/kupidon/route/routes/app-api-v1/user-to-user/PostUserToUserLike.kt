@@ -1,6 +1,6 @@
 package com.rrain.kupidon.route.routes.`app-api-v1`.`user-to-user`
 
-import com.rrain.kupidon.plugin.authUserUuid
+import com.rrain.kupidon.plugin.authUserId
 import com.rrain.kupidon.route.check.checkFromUserExists
 import com.rrain.kupidon.route.check.checkToUserExists
 import com.rrain.kupidon.route.check.checkUserToUserLikeNotExists
@@ -31,7 +31,7 @@ fun Application.addRoutePostUserToUserLike() {
     
     authenticate {
       post(ApiV1Routes.userToUserLike) {
-        val userId = authUserUuid
+        val userId = authUserId
         val likeIn =
           try { call.receive<UserToUserLikeBodyIn>() }
           catch (ex: Exception) { return@post call.respondInvalidBody() }

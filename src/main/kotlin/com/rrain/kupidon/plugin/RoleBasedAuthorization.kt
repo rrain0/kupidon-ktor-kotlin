@@ -2,6 +2,7 @@ package com.rrain.kupidon.plugin
 
 import com.rrain.kupidon.model.Permission
 import com.rrain.kupidon.model.Role
+import com.rrain.kupidon.service.AccessToken
 import com.rrain.kupidon.service.JwtService
 import com.rrain.util.logger.logger
 import io.ktor.http.*
@@ -31,12 +32,18 @@ import io.ktor.server.routing.*
   — предоставление определенному лицу или группе лиц прав на выполнение определенных действий.
 */
 
+/*
 private fun getRoleFromCall(call: ApplicationCall): Set<Role> {
   return call.principal<JWTPrincipal>()
-    ?.getListClaim(JwtService.config.accessTokenRolesClaimName, String::class)
+    ?.getListClaim("roles", String::class)
     ?.map(Role::valueOf)
     ?.toSet()
     ?: emptySet()
+}
+*/
+
+private fun getRoleFromCall(call: ApplicationCall): Set<Role> {
+  return call.principal<AccessToken>()?.roles ?: emptySet()
 }
 
 

@@ -10,7 +10,7 @@ import com.mongodb.client.model.UnwindOptions
 import com.rrain.kupidon.model.ChatItem
 import com.rrain.kupidon.model.ChatProfile
 import com.rrain.kupidon.model.ChatType
-import com.rrain.kupidon.plugin.authUserUuid
+import com.rrain.kupidon.plugin.authUserId
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.CollNames
 import com.rrain.kupidon.service.mongo.collChats
@@ -19,10 +19,6 @@ import com.rrain.kupidon.model.db.ChatMessageM
 import com.rrain.kupidon.model.db.ChatM
 import com.rrain.kupidon.model.db.UserM
 import com.rrain.kupidon.model.db.projectionUserM
-import com.rrain.kupidon.service.JwtLoginService
-import com.rrain.kupidon.service.sessions.SessionsService
-import com.rrain.kupidon.service.sessions.UserSession
-import com.rrain.kupidon.service.sessions.UserSessions
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
 import io.ktor.server.application.*
@@ -40,7 +36,7 @@ fun Application.addRouteGetChatItems() {
   routing {
     authenticate {
       get(ApiV1Routes.chatItems) {
-        val userUuid = authUserUuid
+        val userUuid = authUserId
         
         val chatItems = collChats
           .withReadConcern(ReadConcern.SNAPSHOT)
@@ -92,10 +88,6 @@ fun Application.addRouteGetChatItems() {
           .find(Filters.`in`(UserM::id.name, companionUserIds))
           .projectionUserM()
           .fold(mutableMapOf<UUID, UserM>()) { acc, v -> acc.also { it[v.id] = v } }
-        
-        companionUsers.forEach { (id) ->
-          SessionsService.userSessions.getOrPut(id) { UserSessions(id) }.onlineStatusSubscribers += id
-        }
         
         val chatItemsToApi = chatItems.map { chatItem ->
           chatItem

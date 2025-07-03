@@ -1,7 +1,7 @@
 package com.rrain.kupidon.route.routes.`app-api-v1`.user
 
 import com.mongodb.client.model.Filters
-import com.rrain.kupidon.plugin.authUserUuid
+import com.rrain.kupidon.plugin.authUserId
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collUsers
@@ -23,7 +23,7 @@ fun Application.addUserCurrentRoute() {
   routing {
     authenticate {
       get(ApiV1Routes.userCurrent) {
-        val userUuid = authUserUuid
+        val userUuid = authUserId
         
         val nUserId = UserM::id.name
         

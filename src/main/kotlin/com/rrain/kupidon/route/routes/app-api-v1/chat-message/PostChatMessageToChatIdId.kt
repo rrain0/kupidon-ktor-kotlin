@@ -1,6 +1,6 @@
 package com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`
 
-import com.rrain.kupidon.plugin.authUserUuid
+import com.rrain.kupidon.plugin.authUserId
 import com.rrain.kupidon.route.check.checkChatExists
 import com.rrain.kupidon.route.check.filterNone
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
@@ -31,7 +31,7 @@ fun Application.addRoutePostChatMessageToChatIdId() {
     
     authenticate {
       post(ApiV1Routes.chatMessageToChatIdId) {
-        val userId = authUserUuid
+        val userId = authUserId
         val toChatId = call.pathParams["id"].toUuidOr400()
         val msgIn =
           try { call.receive<ChatMessageBodyIn>() }

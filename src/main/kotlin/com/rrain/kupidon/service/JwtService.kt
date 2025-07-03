@@ -10,13 +10,16 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.`util-ktor`.application.get
 import com.rrain.`util-ktor`.application.appConfig
 import com.rrain.util.`date-time`.now
+import com.rrain.util.`date-time`.toInstant
 import com.rrain.util.uuid.toUuid
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.util.*
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
+import kotlinx.datetime.toKotlinInstant
 import java.security.SecureRandom
+import java.util.UUID
 import java.util.UUID.randomUUID
 import kotlin.io.encoding.Base64
 import kotlin.time.Duration
@@ -36,7 +39,7 @@ fun generateJwtSecret(): String = (
 )
 
 
-fun generateCustomAccessToken(): TokenData {
+fun generateCustomAccessToken(): AccessToken {
   JwtService.config = JwtService.Config(
     accessTokenSecret =
       "SECRET",
@@ -85,15 +88,13 @@ object JwtService {
   data class Config(
     val buildAlgorithm: (secret: String) -> Algorithm = { secret -> Algorithm.HMAC256(secret) },
     
-    val accessTokenRolesClaimName: String = "roles",
     val accessTokenSecret: String,
     val accessTokenLifetime: Duration = Duration.parse("3m"), // 3 minutes expiration
     
-    val refreshTokenCookieName: String = "refreshToken",
     val refreshTokenSecret: String,
     val refreshTokenLifetime: Duration = Duration.parse("30d"), // 30 days expiration
     
-    val emailVerifyAccessTokenLifetime: Duration = Duration.parse("1d") // 1 day expiration
+    val emailVerifyAccessTokenLifetime: Duration = Duration.parse("1d"), // 1 day expiration
   ) {
     val algorithmName = buildAlgorithm("").name
   }
@@ -103,23 +104,17 @@ object JwtService {
   
   
   
-  val DecodedJWT.userIdStr get() = this.subject!!
-  val DecodedJWT.userId get() = this.userIdStr.toUuid()
-  val DecodedJWT.sessionIdStr get() = this.claims["sessionId"]!!.asString()
-  val DecodedJWT.sessionId get() = this.sessionIdStr.toUuid()
-  
-  
-  
-  
   fun newAccessToken(
     id: String,
     roles: Set<Role>,
     sessionId: String,
     now: Instant,
-  ): TokenData {
+  ): AccessToken {
     val secret = config.accessTokenSecret
     val lifetime = config.accessTokenLifetime
     val expiresAt = now.plus(lifetime)
+    val sessionLifetime = config.refreshTokenLifetime
+    val sessionExpiresAt = now.plus(sessionLifetime)
     
     val accessToken = JWT.create()
       // Determines when token will expire
@@ -132,33 +127,61 @@ object JwtService {
       //.withIssuer(accessJwt.issuer)
       // Some additional optional parameter
       //.withClaim("realm", realm)
-      .withClaim(config.accessTokenRolesClaimName, roles.map { it.toString() })
       .withClaim("sessionId", sessionId)
+      .withClaim("sessionExpiresAt", sessionExpiresAt.toJavaInstant())
+      .withClaim("roles", roles.map { it.toString() })
+      //.withClaim("test", "1")
       .sign(config.buildAlgorithm(secret))
     
-    return TokenData(accessToken, expiresAt)
+    return AccessToken(accessToken)
   }
+  
+  val accessTokenVerifier: JWTVerifier by lazy {
+    JWT
+      .require(config.buildAlgorithm(config.accessTokenSecret))
+      //.withAudience(jwtAudience)
+      //.withIssuer(jwtIssuer)
+      .withClaimPresence("sessionId")
+      .withClaimPresence("sessionExpiresAt")
+      //.withClaimPresence("test")
+      .build()
+  }
+  
   
   
   fun newRefreshToken(
     id: String,
     sessionId: String,
     now: Instant,
-  ): TokenData {
+  ): RefreshToken {
     val secret = config.refreshTokenSecret
     val lifetime = config.refreshTokenLifetime
     val expiresAt = now.plus(lifetime)
+    val sessionLifetime = config.refreshTokenLifetime
+    val sessionExpiresAt = now.plus(sessionLifetime)
     
     val refreshToken = JWT.create()
       .withExpiresAt(expiresAt.toJavaInstant())
       .withSubject(id)
       .withClaim("sessionId", sessionId)
+      .withClaim("sessionExpiresAt", sessionExpiresAt.toJavaInstant())
+      //.withClaim("test", "1")
       .sign(config.buildAlgorithm(secret))
-    return TokenData(refreshToken, expiresAt)
+    return RefreshToken(refreshToken)
+  }
+  
+  val refreshTokenVerifier: JWTVerifier by lazy {
+    JWT
+      .require(config.buildAlgorithm(config.refreshTokenSecret))
+      .withClaimPresence("sessionId")
+      .withClaimPresence("sessionExpiresAt")
+      //.withClaimPresence("test")
+      .build()
   }
   
   
-  fun newVerificationAccessToken(
+  
+  fun newEmailVerificationAccessToken(
     id: String,
     email: String,
     now: Instant,
@@ -176,6 +199,14 @@ object JwtService {
     return TokenData(accessToken, expiresAt)
   }
   
+  val emailValidationAccessTokenVerifier: JWTVerifier by lazy {
+    JWT
+      .require(config.buildAlgorithm(config.accessTokenSecret))
+      .withClaim("type", AccessTokenType.EMAIL_VERIFICATION.name)
+      .withClaimPresence("email")
+      .build()
+  }
+  
   
   
   
@@ -184,7 +215,7 @@ object JwtService {
     // according to RFC you can specify only domain (without port) for all its ports
     domain: String
   ) = Cookie(
-    name = config.refreshTokenCookieName,
+    name = "refreshToken",
     value = refreshToken,
     expires = JWT.decode(refreshToken).expiresAtAsInstant.toGMTDate(),
     domain = domain,
@@ -198,7 +229,7 @@ object JwtService {
     // according to RFC you can specify only domain (without port) for all its ports
     domain: String
   ) = Cookie(
-    name = config.refreshTokenCookieName,
+    name = "refreshToken",
     value = "",
     maxAge = 0,
     domain = domain,
@@ -207,40 +238,64 @@ object JwtService {
     httpOnly = true,
   )
 
-  
-  val accessTokenVerifier: JWTVerifier by lazy {
-    JWT
-      .require(config.buildAlgorithm(config.accessTokenSecret))
-      //.withAudience(jwtAudience)
-      //.withIssuer(jwtIssuer)
-      .withClaimPresence("sessionId")
-      .build()
-  }
-  
-  val refreshTokenVerifier: JWTVerifier by lazy {
-    JWT
-      .require(config.buildAlgorithm(config.refreshTokenSecret))
-      .withClaimPresence("sessionId")
-      .build()
-  }
-  
-  val emailValidationAccessTokenVerifier: JWTVerifier by lazy {
-    JWT
-      .require(config.buildAlgorithm(config.accessTokenSecret))
-      .withClaim("type", AccessTokenType.EMAIL_VERIFICATION.name)
-      .withClaimPresence("email")
-      .build()
-  }
-
 }
 
 
+
+data class AccessToken(
+  val token: String,
+  val noVerify: Boolean = false,
+) {
+  val decodedToken = if (noVerify) JWT.decode(token)
+    else JwtService.accessTokenVerifier.verify(token)
+  
+  val expiresAt: Instant = decodedToken.expiresAtAsInstant.toKotlinInstant()
+  
+  val userIdStr: String = decodedToken.subject
+  val userId: UUID = userIdStr.toUuid()
+  
+  val sessionIdStr: String = decodedToken.claims["sessionId"]!!.asString()
+  val sessionId: UUID = sessionIdStr.toUuid()
+  
+  val sessionExpiresAt: Instant = decodedToken.claims["sessionExpiresAt"]!!
+    .asInstant().toKotlinInstant()
+  
+  val roles: Set<Role> = decodedToken.claims["roles"]
+    ?.takeIf { !it.isMissing && !it.isNull }
+    ?.asList(String::class.java)
+    ?.map { Role.valueOf(it) }
+    ?.toSet()
+    ?: emptySet()
+}
+
+
+
+data class RefreshToken(
+  val token: String,
+) {
+  val decodedToken = JwtService.refreshTokenVerifier.verify(token)
+  
+  val expiresAt: Instant = decodedToken.expiresAtAsInstant.toKotlinInstant()
+  
+  val userIdStr: String = decodedToken.subject
+  val userId: UUID = userIdStr.toUuid()
+  
+  val sessionIdStr: String = decodedToken.claims["sessionId"]!!.asString()
+  val sessionId: UUID = sessionIdStr.toUuid()
+  
+  val sessionExpiresAt: Instant = decodedToken.claims["sessionExpiresAt"]!!
+    .asInstant().toKotlinInstant()
+}
 
 
 data class TokenData(
   val token: String,
   val expiresAt: Instant,
 )
+
+
+
+val ApplicationCall.refreshTokenCookie get() = this.request.cookies["refreshToken"]
 
 
 
