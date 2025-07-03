@@ -21,7 +21,7 @@ import kotlin.time.Duration.Companion.seconds
 
 
 
-object WsConnections {
+object WsSessions {
   val userSessionToWsSessions: MutableMap<UUID, MutableSet<DefaultWebSocketServerSession>> = ConcurrentHashMap()
   val wsSessionToUserSessions: MutableMap<DefaultWebSocketServerSession, MutableSet<UUID>> = ConcurrentHashMap()
   fun addWsSession(wsSession: DefaultWebSocketServerSession, userSession: UUID) {
@@ -116,18 +116,11 @@ fun Application.configureWebSocketRouting() {
                   
                   println("BECAME_ONLINE userId: $userId, sessionId: $sessionId")
                   
-                  WsConnections.addWsSession(this, sessionId)
+                  WsSessions.addWsSession(this, sessionId)
                   
-                  SessionsService.sessions(userId).apply {
-                    lastStartOnlineAt = now
-                    sessions(sessionId, sessionExpiresAt).apply {
-                      expiresAt = sessionExpiresAt
-                      lastStartOnlineAt = now
-                      lastIsOnline = true
-                    }
-                    // Notify subscribers
+                  SessionsService.becameOnline(userId, sessionId, sessionExpiresAt).apply {
                     subscribedSessions.forEach {
-                      WsConnections.getWsSessions(it)?.forEach {
+                      WsSessions.getWsSessions(it)?.forEach {
                         it.sendSerialized(WsEvToClient(
                           "USERS_STATUS_UPDATE",
                           mapOf("usersStatus" to listOf(UserStatus(userId, online = true)))
@@ -145,17 +138,12 @@ fun Application.configureWebSocketRouting() {
                   
                   println("BECAME_OFFLINE userId: $userId, sessionId: $sessionId")
                   
-                  WsConnections.addWsSession(this, sessionId)
+                  WsSessions.addWsSession(this, sessionId)
                   
-                  SessionsService.sessions(userId).apply {
-                    lastStartOnlineAt = now
-                    sessions(sessionId, sessionExpiresAt).apply {
-                      expiresAt = sessionExpiresAt
-                      lastIsOnline = false
-                    }
-                    // Notify subscribers
+                  
+                  SessionsService.becameOffline(userId, sessionId, sessionExpiresAt).apply {
                     subscribedSessions.forEach {
-                      WsConnections.getWsSessions(it)?.forEach {
+                      WsSessions.getWsSessions(it)?.forEach {
                         it.sendSerialized(WsEvToClient(
                           "USERS_STATUS_UPDATE",
                           mapOf("usersStatus" to listOf(UserStatus(userId, online = online)))
@@ -163,7 +151,6 @@ fun Application.configureWebSocketRouting() {
                       }
                     }
                   }
-                  SessionsService.removeIf(userId)
                 }
                 
                 "SUBSCRIBE_ON_USER_STATUS" -> {
@@ -180,7 +167,7 @@ fun Application.configureWebSocketRouting() {
                   val subscribedUsersStatuses = mutableListOf<UserStatus>()
                   
                   userIds.forEach {
-                    SessionsService.sessions(it).apply {
+                    SessionsService.user(it).apply {
                       subscribedSessions += sessionId
                       subscribedUsersStatuses += UserStatus(id, online = online)
                     }
@@ -189,7 +176,7 @@ fun Application.configureWebSocketRouting() {
                     if (userId !in userIds) sessions.subscribedSessions -= sessionId
                   }
                   
-                  WsConnections.getWsSessions(sessionId)?.forEach {
+                  WsSessions.getWsSessions(sessionId)?.forEach {
                     it.sendSerialized(WsEvToClient(
                       "USERS_STATUS_UPDATE",
                       mapOf("usersStatus" to subscribedUsersStatuses)
@@ -205,7 +192,8 @@ fun Application.configureWebSocketRouting() {
         }
       }
       finally {
-        WsConnections.removeWsSession(this)
+        SessionsService.becameOffline(this)
+        WsSessions.removeWsSession(this)
       }
     }
   }

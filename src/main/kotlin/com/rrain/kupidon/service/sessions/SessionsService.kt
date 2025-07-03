@@ -1,7 +1,9 @@
 package com.rrain.kupidon.service.sessions
 
+import com.rrain.kupidon.`route-ws`.WsSessions
 import com.rrain.util.`date-time`.isExpired
 import com.rrain.util.`date-time`.now
+import io.ktor.server.websocket.DefaultWebSocketServerSession
 import kotlinx.datetime.Instant
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -13,7 +15,7 @@ data object SessionsService {
   val sessionToUser: MutableMap<UUID, UUID> = ConcurrentHashMap()
   val userToSessions: MutableMap<UUID, UserSessions> = ConcurrentHashMap()
   
-  fun sessions(userId: UUID) = (
+  fun user(userId: UUID) = (
     userToSessions.getOrPut(userId) { UserSessions(userId) }
   )
   fun removeIf(userId: UUID) {
@@ -23,6 +25,52 @@ data object SessionsService {
         null
       }
       else it
+    }
+  }
+  
+  fun becameOnline(userId: UUID, sessionId: UUID, sessionExpiresAt: Instant): UserSessions {
+    val now = now()
+    val user = user(userId).apply {
+      lastStartOnlineAt = now
+      sessions(sessionId, sessionExpiresAt).apply {
+        expiresAt = sessionExpiresAt
+        lastStartOnlineAt = now
+        lastIsOnline = true
+      }
+    }
+    return user
+  }
+  
+  fun becameOffline(userId: UUID, sessionId: UUID, sessionExpiresAt: Instant): UserSessions {
+    val now = now()
+    val user = user(userId).apply {
+      lastStartOnlineAt = now
+      sessions(sessionId, sessionExpiresAt).apply {
+        expiresAt = sessionExpiresAt
+        lastIsOnline = false
+      }
+    }
+    removeIf(userId)
+    return user
+  }
+  
+  fun becameOffline(userId: UUID, sessionId: UUID): UserSessions? {
+    val now = now()
+    val user = userToSessions[userId]?.apply {
+      if (online && now > (lastStartOnlineAt ?: now)) lastStartOnlineAt = now
+      sessions[sessionId]?.apply {
+        lastIsOnline = false
+      }
+    }
+    removeIf(userId)
+    return user
+  }
+  
+  fun becameOffline(wsSession: DefaultWebSocketServerSession) {
+    WsSessions.wsSessionToUserSessions[wsSession]?.forEach { sessionId ->
+      sessionToUser[sessionId]?.let { userId ->
+        becameOffline(userId, sessionId)
+      }
     }
   }
 }

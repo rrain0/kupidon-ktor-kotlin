@@ -3,8 +3,10 @@ package com.rrain.kupidon.model.db
 import com.mongodb.kotlin.client.coroutine.FindFlow
 import com.rrain.kupidon.model.Gender
 import com.rrain.kupidon.model.Role
+import com.rrain.kupidon.service.sessions.SessionsService
 import com.rrain.`util-ktor`.call.host
 import com.rrain.`util-ktor`.call.port
+import com.rrain.util.any.mapNull
 import com.rrain.util.`date-time`.getAge
 import kotlinx.datetime.Instant
 import org.bson.Document
@@ -49,6 +51,7 @@ data class UserM(
     port: Int,
     // TODO pass timeZone query param for each user or try get from user agent string
     timeZone: TimeZone = TimeZone.UTC,
+    showStatus: Boolean = false,
   ): MutableMap<String, Any?> {
     val lvl = when (userType) {
       UserDataType.Full -> 3
@@ -85,6 +88,11 @@ data class UserM(
       "pwd" to pwd, // hashed pwd
       "createdAt" to createdAt,
       "updatedAt" to updatedAt,
+    ))
+    
+    if (showStatus) data.putAll(listOf(
+      //"lastStartOnlineAt" to
+      "online" to SessionsService.userToSessions[id]?.online.mapNull { false },
     ))
     
     return data
