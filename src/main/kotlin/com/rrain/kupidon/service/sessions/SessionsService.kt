@@ -1,6 +1,6 @@
 package com.rrain.kupidon.service.sessions
 
-import com.rrain.kupidon.`route-ws`.WsSessions
+import com.rrain.kupidon.service.WsSessionsService
 import com.rrain.util.`date-time`.isExpired
 import com.rrain.util.`date-time`.now
 import io.ktor.server.websocket.DefaultWebSocketServerSession
@@ -67,7 +67,7 @@ data object SessionsService {
   }
   
   fun becameOffline(wsSession: DefaultWebSocketServerSession) {
-    WsSessions.wsSessionToUserSessions[wsSession]?.forEach { sessionId ->
+    WsSessionsService.wsSessionToUserSessions[wsSession]?.forEach { sessionId ->
       sessionToUser[sessionId]?.let { userId ->
         becameOffline(userId, sessionId)
       }

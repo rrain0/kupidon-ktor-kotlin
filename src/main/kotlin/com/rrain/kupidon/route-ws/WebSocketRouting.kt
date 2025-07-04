@@ -3,6 +3,7 @@ package com.rrain.kupidon.`route-ws`
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.rrain.kupidon.plugin.JacksonObjectMapper
 import com.rrain.kupidon.service.AccessToken
+import com.rrain.kupidon.service.WsSessionsService
 import com.rrain.kupidon.service.sessions.SessionsService
 import com.rrain.util.any.cast
 import com.rrain.util.`date-time`.now
@@ -15,39 +16,15 @@ import io.ktor.server.routing.*
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.charsets.Charset
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration.Companion.seconds
-
-
-
-
-object WsSessions {
-  val userSessionToWsSessions: MutableMap<UUID, MutableSet<DefaultWebSocketServerSession>> = ConcurrentHashMap()
-  val wsSessionToUserSessions: MutableMap<DefaultWebSocketServerSession, MutableSet<UUID>> = ConcurrentHashMap()
-  fun addWsSession(wsSession: DefaultWebSocketServerSession, userSession: UUID) {
-    userSessionToWsSessions.getOrPut(userSession) { ConcurrentHashMap.newKeySet() } += wsSession
-    wsSessionToUserSessions.getOrPut(wsSession) { ConcurrentHashMap.newKeySet() } += userSession
-  }
-  fun removeWsSession(wsSession: DefaultWebSocketServerSession) {
-    wsSessionToUserSessions.remove(wsSession)?.forEach {
-      userSessionToWsSessions.computeIfPresent(it) { k, v ->
-        v.remove(wsSession)
-        if (v.isEmpty()) null else v
-      }
-    }
-  }
-  fun getWsSessions(userSession: UUID) = userSessionToWsSessions[userSession]
-}
 
 
 
 data class WsMsg(val type: String, val data: Map<String, Any?> = mapOf())
 
-data class WsMsgToClient (val type: String = "TO_CLIENT", val data: WsMsg) {
-  constructor(type: String, data: Map<String, Any?> = mapOf())
-    : this("TO_CLIENT", WsMsg(type, data))
-}
-
+fun WsMsgToClient(type: String, data: Map<String, Any?> = mapOf()) = (
+  mapOf("type" to "TO_CLIENT", "data" to WsMsg(type, data))
+)
 
 
 fun Application.configureWebSocketRouting() {
@@ -116,11 +93,11 @@ fun Application.configureWebSocketRouting() {
                   
                   println("BECAME_ONLINE userId: $userId, sessionId: $sessionId")
                   
-                  WsSessions.addWsSession(this, sessionId)
+                  WsSessionsService.addWsSession(this, sessionId)
                   
                   SessionsService.becameOnline(userId, sessionId, sessionExpiresAt).apply {
                     subscribedSessions.forEach {
-                      WsSessions.getWsSessions(it)?.forEach {
+                      WsSessionsService.getWsSessions(it)?.forEach {
                         it.sendSerialized(WsMsgToClient(
                           "USERS_STATUS_UPDATE",
                           mapOf("usersStatus" to listOf(UserStatus(userId, online = true)))
@@ -138,12 +115,12 @@ fun Application.configureWebSocketRouting() {
                   
                   println("BECAME_OFFLINE userId: $userId, sessionId: $sessionId")
                   
-                  WsSessions.addWsSession(this, sessionId)
+                  WsSessionsService.addWsSession(this, sessionId)
                   
                   
                   SessionsService.becameOffline(userId, sessionId, sessionExpiresAt).apply {
                     subscribedSessions.forEach {
-                      WsSessions.getWsSessions(it)?.forEach {
+                      WsSessionsService.getWsSessions(it)?.forEach {
                         it.sendSerialized(WsMsgToClient(
                           "USERS_STATUS_UPDATE",
                           mapOf("usersStatus" to listOf(UserStatus(userId, online = online)))
@@ -164,7 +141,7 @@ fun Application.configureWebSocketRouting() {
                     "$userId, sessionId: $sessionId, userIds: $watchUserIds"
                   )
                   
-                  WsSessions.addWsSession(this, sessionId)
+                  WsSessionsService.addWsSession(this, sessionId)
                   
                   val subscribedUsersStatus = mutableListOf<UserStatus>()
                   
@@ -181,7 +158,7 @@ fun Application.configureWebSocketRouting() {
                     if (userId !in watchUserIds) sessions.subscribedSessions -= sessionId
                   }
                   // Отправляем текущий статус юзеров
-                  WsSessions.getWsSessions(sessionId)?.forEach {
+                  WsSessionsService.getWsSessions(sessionId)?.forEach {
                     it.sendSerialized(WsMsgToClient(
                       "USERS_STATUS_UPDATE",
                       mapOf("usersStatus" to subscribedUsersStatus)
@@ -199,7 +176,7 @@ fun Application.configureWebSocketRouting() {
       }
       finally {
         SessionsService.becameOffline(this)
-        WsSessions.removeWsSession(this)
+        WsSessionsService.removeWsSession(this)
       }
     }
   }
