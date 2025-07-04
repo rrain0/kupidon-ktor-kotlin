@@ -153,36 +153,42 @@ fun Application.configureWebSocketRouting() {
                   }
                 }
                 
-                "SUBSCRIBE_ON_USER_STATUS" -> {
+                "SUBSCRIBE_ON_USERS_STATUS" -> {
                   val accessToken = AccessToken(ev.data["accessToken"] as String, noVerify = true)
                   val userId = accessToken.userId
                   val sessionId = accessToken.sessionId
                   
-                  val userIds = ev.data["userIds"].cast<List<String>>().map { it.toUuid() }.toSet()
+                  val watchUserIds = ev.data["userIds"].cast<List<String>>().map { it.toUuid() }.toSet()
                   
-                  println("SUBSCRIBE_ON_USER_STATUS userId: " +
-                    "$userId, sessionId: $sessionId, userIds: $userIds"
+                  println("SUBSCRIBE_ON_USERS_STATUS userId: " +
+                    "$userId, sessionId: $sessionId, userIds: $watchUserIds"
                   )
                   
-                  val subscribedUsersStatuses = mutableListOf<UserStatus>()
+                  WsSessions.addWsSession(this, sessionId)
                   
-                  userIds.forEach {
+                  val subscribedUsersStatus = mutableListOf<UserStatus>()
+                  
+                  // Добавляемся юзерам в подписчики + берём их статус
+                  // Если юзера не было, то создаём!!!
+                  watchUserIds.forEach {
                     SessionsService.user(it).apply {
                       subscribedSessions += sessionId
-                      subscribedUsersStatuses += UserStatus(id, online = online)
+                      subscribedUsersStatus += UserStatus(id, online = online)
                     }
                   }
+                  // Удаляемся из подписчиков тех юзеров, статус которых нам больше не нужен
                   SessionsService.userToSessions.forEach { (userId, sessions) ->
-                    if (userId !in userIds) sessions.subscribedSessions -= sessionId
+                    if (userId !in watchUserIds) sessions.subscribedSessions -= sessionId
                   }
-                  
+                  // Отправляем текущий статус юзеров
                   WsSessions.getWsSessions(sessionId)?.forEach {
                     it.sendSerialized(WsMsgToClient(
                       "USERS_STATUS_UPDATE",
-                      mapOf("usersStatus" to subscribedUsersStatuses)
+                      mapOf("usersStatus" to subscribedUsersStatus)
                     ))
                   }
                 }
+                
               }
             }
             catch (ex: Exception) {

@@ -44,7 +44,7 @@ data object SessionsService {
   fun becameOffline(userId: UUID, sessionId: UUID, sessionExpiresAt: Instant): UserSessions {
     val now = now()
     val user = user(userId).apply {
-      lastStartOnlineAt = now
+      if (online && now > (lastStartOnlineAt ?: now)) lastStartOnlineAt = now
       sessions(sessionId, sessionExpiresAt).apply {
         expiresAt = sessionExpiresAt
         lastIsOnline = false
