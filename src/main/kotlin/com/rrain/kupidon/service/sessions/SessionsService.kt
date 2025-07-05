@@ -86,7 +86,7 @@ data class UserSessions(
   
   @Volatile var lastStartOnlineAt: Instant? = null
   val sessions: MutableMap<UUID, UserSession> = ConcurrentHashMap() // this user sessions
-  val subscribedSessions: MutableSet<UUID> = ConcurrentHashMap.newKeySet() // other user ids
+  val subscribedSessions: MutableSet<UUID> = ConcurrentHashMap.newKeySet() // other session ids
   
   val online get() = sessions.values.any { it.online }
   fun sessions(sessionId: UUID, expiresAt: Instant = now()) = (
