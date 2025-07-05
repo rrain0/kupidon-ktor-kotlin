@@ -96,12 +96,10 @@ fun Application.configureWebSocketRouting() {
                     watchers
                     .flatMap { UserLiveStatusService.sessionToWsSessions[it] ?: emptySet() }
                     .forEach {
-                      it.sendSerialized(
-                        WsMsgToClient(
-                          "USERS_STATUS_UPDATE",
-                          mapOf("usersStatus" to listOf(UserStatus(userId, online = true)))
-                        )
-                      )
+                      it.sendSerialized(WsMsgToClient(
+                        "USERS_STATUS_UPDATE",
+                        mapOf("usersStatus" to listOf(UserStatus(userId, online = true)))
+                      ).also { println("WS send: $it") })
                     }
                   }
                 }
@@ -121,7 +119,7 @@ fun Application.configureWebSocketRouting() {
                       it.sendSerialized(WsMsgToClient(
                         "USERS_STATUS_UPDATE",
                         mapOf("usersStatus" to listOf(UserStatus(userId, online = online())))
-                      ))
+                      ).also { println("WS send: $it") })
                     }
                   }
                 }
@@ -153,7 +151,7 @@ fun Application.configureWebSocketRouting() {
                     it.sendSerialized(WsMsgToClient(
                       "USERS_STATUS_UPDATE",
                       mapOf("usersStatus" to watchedUsersStatus)
-                    ))
+                    ).also { println("WS send: $it") })
                   }
                 }
                 
@@ -173,7 +171,7 @@ fun Application.configureWebSocketRouting() {
               it.sendSerialized(WsMsgToClient(
                 "USERS_STATUS_UPDATE",
                 mapOf("usersStatus" to listOf(UserStatus(id, online = online())))
-              ))
+              ).also { println("WS send: $it") })
             }
         } }
       }
