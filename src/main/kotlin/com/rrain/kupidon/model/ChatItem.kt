@@ -1,7 +1,7 @@
 package com.rrain.kupidon.model
 
 import com.rrain.kupidon.model.db.ChatMessageM
-import com.rrain.kupidon.service.sessions.SessionsService
+import com.rrain.kupidon.service.sessions.UserLiveStatusService
 import com.rrain.util.any.mapNull
 import kotlinx.datetime.Instant
 import java.util.UUID
@@ -30,7 +30,7 @@ data class ChatItem(
       //"lastStartOnlineAt" to
       "online" to type.takeIf { it === ChatType.PERSONAL }
         .let { profile }
-        ?.let { SessionsService.userToSessions[it.id]?.online }
+        ?.let { UserLiveStatusService.user[it.id]?.online() }
         .mapNull { false },
     )
   }

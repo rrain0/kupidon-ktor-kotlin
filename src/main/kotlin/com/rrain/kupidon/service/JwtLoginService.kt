@@ -1,10 +1,7 @@
 package com.rrain.kupidon.service
 
 import com.rrain.kupidon.model.Role
-import com.rrain.kupidon.service.sessions.SessionsService
-import com.rrain.kupidon.service.sessions.UserSession
-import com.rrain.kupidon.service.sessions.UserSessions
-import com.rrain.util.`date-time`.isExpired
+import com.rrain.kupidon.service.sessions.UserLiveStatusService
 import com.rrain.util.`date-time`.now
 import com.rrain.util.loop.retryUntil
 import com.rrain.util.uuid.randomUuid
@@ -27,7 +24,7 @@ object JwtLoginService {
   ): SessionData {
     val sessionId = prevSessionId ?: retryUntil(
       { randomUuid() },
-      { SessionsService.sessionToUser.putIfAbsent(it, userId) == null }
+      { UserLiveStatusService.sessionToUser.putIfAbsent(it, userId) == null }
     )
     val now = now()
     val accessToken = JwtService.newAccessToken(
@@ -36,14 +33,10 @@ object JwtLoginService {
     val refreshToken = JwtService.newRefreshToken(
       userId.toString(), sessionId.toString(), now
     )
-    SessionsService.userToSessions
-      .getOrPut(sessionId) { UserSessions(userId) }
-      .apply {
-        lastStartOnlineAt = now
-        // Clear expired sessions of this user
-        sessions.values.removeIf { it.expiresAt.isExpired(now) }
-        sessions.getOrPut(sessionId) { UserSession(userId, refreshToken.expiresAt, now) }
-      }
+    UserLiveStatusService
+      .userOrCreate(userId)
+      .sessionOrCreate(sessionId, refreshToken.expiresAt)
+    // TODO check & remove expired sessions
     return SessionData(sessionId, accessToken.token, refreshToken.token)
   }
   

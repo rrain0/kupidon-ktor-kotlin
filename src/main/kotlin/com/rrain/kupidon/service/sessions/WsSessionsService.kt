@@ -1,13 +1,12 @@
-package com.rrain.kupidon.service
+package com.rrain.kupidon.service.sessions
 
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.collections.forEach
 
 
 
-
+// TODO remove
 object WsSessionsService {
   val userSessionToWsSessions: MutableMap<UUID, MutableSet<DefaultWebSocketServerSession>> = ConcurrentHashMap()
   val wsSessionToUserSessions: MutableMap<DefaultWebSocketServerSession, MutableSet<UUID>> = ConcurrentHashMap()
@@ -25,4 +24,3 @@ object WsSessionsService {
   }
   fun getWsSessions(userSession: UUID) = userSessionToWsSessions[userSession]
 }
-

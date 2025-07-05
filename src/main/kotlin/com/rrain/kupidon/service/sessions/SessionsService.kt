@@ -1,6 +1,5 @@
 package com.rrain.kupidon.service.sessions
 
-import com.rrain.kupidon.service.WsSessionsService
 import com.rrain.util.`date-time`.isExpired
 import com.rrain.util.`date-time`.now
 import io.ktor.server.websocket.DefaultWebSocketServerSession
@@ -11,6 +10,7 @@ import kotlin.concurrent.Volatile
 
 
 
+// TODO remove
 data object SessionsService {
   val sessionToUser: MutableMap<UUID, UUID> = ConcurrentHashMap()
   val userToSessions: MutableMap<UUID, UserSessions> = ConcurrentHashMap()

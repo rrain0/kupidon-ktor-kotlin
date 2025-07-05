@@ -17,3 +17,11 @@ inline fun <T : Any?> T.mapTruly(block: (it: T) -> T): T {
   return if (this.asBool) block(this) else this
 }
 
+
+
+fun <T : Comparable<T>> maxOf(a: T?, b: T?): T? {
+  return if (b == null) a
+  else if (a == null) b
+  else if (a >= b) a
+  else b
+}
