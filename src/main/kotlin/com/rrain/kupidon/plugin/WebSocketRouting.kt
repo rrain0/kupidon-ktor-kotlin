@@ -91,16 +91,31 @@ fun Application.configureWebSocketRouting() {
                   
                   println("BECAME_ONLINE userId: $userId, sessionId: $sessionId")
                   
-                  UserLiveStatusService.onlineUserSession(userId, sessionId, sessionExpiresAt, this).apply {
-                    watchers
-                    .flatMap { UserLiveStatusService.sessionToWsSessions[it] ?: emptySet() }
-                    .forEach {
-                      it.sendSerialized(WsMsgToClient(
-                        "USERS_STATUS_UPDATE",
-                        mapOf("usersStatus" to listOf(UserStatus(userId, online = true)))
-                      ).also { println("WS send: $it") })
+                  UserLiveStatusService.use { service ->
+                    service.onlineUserSession(userId, sessionId, sessionExpiresAt, this).run {
+                      watchers.flatMap { UserLiveStatusService.sessionToWsSessions[it] ?: emptySet() }
                     }
+                  }.forEach {
+                    it.sendSerialized(WsMsgToClient(
+                      "USERS_STATUS_UPDATE",
+                      mapOf("usersStatus" to listOf(UserStatus(userId, online = true)))
+                    ).also { println("WS send: $it") })
                   }
+                  
+                  val userStatus = UserLiveStatusService.use { service ->
+                    service.onlineUserSession(userId, sessionId, sessionExpiresAt, this)
+                  }
+                  userStatus.apply {
+                    watchers
+                      .flatMap { UserLiveStatusService.sessionToWsSessions[it] ?: emptySet() }
+                      .forEach {
+                        it.sendSerialized(WsMsgToClient(
+                          "USERS_STATUS_UPDATE",
+                          mapOf("usersStatus" to listOf(UserStatus(userId, online = true)))
+                        ).also { println("WS send: $it") })
+                      }
+                  }
+                  
                 }
                 
                 "BECAME_OFFLINE" -> {
@@ -111,15 +126,18 @@ fun Application.configureWebSocketRouting() {
                   
                   println("BECAME_OFFLINE userId: $userId, sessionId: $sessionId")
                   
-                  UserLiveStatusService.offlineUserSession(userId, sessionId)?.apply {
+                  val userStatus = UserLiveStatusService.use { service ->
+                    service.offlineUserSession(userId, sessionId)
+                  }
+                  userStatus?.apply {
                     watchers
-                    .flatMap { UserLiveStatusService.sessionToWsSessions[it] ?: emptySet() }
-                    .forEach {
-                      it.sendSerialized(WsMsgToClient(
-                        "USERS_STATUS_UPDATE",
-                        mapOf("usersStatus" to listOf(UserStatus(userId, online = online())))
-                      ).also { println("WS send: $it") })
-                    }
+                      .flatMap { UserLiveStatusService.sessionToWsSessions[it] ?: emptySet() }
+                      .forEach {
+                        it.sendSerialized(WsMsgToClient(
+                          "USERS_STATUS_UPDATE",
+                          mapOf("usersStatus" to listOf(UserStatus(userId, online = online())))
+                        ).also { println("WS send: $it") })
+                      }
                   }
                 }
                 
@@ -135,12 +153,14 @@ fun Application.configureWebSocketRouting() {
                     "$userId, sessionId: $sessionId, userIds: $watchUserIds"
                   )
                   
-                  UserLiveStatusService
-                    .userOrCreate(userId)
-                    .sessionOrCreate(sessionId, sessionExpiresAt)
-                    .addWs(this)
-                  
-                  UserLiveStatusService.replaceWatched(sessionId, watchUserIds)
+                  UserLiveStatusService.use { service ->
+                    service
+                      .userOrCreate(userId)
+                      .sessionOrCreate(sessionId, sessionExpiresAt)
+                      .addWs(this)
+                    
+                    service.replaceWatched(sessionId, watchUserIds)
+                  }
                   
                   val watchedUsersStatus = watchUserIds
                     .mapNotNull { UserLiveStatusService.user[it] }
@@ -163,16 +183,17 @@ fun Application.configureWebSocketRouting() {
         }
       }
       finally {
-        UserLiveStatusService.offlineWs(this).forEach { it.apply {
-          watchers
-            .flatMap { UserLiveStatusService.sessionToWsSessions[it] ?: emptySet() }
-            .forEach {
-              it.sendSerialized(WsMsgToClient(
-                "USERS_STATUS_UPDATE",
-                mapOf("usersStatus" to listOf(UserStatus(id, online = online())))
-              ).also { println("WS send: $it") })
-            }
-        } }
+        UserLiveStatusService.use { session -> session.offlineWs(this) }
+          .forEach { it.apply {
+            watchers
+              .flatMap { UserLiveStatusService.sessionToWsSessions[it] ?: emptySet() }
+              .forEach {
+                it.sendSerialized(WsMsgToClient(
+                  "USERS_STATUS_UPDATE",
+                  mapOf("usersStatus" to listOf(UserStatus(id, online = online())))
+                ).also { println("WS send: $it") })
+              }
+          } }
       }
     }
   }

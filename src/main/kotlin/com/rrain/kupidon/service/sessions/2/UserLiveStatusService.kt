@@ -18,7 +18,7 @@ typealias WsSession = DefaultWebSocketServerSession
 
 object UserLiveStatusService {
   
-  @Synchronized fun <T> use(block: UserLiveStatusService.() -> T) = block(UserLiveStatusService)
+  @Synchronized fun <T> use(block: UserLiveStatusService.() -> T) = UserLiveStatusService.block()
   
   
   private val userIdToUser: MutableMap<UserId, UserState> = mutableMapOf()
