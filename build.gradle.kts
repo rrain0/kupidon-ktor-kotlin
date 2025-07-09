@@ -6,14 +6,9 @@ plugins {
   
   // Kotlin
   kotlin("jvm") version kotlinV
-  // Kotlin annotation processing plugin
-  kotlin("kapt") version kotlinV // Only for Kotlin projects
   
   // Ktor
   id("io.ktor.plugin") version ktorV
-  
-  // ObjectBox
-  //id("io.objectbox") // Apply last
 }
 
 group = "com.rrain.kupidon"
@@ -46,9 +41,6 @@ dependencies {
   // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-datetime
   implementation("org.jetbrains.kotlinx:kotlinx-datetime:$kotlinDateTimeV")
   
-  // https://mvnrepository.com/artifact/org.openjfx/javafx-base
-  implementation("org.openjfx:javafx-base:21")
-  
   // Ktor server core
   implementation("io.ktor:ktor-server-core")
   // Ktor server core JVM
@@ -76,12 +68,6 @@ dependencies {
   implementation(platform("org.mongodb:mongodb-driver-bom:$mongoKotlinCoroutineDriverV"))
   implementation("org.mongodb:mongodb-driver-kotlin-coroutine")
   implementation("org.mongodb:bson-kotlinx")
-  
-  // ObjectBox - In-memory object database
-  //val objectboxV = "4.3.0"
-  //implementation("io.objectbox:objectbox-kotlin:${objectboxV}")
-  //implementation("io.objectbox:objectbox-gradle-plugin:${objectboxV}")
-  //kapt("io.objectbox:objectbox-processor:${objectboxV}")
   
   val slf4jV = "2.0.17"
   val logbackV = "1.5.18"
