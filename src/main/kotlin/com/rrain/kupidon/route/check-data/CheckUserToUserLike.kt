@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.check
+package com.rrain.kupidon.route.`check-data`
 
 import com.mongodb.client.model.Filters
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest

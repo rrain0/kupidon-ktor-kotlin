@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route
+package com.rrain.kupidon.plugin
 
 import com.rrain.kupidon.route.routes.`app-api-v1`.auth.addAuthOtherRoutes
 import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-item`.addRouteGetChatItem
@@ -22,14 +22,10 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.users.addRouteGetUsers
 import com.rrain.kupidon.route.routes.app.api.v1.auth.addAuthLoginRoute
 import com.rrain.kupidon.route.routes.app.api.v1.auth.addAuthRefreshTokensRoute
 import io.ktor.server.application.*
-import io.ktor.server.routing.IgnoreTrailingSlash
 
 
 
-fun Application.configureRouting() {
-  
-  install(IgnoreTrailingSlash)
-  
+fun Application.configureHttpRouting() {
   
   addMainRoutes()
   

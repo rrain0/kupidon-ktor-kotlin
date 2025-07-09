@@ -2,11 +2,11 @@ package com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`
 
 import com.rrain.kupidon.model.ChatType
 import com.rrain.kupidon.plugin.authUserId
-import com.rrain.kupidon.route.check.checkFromUserExists
-import com.rrain.kupidon.route.check.checkToUserExists
-import com.rrain.kupidon.route.check.checkUserToUserLikeExists
-import com.rrain.kupidon.route.check.filterNone
-import com.rrain.kupidon.route.check.filterPersonalChats
+import com.rrain.kupidon.route.`check-data`.checkFromUserExists
+import com.rrain.kupidon.route.`check-data`.checkToUserExists
+import com.rrain.kupidon.route.`check-data`.checkUserToUserLikeExists
+import com.rrain.kupidon.route.`check-data`.filterNone
+import com.rrain.kupidon.route.`check-data`.filterPersonalChats
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collChats

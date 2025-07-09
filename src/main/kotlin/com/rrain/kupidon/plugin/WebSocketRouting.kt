@@ -1,7 +1,6 @@
-package com.rrain.kupidon.`route-ws`
+package com.rrain.kupidon.plugin
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.rrain.kupidon.plugin.JacksonObjectMapper
 import com.rrain.kupidon.service.AccessToken
 import com.rrain.kupidon.service.sessions.UserLiveStatusService
 import com.rrain.util.any.cast

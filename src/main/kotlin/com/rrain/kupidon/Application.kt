@@ -3,12 +3,11 @@ package com.rrain.kupidon
 import io.ktor.server.application.*
 import com.rrain.kupidon.plugin.*
 import com.rrain.kupidon.plugin.configureJsonSerialization
-import com.rrain.kupidon.route.*
 import com.rrain.kupidon.plugin.configureStatusPages
-import com.rrain.kupidon.`route-ws`.configureWebSocketRouting
+import com.rrain.kupidon.plugin.configureWebSocketRouting
 import com.rrain.kupidon.service.configureEmailService
 import com.rrain.kupidon.service.configureJwtService
-import com.rrain.kupidon.service.configurePwdHashing
+import com.rrain.kupidon.service.configurePwdHashService
 import com.rrain.kupidon.service.mongo.configureMongoDbService
 
 
@@ -24,7 +23,7 @@ fun Application.module() {
   configureJsonSerialization()
   
   configureJwtService()
-  configurePwdHashing()
+  configurePwdHashService()
   configureEmailService()
   
   configureMongoDbService()
@@ -35,6 +34,8 @@ fun Application.module() {
   
   configureJwtAuthentication()
   configureStatusPages()
-  configureWebSocketRouting()
   configureRouting()
+  configureHttpRouting()
+  configurePushServerRouting()
+  configureWebSocketRouting()
 }

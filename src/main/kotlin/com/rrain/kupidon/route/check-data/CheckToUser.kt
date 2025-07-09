@@ -1,4 +1,4 @@
-package com.rrain.kupidon.route.check
+package com.rrain.kupidon.route.`check-data`
 
 import com.mongodb.client.model.Filters
 import com.rrain.kupidon.route.`response-errors`.respondNotFound
@@ -11,19 +11,19 @@ import java.util.UUID
 
 
 context(routingContext: RoutingContext)
-suspend inline fun checkFromUserExists(
-  fromUserId: UUID,
+suspend inline fun checkToUserExists(
+  toUserId: UUID,
 ): UserM {
-  val foundFromUser = collUsers
-    .find(Filters.eq(UserM::id.name, fromUserId))
+  val foundToUser = collUsers
+    .find(Filters.eq(UserM::id.name, toUserId))
     .firstOrNull()
   
-  foundFromUser ?: run {
+  foundToUser ?: run {
     routingContext.call.respondNotFound(
-      "NO_FROM_USER", ""
+      "NO_TO_USER", ""
     )
     throw IllegalStateException()
   }
   
-  return foundFromUser
+  return foundToUser
 }

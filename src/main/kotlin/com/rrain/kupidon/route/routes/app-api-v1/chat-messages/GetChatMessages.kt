@@ -3,8 +3,8 @@ package com.rrain.kupidon.route.routes.`app-api-v1`.`chat-messages`
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Sorts
 import com.rrain.kupidon.plugin.authUserId
-import com.rrain.kupidon.route.check.checkChatExists
-import com.rrain.kupidon.route.check.checkPersonalChatExists
+import com.rrain.kupidon.route.`check-data`.checkChatExists
+import com.rrain.kupidon.route.`check-data`.checkPersonalChatExists
 import com.rrain.kupidon.route.`response-errors`.respondInvalidParams
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collChatMessages

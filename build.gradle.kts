@@ -1,21 +1,19 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val kotlinV = "2.2.0"
-val kotlinCoroutinesV = "1.10.2"
-val kotlinDateTimeV = "0.6.2"
-val ktorV = "3.2.1"
-val jacksonV = "2.19.0"
-val mongoKotlinCoroutineDriverV = "5.5.1"
-val slf4jV = "2.0.17"
-val logbackV = "1.5.18"
-val apacheEmail = "1.6.0"
 plugins {
   val kotlinV = "2.2.0"
   val ktorV = "3.2.1"
   
+  // Kotlin
   kotlin("jvm") version kotlinV
-  kotlin("plugin.serialization") version kotlinV
+  // Kotlin annotation processing plugin
+  kotlin("kapt") version kotlinV // Only for Kotlin projects
+  
+  // Ktor
   id("io.ktor.plugin") version ktorV
+  
+  // ObjectBox
+  //id("io.objectbox") // Apply last
 }
 
 group = "com.rrain.kupidon"
@@ -30,9 +28,7 @@ application {
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.compilerOptions {
-  freeCompilerArgs.set(listOf(
-    "-Xcontext-parameters", // enable experimental context parameters
-  ))
+  freeCompilerArgs.add("-Xcontext-parameters") // enable experimental context parameters
 }
 
 
@@ -42,11 +38,16 @@ repositories {
 
 dependencies {
   // Kotlin Coroutines
+  val kotlinCoroutinesV = "1.10.2"
   // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesV")
   // Kotlin DateTime
+  val kotlinDateTimeV = "0.6.2"
   // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-datetime
   implementation("org.jetbrains.kotlinx:kotlinx-datetime:$kotlinDateTimeV")
+  
+  // https://mvnrepository.com/artifact/org.openjfx/javafx-base
+  implementation("org.openjfx:javafx-base:21")
   
   // Ktor server core
   implementation("io.ktor:ktor-server-core")
@@ -62,6 +63,7 @@ dependencies {
   // Ktor serialization via Jackson
   implementation("io.ktor:ktor-serialization-jackson")
   // Kotlin Jackson Support
+  val jacksonV = "2.19.0"
   // https://github.com/FasterXML/jackson-module-kotlin
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonV")
   // Java Time Jackson Support
@@ -70,10 +72,19 @@ dependencies {
   
   // Kotlin coroutine MongoDB driver
   // BOM - Bill of Materials - organizes dependency versions
+  val mongoKotlinCoroutineDriverV = "5.5.1"
   implementation(platform("org.mongodb:mongodb-driver-bom:$mongoKotlinCoroutineDriverV"))
   implementation("org.mongodb:mongodb-driver-kotlin-coroutine")
   implementation("org.mongodb:bson-kotlinx")
   
+  // ObjectBox - In-memory object database
+  //val objectboxV = "4.3.0"
+  //implementation("io.objectbox:objectbox-kotlin:${objectboxV}")
+  //implementation("io.objectbox:objectbox-gradle-plugin:${objectboxV}")
+  //kapt("io.objectbox:objectbox-processor:${objectboxV}")
+  
+  val slf4jV = "2.0.17"
+  val logbackV = "1.5.18"
   // SLF4J - Simple Logging Facade for Java
   implementation("org.slf4j:slf4j-api:$slf4jV")
   // Транзитивная зависимость без которой в рантайме может не найтись класс
@@ -91,6 +102,8 @@ dependencies {
   implementation("io.ktor:ktor-server-auth-jwt")
   // Ktor server - Websocket
   implementation("io.ktor:ktor-server-websockets")
+  // Ktor server - Server-Sent Events (SSE) - Push server
+  implementation("io.ktor:ktor-server-sse")
   // Use proxy server forwarded & x-forwarded headers
   implementation("io.ktor:ktor-server-forwarded-header")
   implementation("io.ktor:ktor-server-caching-headers")
@@ -100,5 +113,6 @@ dependencies {
   implementation("io.ktor:ktor-server-call-logging")
   
   // Mail sending
+  val apacheEmail = "1.6.0"
   implementation("org.apache.commons:commons-email:$apacheEmail")
 }

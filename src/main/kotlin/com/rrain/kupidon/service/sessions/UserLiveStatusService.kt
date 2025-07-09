@@ -10,15 +10,17 @@ import java.util.concurrent.ConcurrentHashMap
 
 
 
+
 typealias UserId = UUID
 typealias SessionId = UUID
+typealias WsSession = DefaultWebSocketServerSession
 
 
 object UserLiveStatusService {
   val user: MutableMap<UserId, UserStatus> = ConcurrentHashMap()
   val sessionToUser: MutableMap<SessionId, UserId> = ConcurrentHashMap()
-  val sessionToWsSessions: MutableMap<SessionId, MutableSet<DefaultWebSocketServerSession>> = ConcurrentHashMap()
-  val wsSessionToSessions: MutableMap<DefaultWebSocketServerSession, MutableSet<SessionId>> = ConcurrentHashMap()
+  val sessionToWsSessions: MutableMap<SessionId, MutableSet<WsSession>> = ConcurrentHashMap()
+  val wsSessionToSessions: MutableMap<WsSession, MutableSet<SessionId>> = ConcurrentHashMap()
   val sessionToWatchedUsers: MutableMap<SessionId, MutableSet<UserId>> = ConcurrentHashMap()
   
   fun userOrCreate(userId: UserId) = (
@@ -29,7 +31,7 @@ object UserLiveStatusService {
     userId: UserId,
     sessionId: SessionId,
     expiresAt: Instant,
-    wsSession: DefaultWebSocketServerSession,
+    wsSession: WsSession,
   ): UserStatus {
     val now = now()
     return userOrCreate(userId)
@@ -42,7 +44,7 @@ object UserLiveStatusService {
     return user
   }
   
-  fun offlineWs(wsSession: DefaultWebSocketServerSession): List<UserStatus> {
+  fun offlineWs(wsSession: WsSession): List<UserStatus> {
     val now = now()
     val users: MutableList<UserStatus> = mutableListOf()
     wsSessionToSessions.remove(wsSession)?.forEach { sessionId ->
@@ -95,7 +97,7 @@ data class UserStatus(
   fun onlineSession(
     sessionId: SessionId,
     expiresAt: Instant,
-    wsSession: DefaultWebSocketServerSession,
+    wsSession: WsSession,
     now: Instant? = now(),
   ) {
     lastStartOnlineAt = now
@@ -108,7 +110,7 @@ data class UserStatus(
     removeIfEmpty()
   }
   
-  fun offlineWs(sessionId: SessionId, wsSession: DefaultWebSocketServerSession, now: Instant? = null) {
+  fun offlineWs(sessionId: SessionId, wsSession: WsSession, now: Instant? = null) {
     sessions[sessionId]?.offlineWs(wsSession, now)
     online(now)
     removeIfEmpty()
@@ -127,7 +129,7 @@ data class SessionStatus(
   @Volatile var lastStartOnlineAt: Instant? = null,
   @Volatile var lastIsOnline: Boolean = false,
 ) {
-  val wsSessions: MutableSet<DefaultWebSocketServerSession> = ConcurrentHashMap.newKeySet()
+  val wsSessions: MutableSet<WsSession> = ConcurrentHashMap.newKeySet()
   
   
   fun online(now: Instant? = now()) = lastIsOnline && !(expiresAt?.isExpired() ?: true) && wsSessions.isNotEmpty()
@@ -140,7 +142,7 @@ data class SessionStatus(
   
   fun onlineSession(
     expiresAt: Instant,
-    wsSession: DefaultWebSocketServerSession,
+    wsSession: WsSession,
     now: Instant? = now(),
   ) {
     this.expiresAt = expiresAt
@@ -149,7 +151,7 @@ data class SessionStatus(
     addWs(wsSession)
   }
   
-  fun addWs(wsSession: DefaultWebSocketServerSession) {
+  fun addWs(wsSession: WsSession) {
     wsSessions += wsSession.apply {
       UserLiveStatusService.sessionToWsSessions.getOrPut(id) { ConcurrentHashMap.newKeySet() } += this
       UserLiveStatusService.wsSessionToSessions.getOrPut(this) { ConcurrentHashMap.newKeySet() } += id
@@ -162,7 +164,7 @@ data class SessionStatus(
     removeIfEmpty()
   }
   
-  fun offlineWs(wsSession: DefaultWebSocketServerSession, now: Instant? = null) {
+  fun offlineWs(wsSession: WsSession, now: Instant? = null) {
     online(now)
     wsSessions -= wsSession
     online(now)

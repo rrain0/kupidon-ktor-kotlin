@@ -1,10 +1,10 @@
 package com.rrain.kupidon.route.routes.`app-api-v1`.`user-to-user`
 
 import com.rrain.kupidon.plugin.authUserId
-import com.rrain.kupidon.route.check.checkFromUserExists
-import com.rrain.kupidon.route.check.checkToUserExists
-import com.rrain.kupidon.route.check.checkUserToUserLikeNotExists
-import com.rrain.kupidon.route.check.filterUserToUserLike
+import com.rrain.kupidon.route.`check-data`.checkFromUserExists
+import com.rrain.kupidon.route.`check-data`.checkToUserExists
+import com.rrain.kupidon.route.`check-data`.checkUserToUserLikeNotExists
+import com.rrain.kupidon.route.`check-data`.filterUserToUserLike
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes

@@ -1,8 +1,8 @@
 package com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`
 
 import com.rrain.kupidon.plugin.authUserId
-import com.rrain.kupidon.route.check.checkChatExists
-import com.rrain.kupidon.route.check.filterNone
+import com.rrain.kupidon.route.`check-data`.checkChatExists
+import com.rrain.kupidon.route.`check-data`.filterNone
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collChatMessages

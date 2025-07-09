@@ -47,7 +47,7 @@ fun generateRandomPwdSalt(): String = ByteArray(16)
 
 
 
-fun Application.configurePwdHashing() {
+fun Application.configurePwdHashService() {
   
   PwdHashService.run {
     config = PwdHashService.Config(
