@@ -30,7 +30,7 @@ data class ChatItem(
       //"lastStartOnlineAt" to
       "online" to type.takeIf { it === ChatType.PERSONAL }
         .let { profile }
-        ?.let { UserLiveStatusService.user[it.id]?.online() }
+        ?.let { UserLiveStatusService.getUser(it.id)?.online }
         .mapNull { false },
     )
   }

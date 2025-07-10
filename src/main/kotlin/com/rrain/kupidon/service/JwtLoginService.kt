@@ -1,9 +1,7 @@
 package com.rrain.kupidon.service
 
 import com.rrain.kupidon.model.Role
-import com.rrain.kupidon.service.sessions.UserLiveStatusService
 import com.rrain.util.`date-time`.now
-import com.rrain.util.loop.retryUntil
 import com.rrain.util.uuid.randomUuid
 import java.util.UUID
 
@@ -22,10 +20,7 @@ object JwtLoginService {
     userRoles: Set<Role>,
     prevSessionId: UUID? = null
   ): SessionData {
-    val sessionId = prevSessionId ?: retryUntil(
-      { randomUuid() },
-      { UserLiveStatusService.sessionToUser.putIfAbsent(it, userId) == null }
-    )
+    val sessionId = prevSessionId ?: randomUuid()
     val now = now()
     val accessToken = JwtService.newAccessToken(
       userId.toString(), userRoles, sessionId.toString(), now
@@ -33,10 +28,6 @@ object JwtLoginService {
     val refreshToken = JwtService.newRefreshToken(
       userId.toString(), sessionId.toString(), now
     )
-    UserLiveStatusService
-      .userOrCreate(userId)
-      .sessionOrCreate(sessionId, refreshToken.expiresAt)
-    // TODO check & remove expired sessions
     return SessionData(sessionId, accessToken.token, refreshToken.token)
   }
   

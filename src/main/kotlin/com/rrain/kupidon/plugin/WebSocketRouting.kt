@@ -3,6 +3,7 @@ package com.rrain.kupidon.plugin
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.rrain.kupidon.service.AccessToken
 import com.rrain.kupidon.service.sessions.UserLiveStatusService
+import com.rrain.kupidon.service.sessions.UserStatus
 import com.rrain.util.any.cast
 import com.rrain.util.uuid.toUuid
 import io.ktor.serialization.WebsocketContentConverter
@@ -59,7 +60,7 @@ fun Application.configureWebSocketRouting() {
   }
   
   
-  data class UserStatus(val id: UUID, val online: Boolean)
+  data class UserStatusToApi(val id: UUID, val online: Boolean)
   
   
   routing {
@@ -93,12 +94,12 @@ fun Application.configureWebSocketRouting() {
                   
                   UserLiveStatusService.use { service ->
                     service.onlineUserSession(userId, sessionId, sessionExpiresAt, this).run {
-                      watchers.flatMap { UserLiveStatusService.sessionToWsSessions[it] ?: emptySet() }
+                      watchers.flatMap { UserLiveStatusService.getWsSessionBySession(it) ?: emptySet() }
                     }
                   }.forEach {
                     it.sendSerialized(WsMsgToClient(
                       "USERS_STATUS_UPDATE",
-                      mapOf("usersStatus" to listOf(UserStatus(userId, online = true)))
+                      mapOf("usersStatus" to listOf(UserStatusToApi(userId, online = true)))
                     ).also { println("WS send: $it") })
                   }
                   
@@ -107,11 +108,11 @@ fun Application.configureWebSocketRouting() {
                   }
                   userStatus.apply {
                     watchers
-                      .flatMap { UserLiveStatusService.sessionToWsSessions[it] ?: emptySet() }
+                      .flatMap { UserLiveStatusService.getWsSessionBySession(it) ?: emptySet() }
                       .forEach {
                         it.sendSerialized(WsMsgToClient(
                           "USERS_STATUS_UPDATE",
-                          mapOf("usersStatus" to listOf(UserStatus(userId, online = true)))
+                          mapOf("usersStatus" to listOf(UserStatusToApi(userId, online = true)))
                         ).also { println("WS send: $it") })
                       }
                   }
@@ -131,11 +132,11 @@ fun Application.configureWebSocketRouting() {
                   }
                   userStatus?.apply {
                     watchers
-                      .flatMap { UserLiveStatusService.sessionToWsSessions[it] ?: emptySet() }
+                      .flatMap { UserLiveStatusService.getWsSessionBySession(it) ?: emptySet() }
                       .forEach {
                         it.sendSerialized(WsMsgToClient(
                           "USERS_STATUS_UPDATE",
-                          mapOf("usersStatus" to listOf(UserStatus(userId, online = online())))
+                          mapOf("usersStatus" to listOf(UserStatusToApi(userId, online = online)))
                         ).also { println("WS send: $it") })
                       }
                   }
@@ -155,18 +156,17 @@ fun Application.configureWebSocketRouting() {
                   
                   UserLiveStatusService.use { service ->
                     service
-                      .userOrCreate(userId)
-                      .sessionOrCreate(sessionId, sessionExpiresAt)
-                      .addWs(this)
+                      .getOrAddUser(UserStatus(userId))
+                      .getOrAddSession(sessionId, sessionExpiresAt, this)
                     
                     service.replaceWatched(sessionId, watchUserIds)
                   }
                   
                   val watchedUsersStatus = watchUserIds
-                    .mapNotNull { UserLiveStatusService.user[it] }
-                    .map { UserStatus(it.id, online = it.online()) }
+                    .mapNotNull { UserLiveStatusService.getUser(it) }
+                    .map { UserStatusToApi(it.id, online = it.online) }
                   
-                  UserLiveStatusService.sessionToWsSessions[sessionId]?.forEach {
+                  UserLiveStatusService.getWsSessionBySession(sessionId)?.forEach {
                     it.sendSerialized(WsMsgToClient(
                       "USERS_STATUS_UPDATE",
                       mapOf("usersStatus" to watchedUsersStatus)
@@ -186,11 +186,11 @@ fun Application.configureWebSocketRouting() {
         UserLiveStatusService.use { session -> session.offlineWs(this) }
           .forEach { it.apply {
             watchers
-              .flatMap { UserLiveStatusService.sessionToWsSessions[it] ?: emptySet() }
+              .flatMap { UserLiveStatusService.getWsSessionBySession(it) ?: emptySet() }
               .forEach {
                 it.sendSerialized(WsMsgToClient(
                   "USERS_STATUS_UPDATE",
-                  mapOf("usersStatus" to listOf(UserStatus(id, online = online())))
+                  mapOf("usersStatus" to listOf(UserStatusToApi(id, online = online)))
                 ).also { println("WS send: $it") })
               }
           } }

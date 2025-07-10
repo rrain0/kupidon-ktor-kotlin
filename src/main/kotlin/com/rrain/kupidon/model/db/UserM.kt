@@ -90,7 +90,7 @@ data class UserM(
     
     if (showStatus) data.putAll(listOf(
       //"lastStartOnlineAt" to
-      "online" to UserLiveStatusService.user[id]?.online().mapNull { false },
+      "online" to UserLiveStatusService.getUser(id)?.online.mapNull { false },
     ))
     
     return data
