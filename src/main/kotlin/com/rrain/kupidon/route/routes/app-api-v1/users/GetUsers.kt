@@ -21,7 +21,7 @@ fun Application.addRouteGetUsers() {
       val usersToApi = collUsers
         .find()
         .projectionUserM()
-        .map { it.toApi(UserDataType.Other, call.host, call.port) }
+        .map { it.toApi(UserDataType.Stranger, call.host, call.port) }
         .toList()
       
       call.respond(mapOf(

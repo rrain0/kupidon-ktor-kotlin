@@ -15,6 +15,7 @@ object ApiV1Routes {
   val user = "$apiV1/user"
   val userCurrent = "$user/current"
   val userIdId = "$user/id/{id}"
+  val userTypeAcquaintanceShortIdId = "$user/type/acquaintance-short/id/{id}"
   val userProfilePhoto = "$user/profile-photo"
   val userProfilePhotoName = "$user/profile-photo/*"
   object userProfilePhotoNameParams {

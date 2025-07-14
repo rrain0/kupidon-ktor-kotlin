@@ -1,5 +1,6 @@
 package com.rrain.kupidon.service.sessions
 
+import com.rrain.util.any.mapNull
 import com.rrain.util.any.maxOf
 import com.rrain.util.collections.concurrentMapOf
 import com.rrain.util.collections.concurrentSetOf
@@ -18,14 +19,16 @@ typealias WsSession = DefaultWebSocketServerSession
 
 
 
-// Добавление сущностей идёд в порядке сверху вниз: user -> session -> wsSession.
-// Изменение / удаление сущностей идёт в прядке сниуз вверх: wsSession -> session -> user.
-// При добавлении сущности все сначала по порядку досоздаются все верхние сущности.
+
+// Добавление сущностей идёт в порядке сверху вниз: user -> session -> wsSession.
+// Изменение / удаление сущностей идёт в прядке снизу вверх: wsSession -> session -> user.
+// При добавлении сущности сначала по порядку досоздаются все верхние сущности.
 // При изменении сущности изменения должны сразу распространяться вверх и проверяться, нужно ли её удалить.
 // При удалении сущности верхние сущности должны сразу проверяться на то, могут ли быть удалены и удаляться.
 
 
-private val user: MutableMap<UserId, UserStatus> = concurrentMapOf()
+private val userStatus: MutableMap<UserId, UserStatus> = concurrentMapOf()
+private val onlineUsers: MutableSet<UserId> = concurrentSetOf()
 private val sessionToUser: MutableMap<SessionId, UserId> = concurrentMapOf()
 private val sessionToWsSessions: MutableMap<SessionId, MutableSet<WsSession>> = concurrentMapOf()
 private val sessionToWatchedUsers: MutableMap<SessionId, MutableSet<UserId>> = concurrentMapOf()
@@ -35,13 +38,17 @@ private val wsSessionToSessions: MutableMap<WsSession, MutableSet<SessionId>> = 
 
 object UserLiveStatusService {
   
-  @Synchronized fun <T> use(block: (service: UserLiveStatusService) -> T) = block(UserLiveStatusService)
+  @Synchronized fun <T> use(block: (service: UserLiveStatusService) -> T) = (
+    block(UserLiveStatusService)
+  )
   
   
-  fun getUser(id: UserId) = user[id]
-  fun getOrAddUser(userToAdd: UserStatus) = user.getOrPut(userToAdd.id) { userToAdd }
+  fun getUser(id: UserId) = userStatus[id]
+  fun isUserOnline(id: UserId) = getUser(id)?.online.mapNull { false }
   
-  fun getUserBySession(id: SessionId) = sessionToUser[id]?.let { user[it] }
+  fun getOrAddUser(userToAdd: UserStatus) = userStatus.getOrPut(userToAdd.id) { userToAdd }
+  
+  fun getUserBySession(id: SessionId) = sessionToUser[id]?.let { userStatus[it] }
   fun getWsSessionBySession(id: SessionId) = sessionToWsSessions[id]
   
   
@@ -53,44 +60,56 @@ object UserLiveStatusService {
     sessionId: SessionId,
     expiresAt: Instant,
     wsSession: WsSession,
+    now: Instant = now(),
   ): UserStatus {
-    val now = now()
     return userOrAdd(userId)
-      .apply { onlineSession(sessionId, expiresAt, wsSession, now) }
+      .apply {
+        getOrAddSession(sessionId, expiresAt, wsSession)
+          .onlineSession(expiresAt, wsSession, now)
+      }
   }
   
-  fun offlineUserSession(userId: UUID, sessionId: UUID): UserStatus? {
-    val now = now()
-    val user = user[userId]?.apply { offlineSession(sessionId, now) }
-    return user
+  fun offlineUserSession(
+    userId: UserId,
+    sessionId: SessionId,
+    now: Instant = now(),
+  ): UserStatus? {
+    return userStatus[userId]?.apply {
+      sessions[sessionId]?.offlineSession(now)
+    }
   }
   
-  fun offlineWs(wsSession: WsSession): List<UserStatus> {
-    val now = now()
+  fun offlineWs(
+    wsSession: WsSession,
+    now: Instant = now(),
+  ): List<UserStatus> {
     val users: MutableList<UserStatus> = mutableListOf()
     wsSessionToSessions.remove(wsSession)?.forEach { sessionId ->
-      sessionToUser[sessionId]?.also { userId ->
-        user[userId]?.apply {
-          offlineWs(sessionId, wsSession, now)
-          users += this
+      Serv.getUserBySession(sessionId)?.apply {
+        sessions[sessionId]?.apply {
+          updateStatus(now)
+          wsSessions -= wsSession
+          updateStatus(now)
+          removeIfEmpty()
         }
+        users += this
       }
-      sessionToWsSessions.computeIfPresent(sessionId) { _, v ->
-        v -= wsSession
-        v.ifEmpty { null }
+      sessionToWsSessions.computeIfPresent(sessionId) { _, wsSessions ->
+        wsSessions.apply { remove(wsSession) }.ifEmpty { null }
       }
     }
     return users
   }
   
   fun replaceWatched(sessionId: SessionId, watchedUserIds: Set<UserId>) {
-    sessionToWatchedUsers.getOrPut(sessionId) { concurrentSetOf() }.let {
+    sessionToWatchedUsers.compute(sessionId) { _, it -> (it ?: concurrentSetOf()).let {
       val watch = watchedUserIds - it
       val unwatch = it - watchedUserIds
       watch.map { userOrAdd(it) }.forEach { it.watchers += sessionId }
-      unwatch.mapNotNull { user[it] }.forEach { it.watchers -= sessionId }
+      unwatch.mapNotNull { userStatus[it] }.forEach { it.watchers -= sessionId }
       it.removeAll(unwatch)
-    }
+      it.ifEmpty { null }
+    } }
   }
 }
 private val Serv = UserLiveStatusService
@@ -110,12 +129,13 @@ data class UserStatus(
   
   val empty get() = sessions.isEmpty() && watchers.isEmpty()
   
-  fun updateStatus() = this.also {
+  fun updateStatus() {
     online = false
     sessions.values.forEach {
       online = online || it.online
       onlineAt = maxOf(it.onlineAt, onlineAt)
     }
+    if (online) onlineUsers += id else onlineUsers -= id
   }
   
   
@@ -126,32 +146,16 @@ data class UserStatus(
   ) = (
     sessions.getOrPut(sessionId) { SessionStatus(sessionId, expiresAt) }.also {
       sessionToUser[it.id] = id
-      if (wsSession != null) it.addWs(wsSession)
+      if (wsSession != null) it.getOrAddWsSession(wsSession)
     }
   )
   
   
-  fun onlineSession(
-    sessionId: SessionId,
-    expiresAt: Instant,
-    wsSession: WsSession,
-    now: Instant? = now(),
-  ) {
-    onlineAt = now
-    getOrAddSession(sessionId, expiresAt).onlineSession(expiresAt, wsSession, now)
-  }
-  
-  fun offlineSession(sessionId: SessionId, now: Instant? = null) {
-    sessions[sessionId]?.offlineSession(now)
-  }
-  
-  fun offlineWs(sessionId: SessionId, wsSession: WsSession, now: Instant? = null) {
-    sessions[sessionId]?.offlineWs(wsSession, now)
-  }
-  
-  
   fun removeIfEmpty() {
-    user.computeIfPresent(id) { _, it -> if (it.empty) null else it }
+    userStatus.computeIfPresent(id) { _, user ->
+      if (user.empty) { onlineUsers -= id; null }
+      user
+    }
   }
 }
 
@@ -165,20 +169,21 @@ data class SessionStatus(
 ) {
   val wsSessions: MutableSet<WsSession> = concurrentSetOf()
   
-  fun addWs(wsSession: WsSession) {
-    wsSessions += wsSession.apply {
-      sessionToWsSessions.getOrPut(id) { concurrentSetOf() } += this
-      wsSessionToSessions.getOrPut(this) { concurrentSetOf() } += id
-    }
-  }
   
+  val empty get() = !online && wsSessions.isEmpty()
   
-  val empty get() = !updateStatus().online && wsSessions.isEmpty()
-  
-  fun updateStatus(now: Instant? = now()) = this.also {
+  fun updateStatus(now: Instant? = now()) {
     online = online && !(expiresAt?.isExpired() ?: true) && wsSessions.isNotEmpty()
     if (online) onlineAt = maxOf(now, onlineAt)
     Serv.getUserBySession(id)?.updateStatus()
+  }
+  
+  
+  fun getOrAddWsSession(wsSession: WsSession) = wsSession.apply {
+    if (wsSessions.add(this)) {
+      sessionToWsSessions.getOrPut(id) { concurrentSetOf() } += this
+      wsSessionToSessions.getOrPut(this) { concurrentSetOf() } += id
+    }
   }
   
   
@@ -191,20 +196,13 @@ data class SessionStatus(
     this.expiresAt = expiresAt
     onlineAt = now
     online = true
-    addWs(wsSession)
+    getOrAddWsSession(wsSession)
     updateStatus(now)
   }
   
   fun offlineSession(now: Instant? = null) {
     updateStatus(now)
     online = false
-    updateStatus(now)
-    removeIfEmpty()
-  }
-  
-  fun offlineWs(wsSession: WsSession, now: Instant? = null) {
-    updateStatus(now)
-    wsSessions -= wsSession
     updateStatus(now)
     removeIfEmpty()
   }
@@ -228,3 +226,4 @@ data class SessionStatus(
     }
   }
 }
+

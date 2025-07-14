@@ -9,6 +9,7 @@ import com.mongodb.client.model.Sorts
 import com.mongodb.client.model.UnwindOptions
 import com.rrain.kupidon.model.ChatItem
 import com.rrain.kupidon.model.ChatProfile
+import com.rrain.kupidon.model.ChatProfileType
 import com.rrain.kupidon.model.ChatType
 import com.rrain.kupidon.plugin.authUserId
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
@@ -91,6 +92,7 @@ fun Application.addRouteGetChatItem() {
           ?.let {
             chatItem.profile = ChatProfile(
               id = it.id,
+              type = ChatProfileType.USER,
               name = it.name,
               ava = it.ava(call.host, call.port),
             )

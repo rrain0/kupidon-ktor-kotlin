@@ -8,6 +8,7 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-messages`.addRouteGetCh
 import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-items`.addRouteGetChatItems
 import com.rrain.kupidon.route.routes.`app-api-v1`.users.addRouteGetUsersNewPairs
 import com.rrain.kupidon.route.routes.`app-api-v1`.`user-to-user`.addRoutePostUserToUserLike
+import com.rrain.kupidon.route.routes.`app-api-v1`.user.addRouteGetUserTypeAcquaintanceShortIdId
 import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserCreateRoute
 import com.rrain.kupidon.route.routes.main.addMainRoutes
 import com.rrain.kupidon.route.routes.`app-pwa-manifest`.addPwaManifestRoute
@@ -27,29 +28,30 @@ import io.ktor.server.application.*
 
 fun Application.configureHttpRouting() {
   
-  addMainRoutes()
+  addMainRoutes() // TODO
   
-  addAuthorizationTestRoutes()
-  addHttpTestRoutes()
-  addImgTestRoutes()
-  addJsonSerializationTestRoutes()
-  addMongoTestRoutes()
-  addSendEmailTestRoutes()
+  addAuthorizationTestRoutes() // TODO
+  addHttpTestRoutes() // TODO
+  addImgTestRoutes() // TODO
+  addJsonSerializationTestRoutes() // TODO
+  addMongoTestRoutes() // TODO
+  addSendEmailTestRoutes() // TODO
   
   
-  addPwaManifestRoute()
+  addPwaManifestRoute() // TODO
   
-  addAuthLoginRoute()
-  addAuthRefreshTokensRoute()
-  addAuthOtherRoutes()
+  addAuthLoginRoute() // TODO
+  addAuthRefreshTokensRoute() // TODO
+  addAuthOtherRoutes() // TODO
   
-  addUserCurrentRoute()
-  addUserCreateRoute()
-  addUserUpdateRoute()
-  addUserIdIdRoute()
-  addUserProfilePhotoPostRoute()
-  addUserProfilePhotoGetRoute()
-  addUserEmailInitialVerifyRoute()
+  addUserCurrentRoute() // TODO
+  addUserCreateRoute() // TODO
+  addUserUpdateRoute() // TODO
+  addUserIdIdRoute() // TODO
+  addRouteGetUserTypeAcquaintanceShortIdId() // TODO
+  addUserProfilePhotoPostRoute() // TODO
+  addUserProfilePhotoGetRoute() // TODO
+  addUserEmailInitialVerifyRoute() // TODO
   
   addRoutePostUserToUserLike()
   

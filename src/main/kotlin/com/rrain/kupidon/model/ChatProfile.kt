@@ -1,20 +1,27 @@
 package com.rrain.kupidon.model
 
+import com.rrain.kupidon.service.sessions.UserLiveStatusService
+import kotlinx.datetime.Instant
 import java.util.UUID
 
 
 
 data class ChatProfile(
   var id: UUID,
-  //val type: ChatProfileType = ChatProfileType.USER,
+  var type: ChatProfileType,
   var name: String,
   var ava: String,
-  // val online
-  // val lastOnlineAt
+  var onlineAt: Instant? = null,
+  var online: Boolean = false,
 ) {
   fun toApi() = mutableMapOf<String, Any?>(
     "id" to id,
     "name" to name,
     "ava" to ava,
+    
+    //"onlineAt" to
+    "online" to when (type) {
+      ChatProfileType.USER -> UserLiveStatusService.isUserOnline(id)
+    },
   )
 }

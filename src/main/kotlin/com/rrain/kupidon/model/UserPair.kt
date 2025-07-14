@@ -20,6 +20,6 @@ data class UserPair(
     "fromUserId" to fromUserId,
     "toUserId" to toUserId,
     "createdAt" to createdAt,
-    "toUser" to toUser.toApi(UserDataType.OtherShort, host, port, showStatus = true),
+    "toUser" to toUser.toApi(UserDataType.StrangerShort, host, port, showStatus = true),
   )
 }

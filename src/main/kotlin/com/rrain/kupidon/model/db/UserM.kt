@@ -13,7 +13,14 @@ import kotlinx.datetime.TimeZone
 import java.util.UUID
 
 
-enum class UserDataType { Full, Current, Other, OtherShort }
+enum class UserDataType {
+  Full,
+  Current,
+  //Acquaintance,
+  AcquaintanceShort,
+  Stranger,
+  StrangerShort
+}
 
 
 data class UserM(
@@ -26,7 +33,7 @@ data class UserM(
   // login can be email, phone, nickname#subnickname
   var email: String,
   
-  // hashed password
+  // Password hash
   var pwd: String,
   
   // "2023-06-04T15:21:18.094Z" in string
@@ -44,56 +51,72 @@ data class UserM(
 ) {
   
   fun toApi(
-    userType: UserDataType = UserDataType.Other,
+    userType: UserDataType = UserDataType.Stranger,
     host: String,
     port: Int,
     // TODO pass timeZone query param for each user or try get from user agent string
     timeZone: TimeZone = TimeZone.UTC,
     showStatus: Boolean = false,
   ): MutableMap<String, Any?> {
-    val lvl = when (userType) {
-      UserDataType.Full -> 3
-      UserDataType.Current -> 2
-      UserDataType.Other -> 1
-      UserDataType.OtherShort -> 0
+    return when (userType) {
+      UserDataType.Full -> mutableMapOf(
+        "id" to id,
+        "roles" to roles,
+        "email" to email,
+        // todo email verification
+        //"emailVerified" to true,
+        "createdAt" to createdAt,
+        "updatedAt" to updatedAt,
+        "name" to name,
+        "ava" to ava(host, port),
+        "birthDate" to birthDate,
+        "age" to getAge(birthDate, timeZone),
+        "gender" to gender,
+        "aboutMe" to aboutMe,
+        "photos" to photos.map { it.toApi(id, host, port) },
+        //"lastStartOnlineAt" to
+        "online" to UserLiveStatusService.isUserOnline(id),
+      )
+      UserDataType.Current -> mutableMapOf(
+        "id" to id,
+        "roles" to roles,
+        "email" to email,
+        // todo email verification
+        //"emailVerified" to true,
+        "pwd" to pwd, // hashed pwd
+        "createdAt" to createdAt,
+        "updatedAt" to updatedAt,
+        "name" to name,
+        "ava" to ava(host, port),
+        "birthDate" to birthDate,
+        "age" to getAge(birthDate, timeZone),
+        "gender" to gender,
+        "aboutMe" to aboutMe,
+        "photos" to photos.map { it.toApi(id, host, port) },
+        //"lastStartOnlineAt" to
+        "online" to UserLiveStatusService.isUserOnline(id),
+      )
+      UserDataType.AcquaintanceShort -> mutableMapOf(
+        "id" to id,
+        "name" to name,
+        "ava" to ava(host, port),
+        "online" to UserLiveStatusService.isUserOnline(id),
+      )
+      UserDataType.Stranger -> mutableMapOf(
+        "id" to id,
+        "name" to name,
+        "ava" to ava(host, port),
+        "age" to getAge(birthDate, timeZone),
+        "gender" to gender,
+        "aboutMe" to aboutMe,
+        "photos" to photos.map { it.toApi(id, host, port) },
+      )
+      UserDataType.StrangerShort -> mutableMapOf(
+        "id" to id,
+        "name" to name,
+        "ava" to ava(host, port),
+      )
     }
-    val data = mutableMapOf<String, Any?>(
-      "id" to id,
-      "name" to name,
-    )
-    
-    if (userType === UserDataType.OtherShort) data.put(
-      "ava", ava(host, port),
-    )
-    
-    if (lvl >= 1) data.putAll(listOf(
-      "birthDate" to birthDate, // TODO remove from here
-      "age" to getAge(birthDate, timeZone),
-      "gender" to gender,
-      "aboutMe" to aboutMe,
-      "photos" to photos.map { it.toApi(id, host, port) },
-    ))
-    
-    if (lvl >= 2) data.putAll(listOf(
-      "birthDate" to birthDate,
-      "roles" to roles,
-      "email" to email,
-      // todo email
-      "emailVerified" to true,
-    ))
-    
-    if (lvl >= 3) data.putAll(listOf(
-      "pwd" to pwd, // hashed pwd
-      "createdAt" to createdAt,
-      "updatedAt" to updatedAt,
-    ))
-    
-    if (showStatus) data.putAll(listOf(
-      //"lastStartOnlineAt" to
-      "online" to UserLiveStatusService.getUser(id)?.online.mapNull { false },
-    ))
-    
-    return data
   }
   
   fun ava(
@@ -112,6 +135,6 @@ val projectionUserM = Document(
   "${UserM::photos.name}.${UserProfilePhotoM::binData.name}", false
 )
 
-fun FindFlow<UserM>.projectionUserM(): FindFlow<UserM> {
-  return projection(projectionUserM)
-}
+fun FindFlow<UserM>.projectionUserM(): FindFlow<UserM> = (
+  projection(projectionUserM)
+)
