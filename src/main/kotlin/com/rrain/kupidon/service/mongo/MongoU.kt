@@ -5,8 +5,8 @@ import com.mongodb.client.model.FindOneAndUpdateOptions
 import com.mongodb.client.model.ReturnDocument
 import com.mongodb.client.model.Updates
 import com.mongodb.kotlin.client.coroutine.MongoCollection
-import com.rrain.`util-bson`.toBJson
-import com.rrain.`util-bson`.toDoc
+import com.rrain.util.bson.toBJson
+import com.rrain.util.bson.toDoc
 import kotlinx.datetime.Instant
 import org.bson.Document
 import org.bson.conversions.Bson

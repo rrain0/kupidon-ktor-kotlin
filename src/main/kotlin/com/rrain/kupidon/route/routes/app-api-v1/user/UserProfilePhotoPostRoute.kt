@@ -15,10 +15,10 @@ import com.rrain.kupidon.model.db.UserM
 import com.rrain.kupidon.model.db.UserProfilePhotoM
 import com.rrain.kupidon.model.db.projectionUserM
 import com.rrain.kupidon.service.mongo.useSingleDocTx
-import com.rrain.`util-ktor`.call.host
-import com.rrain.`util-ktor`.call.port
-import com.rrain.util.`date-time`.now
-import com.rrain.util.uuid.toUuid
+import com.rrain.util.ktor.call.host
+import com.rrain.util.ktor.call.port
+import com.rrain.util.base.`date-time`.now
+import com.rrain.util.base.uuid.toUuid
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -39,7 +39,7 @@ fun Application.addUserProfilePhotoPostRoute() {
         var id: String? = null,
         var index: Int? = null,
         var name: String? = null,
-        var mimeType: String? = null,
+        var ext: String? = null,
         var binData: ByteArray? = null,
       )
       
@@ -68,8 +68,8 @@ fun Application.addUserProfilePhotoPostRoute() {
                 "name" -> {
                   if (it is PartData.FormItem) name = it.value
                 }
-                "mimeType" -> {
-                  if (it is PartData.FormItem) mimeType = it.value
+                "ext" -> {
+                  if (it is PartData.FormItem) ext = it.value
                 }
                 "binData" -> {
                   if (it is PartData.FileItem) binData = it.provider().toByteArray()
@@ -116,18 +116,18 @@ fun Application.addUserProfilePhotoPostRoute() {
               }
               .also {
                 if (it.length > 256) return@post call.respondInvalidBody(
-                  "Photo name max length must be 256 chars"
+                  "Photo name max length is 256 chars"
                 )
               },
-            mimeType
+            ext
               .let {
                 it ?: return@post call.respondInvalidBody(
-                  "Field 'mimeType' must exist and must be String"
+                  "Field 'ext' must exist and must be String"
                 )
               }
               .also {
-                if (!it.startsWith("image/")) return@post call.respondInvalidBody(
-                  "Photo mime-type must start with 'image/', but yours is '$it'"
+                if (it.length > 20) return@post call.respondInvalidBody(
+                  "Photo filename extension max length is 20 chars"
                 )
               },
             binData

@@ -3,11 +3,11 @@ package com.rrain.kupidon.route.routes.`app-api-v1`.user
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.model.db.UserDataType
 import com.rrain.kupidon.route.`convert-or-error`.toUuidOr400
-import com.rrain.kupidon.route.`response-errors`.respondBadRequest
+import com.rrain.kupidon.route.`response-errors`.respondNotFound
 import com.rrain.kupidon.service.mongo.findUserById
-import com.rrain.`util-ktor`.call.host
-import com.rrain.`util-ktor`.call.pathParams
-import com.rrain.`util-ktor`.call.port
+import com.rrain.util.ktor.call.host
+import com.rrain.util.ktor.call.pathParams
+import com.rrain.util.ktor.call.port
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -21,8 +21,7 @@ fun Application.addUserIdIdRoute() {
       
       val user = findUserById(userId)
       
-      // TODO respond 404
-      user ?: return@get call.respondBadRequest(
+      user ?: return@get call.respondNotFound(
         "NO_USER", "User with such id not found"
       )
       

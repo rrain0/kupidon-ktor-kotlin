@@ -10,8 +10,8 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collChatMessages
 import com.rrain.kupidon.model.db.ChatMessageM
 import com.rrain.kupidon.route.`convert-or-error`.toUuidOr400
-import com.rrain.`util-ktor`.call.queryParams
-import com.rrain.util.uuid.uuidComparator
+import com.rrain.util.ktor.call.queryParams
+import com.rrain.util.base.uuid.uuidComparator
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.*

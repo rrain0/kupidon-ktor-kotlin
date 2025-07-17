@@ -10,6 +10,6 @@ data class UserProfilePhotoM(
   var id: UUID,
   var index: Int,
   var name: String,
-  var mimeType: String,
+  var ext: String,
   var binData: Binary,
 )

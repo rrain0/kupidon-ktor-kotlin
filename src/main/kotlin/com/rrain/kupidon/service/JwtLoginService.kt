@@ -1,8 +1,8 @@
 package com.rrain.kupidon.service
 
 import com.rrain.kupidon.model.Role
-import com.rrain.util.`date-time`.now
-import com.rrain.util.uuid.randomUuid
+import com.rrain.util.base.`date-time`.now
+import com.rrain.util.base.uuid.randomUuid
 import java.util.UUID
 
 

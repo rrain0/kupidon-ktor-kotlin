@@ -6,7 +6,7 @@ import com.rrain.kupidon.route.`response-errors`.respondNoUserById
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.*
 import com.rrain.kupidon.service.mongo.findUserById
-import com.rrain.`util-ktor`.call.host
+import com.rrain.util.ktor.call.host
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.rrain.kupidon.service.AccessToken
 import com.rrain.kupidon.service.sessions.UserLiveStatusService
 import com.rrain.kupidon.service.sessions.UserStatus
-import com.rrain.util.any.cast
-import com.rrain.util.uuid.toUuid
+import com.rrain.util.base.any.cast
+import com.rrain.util.base.uuid.toUuid
 import io.ktor.serialization.WebsocketContentConverter
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*

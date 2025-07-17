@@ -20,8 +20,8 @@ import com.rrain.kupidon.model.db.ChatMessageM
 import com.rrain.kupidon.model.db.ChatM
 import com.rrain.kupidon.model.db.UserM
 import com.rrain.kupidon.model.db.projectionUserM
-import com.rrain.`util-ktor`.call.host
-import com.rrain.`util-ktor`.call.port
+import com.rrain.util.ktor.call.host
+import com.rrain.util.ktor.call.port
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.*

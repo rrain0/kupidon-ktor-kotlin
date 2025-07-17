@@ -1,8 +1,8 @@
 package com.rrain.kupidon.service
 
-import com.rrain.`util-ktor`.application.get
+import com.rrain.util.ktor.application.get
 import io.ktor.server.application.*
-import com.rrain.`util-ktor`.application.appConfig
+import com.rrain.util.ktor.application.appConfig
 import java.security.SecureRandom
 import java.security.spec.KeySpec
 import javax.crypto.SecretKey

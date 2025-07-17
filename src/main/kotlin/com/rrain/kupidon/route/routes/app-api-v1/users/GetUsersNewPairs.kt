@@ -14,9 +14,9 @@ import com.rrain.kupidon.model.db.UserToUserLikeM
 import com.rrain.kupidon.service.mongo.collUserToUserLikes
 import com.rrain.kupidon.model.db.ChatM
 import com.rrain.kupidon.model.db.UserM
-import com.rrain.`util-ktor`.call.host
-import com.rrain.`util-ktor`.call.port
-import com.rrain.util.print.println
+import com.rrain.util.ktor.call.host
+import com.rrain.util.ktor.call.port
+import com.rrain.util.base.print.println
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.*

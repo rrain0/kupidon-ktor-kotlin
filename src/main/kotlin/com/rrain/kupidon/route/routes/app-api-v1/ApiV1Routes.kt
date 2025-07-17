@@ -33,7 +33,8 @@ object ApiV1Routes {
   val userToUser = "$apiV1/user-to-user"
   val userToUserLike = "$userToUser/like"
   
-  val chatItem = "$apiV1/chat-item/id/{id}"
+  val chatItemIdId = "$apiV1/chat-item/id/{id}"
+  val chatItemToUserIdId = "$apiV1/chat-item/to-user-id/{id}"
   
   val chatItems = "$apiV1/chat-items"
   

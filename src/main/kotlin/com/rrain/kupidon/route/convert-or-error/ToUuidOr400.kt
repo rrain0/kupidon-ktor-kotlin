@@ -1,7 +1,7 @@
 package com.rrain.kupidon.route.`convert-or-error`
 
 import com.rrain.kupidon.route.`response-errors`.respondInvalidRequest
-import com.rrain.util.uuid.toUuid
+import com.rrain.util.base.uuid.toUuid
 import io.ktor.server.routing.RoutingContext
 import java.util.UUID
 

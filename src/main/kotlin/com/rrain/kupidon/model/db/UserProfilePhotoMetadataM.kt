@@ -12,7 +12,7 @@ data class UserProfilePhotoMetadataM(
   var id: UUID,
   var index: Int,
   var name: String,
-  var mimeType: String,
+  var ext: String,
 ) {
   
   fun getUrl(
@@ -24,11 +24,6 @@ data class UserProfilePhotoMetadataM(
     val userIdParam = ApiV1Routes.userProfilePhotoNameParams.userId
     val photoIdParam = ApiV1Routes.userProfilePhotoNameParams.photoId
     val photoId = it.id
-    // TODO save extension in db instead of mime type (maxLen = 20)
-    val extension = Regex("""[^/]+/(?<ext>[^/]+)""")
-      .matchEntire(mimeType)
-      ?.let { it.groups["ext"]?.value }
-    val extPart = extension?.let { ".$it" } ?: ""
     
     URLBuilder(
       protocol = URLProtocol.HTTPS,
@@ -40,7 +35,7 @@ data class UserProfilePhotoMetadataM(
         append(photoIdParam, photoId.toString())
       }
     )
-      .apply { path(path, "$name $id$extPart") }
+      .apply { path(path, "$name $id.$ext") }
       .build().toString()
   }
   
@@ -53,7 +48,7 @@ data class UserProfilePhotoMetadataM(
       "id" to id,
       "index" to index,
       "name" to name,
-      "mimeType" to mimeType,
+      "ext" to ext,
       "url" to getUrl(userId, host, port),
     )
   )

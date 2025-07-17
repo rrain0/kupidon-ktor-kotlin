@@ -11,8 +11,8 @@ import com.rrain.kupidon.model.db.ChatMessageContentM
 import com.rrain.kupidon.model.db.ChatMessageM
 import com.rrain.kupidon.route.`convert-or-error`.toUuidOr400
 import com.rrain.kupidon.service.mongo.mongoUniqueViolationRetry
-import com.rrain.`util-ktor`.call.pathParams
-import com.rrain.util.`date-time`.now
+import com.rrain.util.ktor.call.pathParams
+import com.rrain.util.base.`date-time`.now
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.*

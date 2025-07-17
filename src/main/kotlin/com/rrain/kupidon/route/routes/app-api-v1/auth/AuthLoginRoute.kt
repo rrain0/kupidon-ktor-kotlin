@@ -11,8 +11,8 @@ import com.rrain.kupidon.model.db.UserDataType
 import com.rrain.kupidon.model.db.UserM
 import com.rrain.kupidon.model.db.projectionUserM
 import com.rrain.kupidon.service.JwtLoginService
-import com.rrain.`util-ktor`.call.host
-import com.rrain.`util-ktor`.call.port
+import com.rrain.util.ktor.call.host
+import com.rrain.util.ktor.call.port
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*

@@ -7,7 +7,8 @@ import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.model.db.UserM
 import com.rrain.kupidon.model.db.UserProfilePhotoM
 import com.rrain.kupidon.route.`convert-or-error`.toUuidOr400
-import com.rrain.`util-ktor`.call.queryParams
+import com.rrain.util.ktor.call.queryParams
+import com.rrain.util.mime.extToMimeOrEmpty
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
@@ -46,7 +47,7 @@ fun Application.addUserProfilePhotoGetRoute() {
       // Unique images have unique URL so can be cached indefinitely
       call.caching = CachingOptions(CacheControl.MaxAge(maxAgeSeconds = Int.MAX_VALUE))
       call.respondBytes(
-        ContentType.parse(photo.mimeType),
+        ContentType.parse(photo.ext.extToMimeOrEmpty()),
         HttpStatusCode.OK,
         suspend { photo.binData.data }
       )

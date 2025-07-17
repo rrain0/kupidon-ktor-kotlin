@@ -34,21 +34,31 @@ suspend inline fun checkUserToUserLikeNotExists(
 }
 
 
+
 context(routingContext: RoutingContext)
-suspend inline fun checkUserToUserLikeExists(
+suspend inline fun checkUsersPairExists(
   fromUserId: UUID,
   toUserId: UUID,
-): UserToUserLikeM {
-  val foundLike = collUserToUserLikes
+) {
+  val toLike = collUserToUserLikes
     .find(filterUserToUserLike(fromUserId, toUserId))
     .firstOrNull()
   
-  foundLike ?: run {
+  toLike ?: run {
     routingContext.call.respondNotFound(
-      "NO_MUTUAL_LIKE", "You have no chat with this user and have no mutual like"
+      "NO_USERS_PAIR", "You have no pair with this user"
     )
     throw IllegalStateException()
   }
   
-  return foundLike
+  val fromLike = collUserToUserLikes
+    .find(filterUserToUserLike(toUserId, fromUserId))
+    .firstOrNull()
+  
+  fromLike ?: run {
+    routingContext.call.respondNotFound(
+      "NO_USERS_PAIR", "You have no pair with this user"
+    )
+    throw IllegalStateException()
+  }
 }

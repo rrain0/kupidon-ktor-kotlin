@@ -6,9 +6,9 @@ import com.rrain.kupidon.plugin.authUserId
 import com.rrain.kupidon.route.`convert-or-error`.toUuidOr400
 import com.rrain.kupidon.route.`response-errors`.respondNotFound
 import com.rrain.kupidon.service.mongo.findUserById
-import com.rrain.`util-ktor`.call.host
-import com.rrain.`util-ktor`.call.pathParams
-import com.rrain.`util-ktor`.call.port
+import com.rrain.util.ktor.call.host
+import com.rrain.util.ktor.call.pathParams
+import com.rrain.util.ktor.call.port
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.*

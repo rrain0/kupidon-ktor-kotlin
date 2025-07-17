@@ -4,8 +4,7 @@ import com.mongodb.kotlin.client.coroutine.FindFlow
 import com.rrain.kupidon.model.Gender
 import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.service.sessions.UserLiveStatusService
-import com.rrain.util.any.mapNull
-import com.rrain.util.`date-time`.getAge
+import com.rrain.util.base.`date-time`.getAge
 import kotlinx.datetime.Instant
 import org.bson.Document
 import kotlinx.datetime.LocalDate
@@ -63,6 +62,7 @@ data class UserM(
         "id" to id,
         "roles" to roles,
         "email" to email,
+        "pwd" to pwd, // hashed pwd
         // todo email verification
         //"emailVerified" to true,
         "createdAt" to createdAt,
@@ -74,7 +74,7 @@ data class UserM(
         "gender" to gender,
         "aboutMe" to aboutMe,
         "photos" to photos.map { it.toApi(id, host, port) },
-        //"lastStartOnlineAt" to
+        //"onlineAt" to
         "online" to UserLiveStatusService.isUserOnline(id),
       )
       UserDataType.Current -> mutableMapOf(
@@ -83,7 +83,6 @@ data class UserM(
         "email" to email,
         // todo email verification
         //"emailVerified" to true,
-        "pwd" to pwd, // hashed pwd
         "createdAt" to createdAt,
         "updatedAt" to updatedAt,
         "name" to name,
@@ -93,7 +92,7 @@ data class UserM(
         "gender" to gender,
         "aboutMe" to aboutMe,
         "photos" to photos.map { it.toApi(id, host, port) },
-        //"lastStartOnlineAt" to
+        //"onlineAt" to
         "online" to UserLiveStatusService.isUserOnline(id),
       )
       UserDataType.AcquaintanceShort -> mutableMapOf(

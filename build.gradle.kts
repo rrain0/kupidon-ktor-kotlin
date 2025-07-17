@@ -99,6 +99,6 @@ dependencies {
   implementation("io.ktor:ktor-server-call-logging")
   
   // Mail sending
-  val apacheEmail = "1.6.0"
-  implementation("org.apache.commons:commons-email:$apacheEmail")
+  val apacheEmailV = "1.6.0"
+  implementation("org.apache.commons:commons-email:$apacheEmailV")
 }

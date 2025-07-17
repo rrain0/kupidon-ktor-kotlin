@@ -1,7 +1,8 @@
 package com.rrain.kupidon.plugin
 
 import com.rrain.kupidon.route.routes.`app-api-v1`.auth.addAuthOtherRoutes
-import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-item`.addRouteGetChatItem
+import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-item`.addRouteGetChatItemIdId
+import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-item`.addRouteGetChatItemToUserIdId
 import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`.addRoutePostChatMessageToChatIdId
 import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-message`.addRoutePostChatMessageToUserIdId
 import com.rrain.kupidon.route.routes.`app-api-v1`.`chat-messages`.addRouteGetChatMessages
@@ -23,6 +24,7 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.users.addRouteGetUsers
 import com.rrain.kupidon.route.routes.app.api.v1.auth.addAuthLoginRoute
 import com.rrain.kupidon.route.routes.app.api.v1.auth.addAuthRefreshTokensRoute
 import io.ktor.server.application.*
+
 
 
 
@@ -58,7 +60,8 @@ fun Application.configureHttpRouting() {
   addRouteGetUsers()
   addRouteGetUsersNewPairs()
   
-  addRouteGetChatItem() // TODO
+  addRouteGetChatItemIdId()
+  addRouteGetChatItemToUserIdId()
   addRouteGetChatItems()
   
   addRoutePostChatMessageToUserIdId()

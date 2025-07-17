@@ -7,9 +7,9 @@ import com.rrain.kupidon.model.db.ChatMessageM
 import com.rrain.kupidon.model.db.ChatM
 import com.rrain.kupidon.model.db.UserM
 import com.rrain.kupidon.model.db.UserToUserLikeM
-import com.rrain.`util-bson`.appBsonCodecRegistry
-import com.rrain.`util-ktor`.application.appConfig
-import com.rrain.`util-ktor`.application.get
+import com.rrain.util.bson.appBsonCodecRegistry
+import com.rrain.util.ktor.application.appConfig
+import com.rrain.util.ktor.application.get
 import io.ktor.http.*
 import io.ktor.server.application.*
 import org.bson.UuidRepresentation

@@ -4,7 +4,6 @@ import com.rrain.kupidon.model.ChatType
 import com.rrain.kupidon.plugin.authUserId
 import com.rrain.kupidon.route.`check-data`.checkFromUserExists
 import com.rrain.kupidon.route.`check-data`.checkToUserExists
-import com.rrain.kupidon.route.`check-data`.checkUserToUserLikeExists
 import com.rrain.kupidon.route.`check-data`.filterNone
 import com.rrain.kupidon.route.`check-data`.filterPersonalChats
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
@@ -15,11 +14,12 @@ import com.rrain.kupidon.service.mongo.findOneOrInsert
 import com.rrain.kupidon.model.db.ChatMessageContentM
 import com.rrain.kupidon.model.db.ChatMessageM
 import com.rrain.kupidon.model.db.ChatM
+import com.rrain.kupidon.route.`check-data`.checkUsersPairExists
 import com.rrain.kupidon.route.`convert-or-error`.toUuidOr400
 import com.rrain.kupidon.service.mongo.mongoUniqueViolationRetry
-import com.rrain.`util-ktor`.call.pathParams
-import com.rrain.util.`date-time`.now
-import com.rrain.util.uuid.uuidComparator
+import com.rrain.util.ktor.call.pathParams
+import com.rrain.util.base.`date-time`.now
+import com.rrain.util.base.uuid.uuidComparator
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.*
@@ -62,7 +62,7 @@ fun Application.addRoutePostChatMessageToUserIdId() {
         
         if (foundChat != null) chat = foundChat
         else {
-          checkUserToUserLikeExists(userId, toUserId)
+          checkUsersPairExists(userId, toUserId)
           checkToUserExists(toUserId)
           checkFromUserExists(userId)
           
