@@ -4,7 +4,6 @@ import com.rrain.util.base.any.mapNull
 import com.rrain.util.base.any.maxOf
 import com.rrain.util.base.collections.concurrentMapOf
 import com.rrain.util.base.collections.concurrentSetOf
-import com.rrain.util.base.`date-time`.now
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 import kotlinx.datetime.Instant
 import java.util.UUID
@@ -35,6 +34,15 @@ typealias WsSession = DefaultWebSocketServerSession
  */
 
 
+private val userIdToUserStatus: MutableMap<UserId, UserStatus> = concurrentMapOf()
+private val userIdToSessions: MutableMap<UserId, MutableSet<SessionStatus>> = concurrentMapOf()
+
+private val sessionIdToSessionStatus: MutableMap<SessionId, SessionStatus> = concurrentMapOf()
+private val sessionIdToWsSessions: MutableMap<SessionId, MutableSet<WsSession>> = concurrentMapOf()
+
+private val wsSessionToWsStatus: MutableMap<WsSession, WsStatus> = concurrentMapOf()
+
+/*
 private val userStatus: MutableMap<UserId, UserStatus> = concurrentMapOf()
 private val onlineUsers: MutableSet<UserId> = concurrentSetOf()
 private val sessionToUser: MutableMap<SessionId, UserId> = concurrentMapOf()
@@ -45,6 +53,7 @@ private val wsSessionToSessions: MutableMap<WsSession, MutableSet<SessionId>> = 
 
 val userOnlineChanges: MutableMap<UserId, UserOnline> = concurrentMapOf()
 val sessionOnlineChanges: MutableMap<SessionId, SessionOnline> = concurrentMapOf()
+*/
 
 
 
@@ -54,7 +63,7 @@ object UserLiveOnline {
     block(UserLiveOnline)
   )
   
-  
+  /*
   fun getUser(id: UserId) = userStatus[id]
   fun isUserOnline(id: UserId) = getUser(id)?.online.mapNull { false }
   
@@ -65,7 +74,7 @@ object UserLiveOnline {
   
   
   fun getOrAddUserById(userId: UserId) = getOrAddUser(UserStatus(userId))
-  
+   */
   
   /* fun onlineUserSession(
     userId: UserId,
@@ -113,60 +122,47 @@ private val Srv = UserLiveOnline
 
 
 
-data class UserOnline(
-  val online: Boolean = false,
-  val onlineAt: Instant? = null,
-)
-data class SessionOnline(
-  val expiresAt: Instant? = null,
-  val online: Boolean = false,
-  val onlineAt: Instant? = null,
-)
-data class WsOnline(
-  val online: Boolean = false,
-  val onlineAt: Instant? = null,
-)
 
 
-data class WsUpdate(
-  val active: Boolean? = null,
+data class UserCurr(
+  val online: Boolean = false,
+  val onlineAt: Instant? = null,
+)
+data class UserUpdate(
   val online: Boolean? = null,
   val onlineAt: Instant? = null,
 )
-data class WsCurr(
-  val active: Boolean = false,
-  val online: Boolean = false,
-  val onlineAt: Instant? = null,
+data class UserCurrUpdate(
+  var online: Boolean = false,
+  var onlineAt: Instant? = null,
 )
-
-
 
 
 class UserStatus(
   val id: UserId,
-  @Volatile var online: UserOnline = UserOnline(),
+  @Volatile var status: UserCurr = UserCurr(),
 ) {
-  val sessions: MutableMap<SessionId, SessionStatus> = concurrentMapOf()
+  val sessions get() = userIdToSessions[id] ?: setOf()
   
   fun update() {
-    val changed = online.let { curr ->
-      val upd = object {
-        var online = false
-        var onlineAt = curr.onlineAt
-      }
-      sessions.values.forEach { it -> it.online.let { part ->
-        upd.online = upd.online || part.online
-        upd.onlineAt = maxOf(upd.onlineAt, part.onlineAt)
-      } }
-      
-      val next = UserOnline(upd.online, upd.onlineAt)
-      online = next
-      
-      if (next.online != curr.online) true
-      else if (!next.online && next.onlineAt != curr.onlineAt) true
-      else false
-    }
+    val curr = status
+    val upd = UserCurrUpdate(false, curr.onlineAt)
+    sessions.forEach { it -> it.status.let { part ->
+      upd.online = upd.online || part.online
+      upd.onlineAt = maxOf(upd.onlineAt, part.onlineAt)
+    } }
+    // TODO check expiration
+    //if (curr.expiresAt?.isExpired() ?: false) upd.online = false
+    
+    val next = UserCurr(upd.online, upd.onlineAt)
+    status = next
+    
+    var changed = false
+    if (next.online != curr.online) changed = true
+    if (next.online == false && next.onlineAt != curr.onlineAt) changed = true
+    
     if (changed) {
+      // TODO update user
       // TODO push updates somewhere
       removeIfUnused()
     }
@@ -182,32 +178,50 @@ class UserStatus(
 }
 
 
+
+data class SessionCurr(
+  val expiresAt: Instant? = null,
+  val online: Boolean = false,
+  val onlineAt: Instant? = null,
+)
+data class SessionUpdate(
+  val expiresAt: Instant? = null,
+  val online: Boolean? = null,
+  val onlineAt: Instant? = null,
+)
+data class SessionCurrUpdate(
+  var expiresAt: Instant? = null,
+  var online: Boolean = false,
+  var onlineAt: Instant? = null,
+)
+
+
 class SessionStatus(
   val id: SessionId,
-  @Volatile var online: SessionOnline = SessionOnline(),
+  @Volatile var status: SessionCurr = SessionCurr(),
 ) {
-  val wsSessions: MutableMap<WsSession, WsStatus> = concurrentMapOf()
+  
+  val wsSessions get() = sessionIdToWsSessions[id]
+    ?.mapNotNull { wsSessionToWsStatus[it] }
+    ?: listOf()
   
   fun update() {
-    val changed = online.let { curr ->
-      val upd = object {
-        var online = false
-        var onlineAt = curr.onlineAt
-      }
-      wsSessions.values.forEach { it -> it.online.let { part ->
-        upd.online = upd.online || part.online
-        upd.onlineAt = maxOf(upd.onlineAt, part.onlineAt)
-      } }
-      // TODO check expiration
-      //if (curr.expiresAt?.isExpired() ?: false) upd.online = false
-      
-      val next = SessionOnline(curr.expiresAt, upd.online, upd.onlineAt)
-      online = next
-      
-      if (next.online != curr.online) true
-      else if (!next.online && next.onlineAt != curr.onlineAt) true
-      else false
-    }
+    val curr = status
+    val upd = SessionCurrUpdate(curr.expiresAt, false, curr.onlineAt)
+    wsSessions.forEach { it -> it.status.let { part ->
+      upd.online = upd.online || part.online
+      upd.onlineAt = maxOf(upd.onlineAt, part.onlineAt)
+    } }
+    // TODO check expiration
+    //if (curr.expiresAt?.isExpired() ?: false) upd.online = false
+    
+    val next = SessionCurr(upd.expiresAt, upd.online, upd.onlineAt)
+    status = next
+    
+    var changed = false
+    if (next.online != curr.online) changed = true
+    if (next.online == false && next.onlineAt != curr.onlineAt) changed = true
+    
     if (changed) {
       // TODO update user
       // TODO push updates somewhere
@@ -225,24 +239,40 @@ class SessionStatus(
 }
 
 
+
+data class WsCurr(
+  val active: Boolean = false,
+  val online: Boolean = false,
+  val onlineAt: Instant? = null,
+)
+data class WsUpdate(
+  val active: Boolean? = null,
+  val online: Boolean? = null,
+  val onlineAt: Instant? = null,
+)
+data class WsCurrUpdate(
+  var active: Boolean = false,
+  var online: Boolean = false,
+  var onlineAt: Instant? = null,
+)
+
+
 class WsStatus(
   val wsSession: WsSession,
-  @Volatile var active: Boolean = false,
-  @Volatile var online: WsOnline = WsOnline(),
+  @Volatile var status: WsCurr = WsCurr(),
 ) {
   
-  fun update(upd: WsUpdate) {
-    val curr = WsCurr(active, online.online, online.onlineAt)
-    val next = WsCurr(
-      upd.active ?: curr.active,
-      upd.online ?: curr.online,
-      upd.onlineAt ?: curr.onlineAt,
+  fun update(update: WsUpdate) {
+    val curr = status
+    val upd = WsCurrUpdate(
+      update.active ?: curr.active,
+      update.online ?: curr.online,
+      update.onlineAt ?: curr.onlineAt,
     )
+    val next = WsCurr(upd.active, upd.online, upd.onlineAt)
+    status = next
+    
     var changed = false
-    
-    active = next.active
-    online = WsOnline(next.online, next.onlineAt)
-    
     if (next.active != curr.active) changed = true
     if (next.online != curr.online) changed = true
     if (next.online == false && next.onlineAt != curr.onlineAt) changed = true
@@ -254,17 +284,17 @@ class WsStatus(
     }
   }
   
-  // This is just shortcut
+  // This is just a shortcut
   fun online(onlineAt: Instant) {
     update(WsUpdate(online = true, onlineAt = onlineAt))
   }
   
-  // This is just shortcut
+  // This is just a shortcut
   fun offline(onlineAt: Instant? = null) {
     update(WsUpdate(online = false, onlineAt = onlineAt))
   }
   
-  val unused get() = !active
+  val unused get() = !status.active
   
   fun removeIfUnused() {
     if (unused) {
