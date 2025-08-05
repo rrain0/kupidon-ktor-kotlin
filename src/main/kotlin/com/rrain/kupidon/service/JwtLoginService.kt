@@ -23,10 +23,10 @@ object JwtLoginService {
     val sessionId = prevSessionId ?: randomUuid()
     val now = now()
     val accessToken = JwtService.newAccessToken(
-      userId.toString(), userRoles, sessionId.toString(), now
+      userId, userRoles, sessionId, now
     )
     val refreshToken = JwtService.newRefreshToken(
-      userId.toString(), sessionId.toString(), now
+      userId, sessionId, now
     )
     return SessionData(sessionId, accessToken.token, refreshToken.token)
   }

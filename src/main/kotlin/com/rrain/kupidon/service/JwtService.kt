@@ -50,7 +50,7 @@ fun generateCustomAccessToken(): AccessToken {
     emailVerifyAccessTokenLifetime = Duration.parse("1d"),
   )
   return JwtService.newAccessToken(
-    "USER_ID", setOf(), randomUUID().toString(), now(),
+    randomUUID(), setOf(), randomUUID(), now(),
   )
 }
 
@@ -103,9 +103,9 @@ object JwtService {
   
   
   fun newAccessToken(
-    id: String,
+    id: UUID,
     roles: Set<Role>,
-    sessionId: String,
+    sessionId: UUID,
     now: Instant,
   ): AccessToken {
     val secret = config.accessTokenSecret
@@ -118,14 +118,14 @@ object JwtService {
       // Determines when token will expire
       .withExpiresAt(expiresAt.toJavaInstant())
       // Identifies the principal (user, entity) the JWT represents, e.g., "user123"
-      .withSubject(id)
+      .withSubject(id.toString())
       // Specifies the intended recipient(s) of the JWT, e.g., "api.example.com"
       //.withAudience(accessJwt.audience)
       // Who issued the token (source)
       //.withIssuer(accessJwt.issuer)
       // Some additional optional parameter
       //.withClaim("realm", realm)
-      .withClaim("sessionId", sessionId)
+      .withClaim("sessionId", sessionId.toString())
       .withClaim("sessionExpiresAt", sessionExpiresAt.toJavaInstant())
       .withClaim("roles", roles.map { it.toString() })
       //.withClaim("test", "1")
@@ -148,8 +148,8 @@ object JwtService {
   
   
   fun newRefreshToken(
-    id: String,
-    sessionId: String,
+    id: UUID,
+    sessionId: UUID,
     now: Instant,
   ): RefreshToken {
     val secret = config.refreshTokenSecret
@@ -160,8 +160,8 @@ object JwtService {
     
     val refreshToken = JWT.create()
       .withExpiresAt(expiresAt.toJavaInstant())
-      .withSubject(id)
-      .withClaim("sessionId", sessionId)
+      .withSubject(id.toString())
+      .withClaim("sessionId", sessionId.toString())
       .withClaim("sessionExpiresAt", sessionExpiresAt.toJavaInstant())
       //.withClaim("test", "1")
       .sign(config.buildAlgorithm(secret))

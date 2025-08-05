@@ -11,6 +11,7 @@ import com.rrain.kupidon.service.configurePwdHashService
 import com.rrain.kupidon.service.mongo.configureMongoDbService
 
 
+
 fun main(args: Array<String>) {
   io.ktor.server.jetty.jakarta.EngineMain.main(args)
 }

@@ -1,9 +1,9 @@
-package com.rrain.kupidon.service.live
+package com.rrain.kupidon.service.live2
 
-import com.rrain.util.base.any.mapNull
 import com.rrain.util.base.any.maxOf
 import com.rrain.util.base.collections.concurrentMapOf
 import com.rrain.util.base.collections.concurrentSetOf
+import com.rrain.util.base.`date-time`.now
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 import kotlinx.datetime.Instant
 import java.util.UUID
@@ -24,23 +24,29 @@ typealias WsSession = DefaultWebSocketServerSession
 // При изменении сущности изменения должны сразу распространяться вверх и проверяться, нужно ли её удалить.
 // При удалении сущности верхние сущности должны сразу проверяться на то, могут ли быть удалены и удаляться.
 /*
-  User
+  User:
     Может иметь несколько сессий (разные браузерные контексты (обычное окно, приватное окно)).
-  Session
+  Session:
     Принадлежит только одному юзеру.
     Может иметь несколько вебсокет соединений (2 вкладки с ws в каждой в одном браузерном контексте).
-  Web socket соединение / сессия
+  Web socket соединение / сессия:
     Через него могут общаться несколько сессий (мультиаккаунтность).
+ */
+/*
+  user     1<--M  session
+  guest    1<--1  session
+  session  M<--M  wsSession
  */
 
 
 private val userIdToUserStatus: MutableMap<UserId, UserStatus> = concurrentMapOf()
-private val userIdToSessions: MutableMap<UserId, MutableSet<SessionStatus>> = concurrentMapOf()
+private val userIdToSessions: MutableMap<UserId, MutableSet<SessionId>> = concurrentMapOf()
 
 private val sessionIdToSessionStatus: MutableMap<SessionId, SessionStatus> = concurrentMapOf()
 private val sessionIdToWsSessions: MutableMap<SessionId, MutableSet<WsSession>> = concurrentMapOf()
 
 private val wsSessionToWsStatus: MutableMap<WsSession, WsStatus> = concurrentMapOf()
+private val wsSessionToSessions: MutableMap<WsSession, MutableSet<SessionId>> = concurrentMapOf()
 
 /*
 private val userStatus: MutableMap<UserId, UserStatus> = concurrentMapOf()
@@ -56,6 +62,50 @@ val sessionOnlineChanges: MutableMap<SessionId, SessionOnline> = concurrentMapOf
 */
 
 
+private fun getUser(id: UserId) = userIdToUserStatus[id]
+private fun isUserOnline(id: UserId) = getUser(id)?.status?.online ?: false
+
+private fun getOrAddUser(id: UserId) = userIdToUserStatus
+  .getOrPut(id) { UserStatus(id) }
+
+private fun getUserBySessionId(id: SessionId) = sessionIdToSessionStatus[id]
+  ?.userId
+  ?.let { userIdToUserStatus[it] }
+
+
+private fun getOrAddSession(userId: UserId, id: SessionId) = sessionIdToSessionStatus
+  .getOrPut(id) { SessionStatus(userId, id) }
+  .also {
+    userIdToSessions
+      .getOrPut(userId) { concurrentSetOf() }
+      .add(id)
+  }
+
+private fun getSessionsByUserId(id: UserId) = userIdToSessions[id]
+  ?.mapNotNull { sessionIdToSessionStatus[it] }
+  ?: listOf()
+
+private fun getSessionsByWsSession(wsSession: WsSession) = wsSessionToSessions[wsSession]
+  ?.mapNotNull { sessionIdToSessionStatus[it] }
+  ?: listOf()
+
+
+private fun getOrAddWsSession(
+  sessionId: SessionId,
+  wsSession: WsSession,
+) = wsSessionToWsStatus
+  .getOrPut(wsSession) { WsStatus(wsSession) }
+  .also {
+    sessionIdToWsSessions
+      .getOrPut(sessionId) { concurrentSetOf() }
+      .add(wsSession)
+  }
+
+private fun getWsSessionsBySessionId(id: SessionId) = sessionIdToWsSessions[id]
+  ?.mapNotNull { wsSessionToWsStatus[it] }
+  ?: listOf()
+
+
 
 object UserLiveOnline {
   
@@ -63,18 +113,21 @@ object UserLiveOnline {
     block(UserLiveOnline)
   )
   
-  /*
-  fun getUser(id: UserId) = userStatus[id]
-  fun isUserOnline(id: UserId) = getUser(id)?.online.mapNull { false }
-  
-  fun getOrAddUser(userToAdd: UserStatus) = userStatus.getOrPut(userToAdd.id) { userToAdd }
-  
-  fun getUserBySession(id: SessionId) = sessionToUser[id]?.let { userStatus[it] }
-  fun getWsSessionBySession(id: SessionId) = sessionToWsSessions[id]
-  
-  
-  fun getOrAddUserById(userId: UserId) = getOrAddUser(UserStatus(userId))
-   */
+  fun onlineSession(
+    userId: UserId,
+    sessionId: SessionId,
+    expiresAt: Instant,
+    wsSession: WsSession,
+    now: Instant = now(),
+  ) {
+    getOrAddUser(userId)
+    getOrAddSession(userId, sessionId).apply {
+      status = status.copy(expiresAt = expiresAt)
+    }
+    getOrAddWsSession(sessionId, wsSession).apply {
+      update(WsUpdate(true, true, now))
+    }
+  }
   
   /* fun onlineUserSession(
     userId: UserId,
@@ -142,12 +195,11 @@ class UserStatus(
   val id: UserId,
   @Volatile var status: UserCurr = UserCurr(),
 ) {
-  val sessions get() = userIdToSessions[id] ?: setOf()
   
   fun update() {
     val curr = status
     val upd = UserCurrUpdate(false, curr.onlineAt)
-    sessions.forEach { it -> it.status.let { part ->
+    getSessionsByUserId(id).forEach { it -> it.status.let { part ->
       upd.online = upd.online || part.online
       upd.onlineAt = maxOf(upd.onlineAt, part.onlineAt)
     } }
@@ -168,7 +220,7 @@ class UserStatus(
     }
   }
   
-  val unused get() = sessions.isEmpty()
+  val unused get() = getSessionsByUserId(id).isEmpty()
   
   fun removeIfUnused() {
     if (unused) {
@@ -197,18 +249,15 @@ data class SessionCurrUpdate(
 
 
 class SessionStatus(
+  val userId: UserId,
   val id: SessionId,
   @Volatile var status: SessionCurr = SessionCurr(),
 ) {
   
-  val wsSessions get() = sessionIdToWsSessions[id]
-    ?.mapNotNull { wsSessionToWsStatus[it] }
-    ?: listOf()
-  
   fun update() {
     val curr = status
     val upd = SessionCurrUpdate(curr.expiresAt, false, curr.onlineAt)
-    wsSessions.forEach { it -> it.status.let { part ->
+    getWsSessionsBySessionId(id).forEach { it -> it.status.let { part ->
       upd.online = upd.online || part.online
       upd.onlineAt = maxOf(upd.onlineAt, part.onlineAt)
     } }
@@ -229,7 +278,7 @@ class SessionStatus(
     }
   }
   
-  val unused get() = wsSessions.isEmpty()
+  val unused get() = getWsSessionsBySessionId(id).isEmpty()
   
   fun removeIfUnused() {
     if (unused) {
@@ -278,20 +327,10 @@ class WsStatus(
     if (next.online == false && next.onlineAt != curr.onlineAt) changed = true
     
     if (changed) {
-      // TODO update session
+      getSessionsByWsSession(wsSession).forEach { it.update() }
       // TODO push updates somewhere
       removeIfUnused()
     }
-  }
-  
-  // This is just a shortcut
-  fun online(onlineAt: Instant) {
-    update(WsUpdate(online = true, onlineAt = onlineAt))
-  }
-  
-  // This is just a shortcut
-  fun offline(onlineAt: Instant? = null) {
-    update(WsUpdate(online = false, onlineAt = onlineAt))
   }
   
   val unused get() = !status.active
