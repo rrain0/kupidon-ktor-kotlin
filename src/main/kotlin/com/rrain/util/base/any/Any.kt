@@ -1,6 +1,6 @@
 package com.rrain.util.base.any
 
-import com.rrain.util.base.bool.asBool
+import com.rrain.util.base.bool.bool
 
 
 inline fun <reified T> Any?.cast(): T = this as T
@@ -14,7 +14,7 @@ inline fun <T : Any?> T.mapNull(block: () -> T & Any): T & Any {
 
 // Maps value by block if it casts to true
 inline fun <T : Any?> T.mapTruly(block: (it: T) -> T): T {
-  return if (this.asBool) block(this) else this
+  return if (this.bool) block(this) else this
 }
 
 

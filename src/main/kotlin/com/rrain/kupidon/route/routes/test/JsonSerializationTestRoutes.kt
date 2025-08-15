@@ -76,7 +76,7 @@ fun Application.addJsonSerializationTestRoutes() {
     
     data class TestDataByMap(
       val map: MutableMap<String,Any?>,
-    ){
+    ) {
       val intProp: Int by map
       val boolProp: Boolean by map
       val doubleProp: Double by map
@@ -105,7 +105,7 @@ fun Application.addJsonSerializationTestRoutes() {
       val name: String,
       val code: String,
     )
-    post("/test/json/dynamic-object"){
+    post("/test/json/dynamic-object") {
       val rootObj = call.receive<JsonNode>()
       
       println("intProp asString: ${rootObj["intProp"].asText()}") // 5
@@ -125,7 +125,7 @@ fun Application.addJsonSerializationTestRoutes() {
       var dynamicArray: List<NameCode> = listOf()
       if (rootObj.has("dynamicArray") &&
         rootObj["dynamicArray"].isArray
-      ){
+      ) {
         dynamicArray = rootObj["dynamicArray"]
           .filter { it.has("name") && it.has("code") }
           .map { JacksonObjectMapper.treeToValue<NameCode>(it) }

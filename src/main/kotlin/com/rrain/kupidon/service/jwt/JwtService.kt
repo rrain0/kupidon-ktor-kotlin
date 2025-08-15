@@ -1,4 +1,4 @@
-package com.rrain.kupidon.service
+package com.rrain.kupidon.service.jwt
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
@@ -6,8 +6,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.route.`response-errors`.CodeMsg
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
-import com.rrain.util.ktor.application.get
-import com.rrain.util.ktor.application.appConfig
+import com.rrain.kupidon.service.env.Env
 import com.rrain.util.base.`date-time`.now
 import com.rrain.util.base.uuid.toUuid
 import io.ktor.http.*
@@ -60,14 +59,13 @@ fun generateCustomAccessToken(): AccessToken {
 fun Application.configureJwtService() {
   
   JwtService.config = JwtService.Config(
-    accessTokenSecret = appConfig["jwt.access-token.secret"],
-    accessTokenLifetime = appConfig["jwt.access-token.lifetime"].run(Duration::parse),
+    accessTokenSecret = Env.accessTokenSecret,
+    accessTokenLifetime = Env.accessTokenLifetime,
     
-    refreshTokenSecret = appConfig["jwt.refresh-token.secret"],
-    refreshTokenLifetime = appConfig["jwt.refresh-token.lifetime"].run(Duration::parse),
+    refreshTokenSecret = Env.refreshTokenSecret,
+    refreshTokenLifetime = Env.refreshTokenLifetime,
     
-    emailVerifyAccessTokenLifetime =
-      appConfig["jwt.email-verify-access-token.lifetime"].run(Duration::parse),
+    emailVerifyAccessTokenLifetime = Env.emailVerifyAccessTokenLifetime,
   )
   
 }

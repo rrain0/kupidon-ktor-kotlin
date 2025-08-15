@@ -1,7 +1,6 @@
-package com.rrain.kupidon.service
+package com.rrain.kupidon.service.email
 
-import com.rrain.util.ktor.application.appConfig
-import com.rrain.util.ktor.application.get
+import com.rrain.kupidon.service.env.Env
 import io.ktor.server.application.*
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.HtmlEmail
@@ -10,11 +9,11 @@ import java.nio.charset.StandardCharsets
 
 
 
-fun Application.configureEmailService(){
+fun Application.configureEmailService() {
   
   EmailService.config = EmailService.Config(
-    fromEmail = appConfig["mail.email"],
-    fromPwd = appConfig["mail.pwd"],
+    fromEmail = Env.mailEmail,
+    fromPwd = Env.mailPwd,
   )
   
 }
@@ -34,7 +33,7 @@ object EmailService {
   // https://commons.apache.org/proper/commons-email/userguide.html
   
   
-  fun sendEmail(emailMessage: EmailMessage){
+  fun sendEmail(emailMessage: EmailMessage) {
     SimpleEmail().run {
       hostName = "smtp.yandex.ru"
       setSmtpPort(465)
@@ -49,7 +48,7 @@ object EmailService {
   }
   
   
-  fun sendHtmlEmail(emailMessage: EmailMessage){
+  fun sendHtmlEmail(emailMessage: EmailMessage) {
     HtmlEmail().run {
       hostName = "smtp.yandex.ru"
       setSmtpPort(465)

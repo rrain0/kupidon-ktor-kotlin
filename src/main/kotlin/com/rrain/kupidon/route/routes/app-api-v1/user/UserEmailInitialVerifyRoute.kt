@@ -33,7 +33,7 @@ fun Application.addUserEmailInitialVerifyRoute() {
       val verifier = JwtService.emailValidationAccessTokenVerifier
       val decodedJwt = try { verifier.verify(verificationToken) }
       // Token was encoded by wrong algorithm. Required HMAC256.
-      catch (ex: AlgorithmMismatchException){
+      catch (ex: AlgorithmMismatchException) {
         return@get call.respondText(
           status = HttpStatusCode.BadRequest,
           text = getHtmlResponse("Ошибка! Токен верификации закодирован неперавильным алгоритмом"),
@@ -41,7 +41,7 @@ fun Application.addUserEmailInitialVerifyRoute() {
         )
       }
       // Damaged Token - Токен повреждён и не может быть декодирован
-      catch (ex: JWTDecodeException){
+      catch (ex: JWTDecodeException) {
         return@get call.respondText(
           status = HttpStatusCode.BadRequest,
           text = getHtmlResponse("Ошибка! Токен верификации повреждён"),
@@ -49,7 +49,7 @@ fun Application.addUserEmailInitialVerifyRoute() {
         )
       }
       // Modified Token - Токен модифицирован (подделан)
-      catch (ex: SignatureVerificationException){
+      catch (ex: SignatureVerificationException) {
         return@get call.respondText(
           status = HttpStatusCode.BadRequest,
           text = getHtmlResponse("Ошибка! Токен верификации модифицирован (подделан)"),
@@ -57,7 +57,7 @@ fun Application.addUserEmailInitialVerifyRoute() {
         )
       }
       // Token has expired
-      catch (ex: TokenExpiredException){
+      catch (ex: TokenExpiredException) {
         return@get call.respondText(
           status = HttpStatusCode.BadRequest,
           text = getHtmlResponse("Ошибка! Токен верификации устарел"),
@@ -65,7 +65,7 @@ fun Application.addUserEmailInitialVerifyRoute() {
         )
       }
       // Token lacks some required claims
-      catch (ex: MissingClaimException){
+      catch (ex: MissingClaimException) {
         return@get call.respondText(
           status = HttpStatusCode.BadRequest,
           text = getHtmlResponse("Ошибка! Токен не является токеном верификации"),
@@ -73,7 +73,7 @@ fun Application.addUserEmailInitialVerifyRoute() {
         )
       }
       // Token claim value is incorrect
-      catch (ex: IncorrectClaimException){
+      catch (ex: IncorrectClaimException) {
         return@get call.respondText(
           status = HttpStatusCode.BadRequest,
           text = getHtmlResponse("Ошибка! Токен не является токеном верификации"),
@@ -96,7 +96,7 @@ fun Application.addUserEmailInitialVerifyRoute() {
       conn.use {
         val user = userServ.getById(decodedJwt.subject, conn)
         // пользователь не найден
-        if (user==null){
+        if (user==null) {
           return@get call.respondText(
             status = HttpStatusCode.BadRequest,
             text = getHtmlResponse("Ошибка! Пользователь с таким id не найден"),
@@ -104,7 +104,7 @@ fun Application.addUserEmailInitialVerifyRoute() {
           )
         }
         // пользователь найден, но у него другой имэйл
-        if (user.email != decodedJwt.claims["email"]!!.asString()){
+        if (user.email != decodedJwt.claims["email"]!!.asString()) {
           return@get call.respondText(
             status = HttpStatusCode.BadRequest,
             text = getHtmlResponse("Ошибка! Данный токен верификации предназначен для другого email"),
@@ -112,7 +112,7 @@ fun Application.addUserEmailInitialVerifyRoute() {
           )
         }
         // пользователь найден, но имэйл уже верифицирован
-        if (user.emailVerified!!){
+        if (user.emailVerified!!) {
           return@get call.respondText(
             status = HttpStatusCode.OK,
             text = getHtmlResponse("Успешно завершено! Ваш email уже был подтверждён ранее"),

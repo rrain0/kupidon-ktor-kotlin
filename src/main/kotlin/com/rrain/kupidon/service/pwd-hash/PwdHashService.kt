@@ -1,8 +1,7 @@
-package com.rrain.kupidon.service
+package com.rrain.kupidon.service.`pwd-hash`
 
-import com.rrain.util.ktor.application.get
+import com.rrain.kupidon.service.env.Env
 import io.ktor.server.application.*
-import com.rrain.util.ktor.application.appConfig
 import java.security.SecureRandom
 import java.security.spec.KeySpec
 import javax.crypto.SecretKey
@@ -51,10 +50,10 @@ fun Application.configurePwdHashService() {
   
   PwdHashService.run {
     config = PwdHashService.Config(
-      algorithm = appConfig["db.user-pwd-hashing.algorithm"],
-      secret = appConfig["db.user-pwd-hashing.secret"],
-      iterations = appConfig["db.user-pwd-hashing.iterations"].toInt(),
-      hashLen = appConfig["db.user-pwd-hashing.hash-len"].toInt(),
+      algorithm = Env.dbUserPwdHashingAlgorithm,
+      secret = Env.dbUserPwdHashingSecret,
+      iterations = Env.dbUserPwdHashingIterations,
+      hashLen = Env.dbUserPwdHashingHashLen,
     )
   }
 }
@@ -70,7 +69,7 @@ object PwdHashService {
     val hashLen: Int,
   )
   
-  lateinit var config: PwdHashService.Config
+  lateinit var config: Config
   
   fun generateHash(pwd: String): String {
     val combinedSalt: ByteArray = "${config.secret}".toByteArray(Charsets.UTF_8)

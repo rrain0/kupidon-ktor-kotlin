@@ -31,7 +31,7 @@ fun main() {
 
 
 
-class DataUrl(dataUrl: String){
+class DataUrl(dataUrl: String) {
   val props: List<String>
   val data: String
   

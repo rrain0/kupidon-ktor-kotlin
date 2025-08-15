@@ -5,9 +5,9 @@ import com.rrain.kupidon.plugin.*
 import com.rrain.kupidon.plugin.configureJsonSerialization
 import com.rrain.kupidon.plugin.configureStatusPages
 import com.rrain.kupidon.plugin.configureWebSocketRouting
-import com.rrain.kupidon.service.configureEmailService
-import com.rrain.kupidon.service.configureJwtService
-import com.rrain.kupidon.service.configurePwdHashService
+import com.rrain.kupidon.service.email.configureEmailService
+import com.rrain.kupidon.service.jwt.configureJwtService
+import com.rrain.kupidon.service.`pwd-hash`.configurePwdHashService
 import com.rrain.kupidon.service.mongo.configureMongoDbService
 
 

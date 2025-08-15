@@ -4,7 +4,16 @@ import com.auth0.jwt.exceptions.*
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
-import com.rrain.kupidon.service.*
+import com.rrain.kupidon.service.jwt.ErrTokenAlgorithmMismatch
+import com.rrain.kupidon.service.jwt.ErrTokenDamaged
+import com.rrain.kupidon.service.jwt.ErrTokenExpired
+import com.rrain.kupidon.service.jwt.ErrTokenLacksOfClaim
+import com.rrain.kupidon.service.jwt.ErrTokenModified
+import com.rrain.kupidon.service.jwt.ErrTokenUnknownVerificationError
+import com.rrain.kupidon.service.jwt.JwtService
+import com.rrain.kupidon.service.jwt.RefreshToken
+import com.rrain.kupidon.service.jwt.refreshTokenCookie
+import com.rrain.kupidon.service.login.JwtLoginService
 import com.rrain.kupidon.service.mongo.findUserById
 import com.rrain.util.ktor.call.host
 import io.ktor.server.application.*
@@ -24,7 +33,9 @@ fun Application.addAuthRefreshTokensRoute() {
       )
       
       val decodedRefresh =
-        try { RefreshToken(refreshToken) }
+        try {
+          RefreshToken(refreshToken)
+        }
         catch (ex: AlgorithmMismatchException) {
           return@get call.respondBadRequest(ErrTokenAlgorithmMismatch)
         }

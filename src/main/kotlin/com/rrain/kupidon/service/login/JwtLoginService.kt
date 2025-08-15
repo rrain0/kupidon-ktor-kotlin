@@ -1,6 +1,7 @@
-package com.rrain.kupidon.service
+package com.rrain.kupidon.service.login
 
 import com.rrain.kupidon.model.Role
+import com.rrain.kupidon.service.jwt.JwtService
 import com.rrain.util.base.`date-time`.now
 import com.rrain.util.base.uuid.randomUuid
 import java.util.UUID
@@ -18,16 +19,12 @@ object JwtLoginService {
   fun login(
     userId: UUID,
     userRoles: Set<Role>,
-    prevSessionId: UUID? = null
+    currSessionId: UUID? = null
   ): SessionData {
-    val sessionId = prevSessionId ?: randomUuid()
+    val sessionId = currSessionId ?: randomUuid()
     val now = now()
-    val accessToken = JwtService.newAccessToken(
-      userId, userRoles, sessionId, now
-    )
-    val refreshToken = JwtService.newRefreshToken(
-      userId, sessionId, now
-    )
+    val accessToken = JwtService.newAccessToken(userId, userRoles, sessionId, now)
+    val refreshToken = JwtService.newRefreshToken(userId, sessionId, now)
     return SessionData(sessionId, accessToken.token, refreshToken.token)
   }
   

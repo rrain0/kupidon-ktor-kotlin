@@ -7,9 +7,8 @@ import com.rrain.kupidon.model.db.ChatMessageM
 import com.rrain.kupidon.model.db.ChatM
 import com.rrain.kupidon.model.db.UserM
 import com.rrain.kupidon.model.db.UserToUserLikeM
+import com.rrain.kupidon.service.env.Env
 import com.rrain.util.bson.appBsonCodecRegistry
-import com.rrain.util.ktor.application.appConfig
-import com.rrain.util.ktor.application.get
 import io.ktor.http.*
 import io.ktor.server.application.*
 import org.bson.UuidRepresentation
@@ -26,13 +25,13 @@ import javax.net.ssl.*
 
 fun Application.configureMongoDbService() {
   
-  val appName = appConfig["db.connection.application-name"]
-  val host = appConfig["db.connection.mongo.host"]
-  val port = appConfig["db.connection.mongo.port"].toInt()
-  val rs = appConfig["db.connection.mongo.rs"]
-  val database = appConfig["db.connection.mongo.database"]
-  val backendClientCert = appConfig["db.connection.mongo.backendClientCert"]
-  val caCert = appConfig["db.connection.mongo.caCert"]
+  val appName = Env.dbConnectionApplicationName
+  val host = Env.dbConnectionMongoHost
+  val port = Env.dbConnectionMongoPort
+  val rs = Env.dbConnectionMongoRs
+  val database = Env.dbConnectionMongoDatabase
+  val backendClientCert = Env.dbConnectionMongoBackendClientCert
+  val caCert = Env.dbConnectionMongoCaCert
   
   
   val connectionString = URLBuilder(

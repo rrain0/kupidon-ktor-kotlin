@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  val kotlinV = "2.2.0"
+  val kotlinV = "2.2.10"
   val ktorV = "3.2.1"
   
   // Kotlin

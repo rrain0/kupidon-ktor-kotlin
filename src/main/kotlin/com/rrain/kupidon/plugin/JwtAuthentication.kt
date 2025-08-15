@@ -7,7 +7,13 @@ import com.auth0.jwt.exceptions.SignatureVerificationException
 import com.auth0.jwt.exceptions.TokenExpiredException
 import com.rrain.kupidon.route.`response-errors`.CodeMsg
 import com.rrain.kupidon.route.`response-errors`.respond401Unauthorized
-import com.rrain.kupidon.service.*
+import com.rrain.kupidon.service.jwt.AccessToken
+import com.rrain.kupidon.service.jwt.ErrTokenAlgorithmMismatch
+import com.rrain.kupidon.service.jwt.ErrTokenDamaged
+import com.rrain.kupidon.service.jwt.ErrTokenExpired
+import com.rrain.kupidon.service.jwt.ErrTokenLacksOfClaim
+import com.rrain.kupidon.service.jwt.ErrTokenModified
+import com.rrain.kupidon.service.jwt.ErrTokenUnknownVerificationError
 import io.ktor.server.auth.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.RoutingContext
@@ -50,7 +56,9 @@ class MyJWTAuthenticationProvider : AuthenticationProvider(Config()) {
     }
     
     val decodedAccess =
-      try { AccessToken(accessToken) }
+      try {
+        AccessToken(accessToken)
+      }
       // Token was encoded by wrong algorithm. Required <algorithm-name>.
       catch (ex: AlgorithmMismatchException) {
         return call.respond401Unauthorized(ErrTokenAlgorithmMismatch)

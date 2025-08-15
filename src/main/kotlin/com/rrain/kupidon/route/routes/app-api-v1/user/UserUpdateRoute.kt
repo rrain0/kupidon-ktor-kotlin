@@ -10,7 +10,7 @@ import com.mongodb.client.model.WriteModel
 import com.rrain.kupidon.model.Gender
 import com.rrain.kupidon.plugin.JacksonObjectMapper
 import com.rrain.kupidon.plugin.authUserId
-import com.rrain.kupidon.service.PwdHashService
+import com.rrain.kupidon.service.`pwd-hash`.PwdHashService
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.`response-errors`.respondNoUserById
@@ -97,7 +97,7 @@ fun Application.addUserUpdateRoute() {
         }
         /*run {
           val allowedFields = setOf("name", "birthDate","gender","aboutMe","currentPwd","pwd","photos")
-          if ((data.fieldNames().asSequence().toSet() - allowedFields).isNotEmpty()){
+          if ((data.fieldNames().asSequence().toSet() - allowedFields).isNotEmpty()) {
             return@put call.respondInvalidBody(
               "Allowed fileds: $allowedFields"
             )
@@ -135,7 +135,7 @@ fun Application.addUserUpdateRoute() {
               }
               update.birthDate = birthDate
             }
-            catch (ex: Exception){
+            catch (ex: Exception) {
               return@put call.respondInvalidBody(
                 "'birthDate' must be string 'yyyy-MM-dd', e.g. '2005-01-01'"
               )
@@ -147,7 +147,7 @@ fun Application.addUserUpdateRoute() {
               val gender = JacksonObjectMapper.treeToValue<Gender>(v)
               update.gender = gender
             }
-            catch (ex: Exception){
+            catch (ex: Exception) {
               return@put call.respondInvalidBody(
                 "Gender must be string of ${Gender.entries}"
               )
@@ -161,7 +161,7 @@ fun Application.addUserUpdateRoute() {
               if (aboutMe.length>2000) throw RuntimeException()
               update.aboutMe = aboutMe
             }
-            catch (ex: Exception){
+            catch (ex: Exception) {
               return@put call.respondInvalidBody(
                 "'About me' must be string and must have max 2000 chars"
               )
@@ -201,7 +201,7 @@ fun Application.addUserUpdateRoute() {
           "photos" -> {
             val photosUpdates =
               try { JacksonObjectMapper.treeToValue<PhotosUpdates>(v) }
-              catch (ex: Exception){
+              catch (ex: Exception) {
                 ex.printStackTrace()
                 println(ex.message)
                 return@put call.respondInvalidBody(

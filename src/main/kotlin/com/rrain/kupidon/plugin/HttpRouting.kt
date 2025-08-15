@@ -22,6 +22,7 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserProfilePhotoPostR
 import com.rrain.kupidon.route.routes.`app-api-v1`.user.addUserProfilePhotoGetRoute
 import com.rrain.kupidon.route.routes.`app-api-v1`.users.addRouteGetUsers
 import com.rrain.kupidon.route.routes.app.api.v1.auth.addAuthLoginRoute
+import com.rrain.kupidon.route.routes.app.api.v1.auth.addAuthLoginTestUserRoute
 import com.rrain.kupidon.route.routes.app.api.v1.auth.addAuthRefreshTokensRoute
 import io.ktor.server.application.*
 
@@ -43,6 +44,7 @@ fun Application.configureHttpRouting() {
   addPwaManifestRoute() // TODO
   
   addAuthLoginRoute() // TODO
+  addAuthLoginTestUserRoute() // TODO
   addAuthRefreshTokensRoute() // TODO
   addAuthOtherRoutes() // TODO
   

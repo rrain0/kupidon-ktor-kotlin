@@ -10,6 +10,7 @@ object ApiV1Routes {
   
   val auth = "$apiV1/auth"
   val authLogin = "$auth/login"
+  val authLoginTestUser = "$authLogin/test-user"
   val authRefreshTokens = "$auth/refresh-tokens"
   
   val user = "$apiV1/user"

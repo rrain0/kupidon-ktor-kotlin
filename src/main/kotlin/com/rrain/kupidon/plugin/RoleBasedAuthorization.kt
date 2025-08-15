@@ -2,7 +2,7 @@ package com.rrain.kupidon.plugin
 
 import com.rrain.kupidon.model.Permission
 import com.rrain.kupidon.model.Role
-import com.rrain.kupidon.service.AccessToken
+import com.rrain.kupidon.service.jwt.AccessToken
 import com.rrain.util.base.logger.logger
 import io.ktor.http.*
 import io.ktor.server.application.*

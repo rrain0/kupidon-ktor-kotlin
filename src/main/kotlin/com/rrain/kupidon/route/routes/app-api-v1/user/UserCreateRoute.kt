@@ -2,8 +2,8 @@ package com.rrain.kupidon.route.routes.`app-api-v1`.user
 
 import com.mongodb.client.model.Filters
 import com.rrain.kupidon.model.Gender
-import com.rrain.kupidon.service.JwtService
-import com.rrain.kupidon.service.PwdHashService
+import com.rrain.kupidon.service.jwt.JwtService
+import com.rrain.kupidon.service.`pwd-hash`.PwdHashService
 import com.rrain.kupidon.service.lang.`ui-values`.AppUiText
 import com.rrain.kupidon.service.lang.`ui-values`.EmailInitialVerificationUiText
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
@@ -15,7 +15,7 @@ import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.model.db.UserDataType
 import com.rrain.kupidon.model.db.projectionUserM
-import com.rrain.kupidon.service.JwtLoginService
+import com.rrain.kupidon.service.login.JwtLoginService
 import com.rrain.kupidon.service.mongo.useSingleDocTx
 import com.rrain.util.ktor.call.host
 import com.rrain.util.ktor.call.port

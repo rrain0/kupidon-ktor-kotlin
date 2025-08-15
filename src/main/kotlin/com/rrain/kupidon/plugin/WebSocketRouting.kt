@@ -1,10 +1,14 @@
 package com.rrain.kupidon.plugin
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.rrain.kupidon.service.AccessToken
+import com.rrain.kupidon.service.jwt.AccessToken
+import com.rrain.kupidon.service.live.Live
+import com.rrain.kupidon.service.live.SessionData
+import com.rrain.kupidon.service.live.WsData
 import com.rrain.kupidon.service.sessions.UserLiveStatusService
 import com.rrain.kupidon.service.sessions.UserStatus
 import com.rrain.util.base.any.cast
+import com.rrain.util.base.`date-time`.now
 import com.rrain.util.base.uuid.toUuid
 import io.ktor.serialization.WebsocketContentConverter
 import io.ktor.server.websocket.*
@@ -18,11 +22,12 @@ import kotlin.time.Duration.Companion.seconds
 
 
 
-data class WsMsg(val type: String, val data: Map<String, Any?> = mapOf())
+data class WsMsgMap(val type: String, val data: Map<String, Any?> = mapOf())
+data class WsMsg<T>(val type: String, val data: T)
 
-fun WsMsgToClient(type: String, data: Map<String, Any?> = mapOf()) = (
-  mapOf("type" to "TO_CLIENT", "data" to WsMsg(type, data))
-)
+fun WsMsgToClient(type: String, data: Map<String, Any?> = mapOf()) =
+  WsMsg("TO_CLIENT", WsMsgMap(type, data))
+
 
 
 fun Application.configureWebSocketRouting() {
@@ -75,14 +80,48 @@ fun Application.configureWebSocketRouting() {
       }
       */
       
+      // Register opened websocket connection
+      Live.use { serv ->
+        serv.addOrUpdateWsSession(WsData(this))
+      }
+      
       try {
         for (frame in incoming) {
           if (frame is Frame.Text) {
             try {
-              val ev = JacksonObjectMapper.readValue<WsMsg>(frame.readText())
+              val textData = frame.readText()
+              val ev = JacksonObjectMapper.readValue<WsMsgMap>(textData)
+              val now = now()
               println("WebSocket received: $ev")
               
               when (ev.type) {
+                
+                "SESSIONS_STATUS" -> {
+                  val sessionsData: SessionsDataIn =
+                    JacksonObjectMapper.readValue<WsMsg<SessionsDataIn>>(textData).data
+                  sessionsData.sessions.forEach { sessionsData ->
+                    val accessToken = AccessToken(sessionsData.accessToken, noVerify = true)
+                    // Make some checks - to be implemented in the future
+                    
+                    Live.use { serv ->
+                      serv.addOrUpdateSession(SessionData(
+                        id = accessToken.sessionId,
+                        userId = accessToken.userId,
+                        expiresAt = accessToken.sessionExpiresAt,
+                        onlineAt = now,
+                        online = sessionsData.online,
+                      ))
+                    }
+                    accessToken.also { tok ->
+                      val userId = tok.userId
+                      val sessionId = tok.sessionId
+                      val sessionExpiresAt = tok.sessionExpiresAt
+                    }
+                  }
+                  
+                  
+                  
+                }
                 
                 "BECAME_ONLINE" -> {
                   val accessToken = AccessToken(ev.data["accessToken"] as String, noVerify = true)
@@ -169,6 +208,9 @@ fun Application.configureWebSocketRouting() {
         }
       }
       finally {
+        Live.use { serv ->
+          serv.removeWsSession(this)
+        }
         UserLiveStatusService.use { service -> service.offlineWs(this) }
           .forEach { userStatus -> userStatus.apply {
             val msg = WsMsgToClient(
@@ -184,3 +226,16 @@ fun Application.configureWebSocketRouting() {
   }
   
 }
+
+
+
+data class SessionDataIn(
+  val accessToken: String,
+  val online: Boolean,
+)
+
+data class SessionsDataIn(
+  val sessions: List<SessionDataIn>
+)
+
+
