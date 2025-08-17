@@ -13,3 +13,8 @@ suspend fun findUserById(id: UUID) = collUsers
   .projectionUserM()
   .firstOrNull()
 
+suspend fun findUserByEmail(email: String) = collUsers
+  .find(Filters.eq(UserM::email.name, email))
+  .projectionUserM()
+  .firstOrNull()
+

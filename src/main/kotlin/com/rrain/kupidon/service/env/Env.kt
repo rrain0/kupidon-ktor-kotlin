@@ -9,8 +9,16 @@ import kotlin.time.Duration
 
 object Env {
   context(app: Application)
-  val isDevelopment: Boolean get() =
-    app.appConfig["ktor.development"].toBoolean()
+  val appMode: String get() =
+    app.appConfig["app.mode"]
+  
+  context(app: Application)
+  val isDev: Boolean get() =
+    appMode == "development"
+  
+  context(app: Application)
+  val isProd: Boolean get() =
+    appMode == "production"
   
   
   context(app: Application)

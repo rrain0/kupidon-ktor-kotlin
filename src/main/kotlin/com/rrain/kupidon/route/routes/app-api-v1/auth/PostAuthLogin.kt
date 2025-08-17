@@ -1,27 +1,24 @@
 package com.rrain.kupidon.route.routes.app.api.v1.auth
 
-import com.mongodb.client.model.Filters
 import com.rrain.kupidon.service.jwt.JwtService
 import com.rrain.kupidon.service.`pwd-hash`.PwdHashService
 import com.rrain.kupidon.route.`response-errors`.respondBadRequest
 import com.rrain.kupidon.route.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
-import com.rrain.kupidon.service.mongo.collUsers
 import com.rrain.kupidon.model.db.UserDataType
-import com.rrain.kupidon.model.db.UserM
-import com.rrain.kupidon.model.db.projectionUserM
+import com.rrain.kupidon.route.`response-errors`.respondNotFound
 import com.rrain.kupidon.service.login.JwtLoginService
+import com.rrain.kupidon.service.mongo.findUserByEmail
 import com.rrain.util.ktor.call.host
 import com.rrain.util.ktor.call.port
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.flow.firstOrNull
 
 
 
-fun Application.addAuthLoginRoute() {
+fun Application.addRoutePostAuthLogin() {
   routing {
     
     data class LoginBodyIn(
@@ -34,13 +31,10 @@ fun Application.addAuthLoginRoute() {
         try { call.receive<LoginBodyIn>() }
         catch (ex: Exception) { return@post call.respondInvalidBody() }
       
-      val user = collUsers
-        .find(Filters.eq(UserM::email.name, loginIn.login))
-        .projectionUserM()
-        .firstOrNull()
+      val user = findUserByEmail(loginIn.login)
       
       if (user == null || !PwdHashService.checkPwd(loginIn.pwd, user.pwd)) {
-        return@post call.respondBadRequest(
+        return@post call.respondNotFound(
           code = "NO_USER",
           msg = "There is no user with such login-password pair",
         )
