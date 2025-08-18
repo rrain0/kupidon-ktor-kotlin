@@ -1,4 +1,4 @@
-package com.rrain.kupidon.service.sessions
+package com.rrain.kupidon.service.live
 
 import com.rrain.util.base.any.mapNull
 import com.rrain.util.base.any.maxOf

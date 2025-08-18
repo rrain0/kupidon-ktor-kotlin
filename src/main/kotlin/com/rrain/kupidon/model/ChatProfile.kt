@@ -1,6 +1,6 @@
 package com.rrain.kupidon.model
 
-import com.rrain.kupidon.service.sessions.UserLiveStatusService
+import com.rrain.kupidon.service.live.UserLiveStatusService
 import kotlinx.datetime.Instant
 import java.util.UUID
 

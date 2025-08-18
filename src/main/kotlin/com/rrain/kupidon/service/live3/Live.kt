@@ -1,4 +1,4 @@
-package com.rrain.kupidon.service.live
+package com.rrain.kupidon.service.live3
 
 import com.rrain.util.base.collections.concurrentMapOf
 import io.ktor.server.websocket.DefaultWebSocketServerSession
@@ -10,8 +10,16 @@ import java.util.UUID
 
 
 
-// Вебсокет.
-// Вебсокет может не быть ассоциирован ни с одной сессией (пользователь-гость).
+
+// ПОЛЬЗОВАТЕЛЬ.
+// Пользователь может иметь несколько сессий (разные устройства, приватное окно).
+
+// СЕССИЯ.
+// Сессия принадлежит одному пользователю, либо никому, если сессия гостевая.
+// Сессия может иметь несколько вебсокетов (несколько вкладок).
+
+// ВЕБСОКЕТ.
+// Вебсокет может не быть ассоциирован ни с одной сессией (пользователь-гость, но в будущем будут гостевые сессии).
 // Вебсокет может быть ассоциирован с несколькими сессиями (мультиаккаунтность).
 //
 // Клиент каждые 15 секунд должен отправлять статус по вебсокету,
@@ -22,14 +30,23 @@ import java.util.UUID
 // то сервер инвалидирует связь вебсокета с сессией.
 //
 // При открытии вебсокета, он добавляется в коллекцию вебсокетов, потом если надо, ассоциируется с сессиями.
-// При закрытии вебсокета он удаляется и связанное с ним 1-к-1 инвалидируется.
+// При закрытии вебсокета он удаляется и связанное с ним 1-к-1 (SessionToWsSession) инвалидируется.
 
-// Сессия.
-// Сессия принадлежит одному пользователю, либо никому, если сессия гостевая.
-// Сессия может иметь несколько вебсокетов (несколько вкладок).
 
-// Пользователь.
-// Пользователь может иметь нескольо сессий (разные устройства, приватное окно).
+// User  1<----M  Session  M<--(SessionToWsSession)--M  WsSession.
+
+
+// Добавление сущностей идёт в порядке сверху вниз:
+// user -> session -> sessionToWsSession
+// wsSession -> sessionToWsSession
+// При добавлении по порядку досоздаются все верхние сущности.
+
+// Изменение / удаление сущностей идёт в порядке снизу вверх:
+// user <- session <- sessionToWsSession
+// user <- wsSession <- sessionToWsSession
+// Помле изменения сущности, верхние сущности по порядку должны провериться на изменения и возможно удалиться.
+
+
 
 
 
@@ -40,8 +57,10 @@ typealias WsSession = DefaultWebSocketServerSession
 
 
 
-data class WsData(
-  val wsSession: WsSession
+data class UserData(
+  val id: UserId,
+  val onlineAt: Instant?,
+  val online: Boolean,
 )
 
 data class SessionData(
@@ -52,10 +71,8 @@ data class SessionData(
   val online: Boolean,
 )
 
-data class UserData(
-  val id: UserId,
-  val onlineAt: Instant?,
-  val online: Boolean,
+data class WsData(
+  val wsSession: WsSession
 )
 
 data class SessionToWsSessionData(
@@ -65,6 +82,8 @@ data class SessionToWsSessionData(
   val onlineAt: Instant?,
   val online: Boolean,
 )
+
+
 
 data class FullSessionUpdate(
   val wsSession: WsSession,
@@ -76,10 +95,12 @@ data class FullSessionUpdate(
   val online: Boolean,
 )
 
+
+
 // Main data
-private val wsSessions: MutableMap<WsSession, WsData> = concurrentMapOf()
-private val sessions: MutableMap<SessionId, SessionData> = concurrentMapOf()
 private val users: MutableMap<UserId, UserData> = concurrentMapOf()
+private val sessions: MutableMap<SessionId, SessionData> = concurrentMapOf()
+private val wsSessions: MutableMap<WsSession, WsData> = concurrentMapOf()
 private val sessionToWsSessions: MutableMap<SessionId, MutableMap<WsSession, SessionToWsSessionData>> = concurrentMapOf()
 
 
@@ -96,6 +117,7 @@ data class WsSessionEv(
   val sessionId: SessionId,
 )
 
+// Flow to push updates
 val wsSessionFlow = MutableSharedFlow<WsSessionEv>()
 val wsSessionEvents = wsSessionFlow.asSharedFlow()
 
@@ -114,42 +136,8 @@ object Live {
     return result
   }
   
-  @Synchronized
-  fun addOrUpdateWsSession(wsData: WsData) {
-    wsData.also { next ->
-      wsSessions.compute(next.wsSession) { k, curr ->
-        // Here you can calculate changes and notify about state updates
-        next
-      }
-    }
-  }
   
-  @Synchronized
-  fun removeWsSession(wsSession: WsSession) {
-    val wsData = wsSessions.remove(wsSession)
-    val sessionIds = wsSessionToSessionIds.remove(wsSession)
-    sessionIds?.forEach { sessionId ->
-      sessionToWsSessions.computeIfPresent(sessionId) { k, wsMap ->
-        val sToWs = wsMap.remove(wsSession)
-        sToWs?.also { sToWs ->
-          // TODO sToWs was removed so push update to session & user
-        }
-        wsMap.ifEmpty { null }
-      }
-    }
-  }
   
-  @Synchronized
-  fun addOrUpdateSession(sessionData: SessionData) {
-    sessionData.also { next ->
-      sessions.compute(next.id) { k, curr ->
-        // TODO calculate changes and notify
-        next
-      }
-    }
-  }
-  
-  @Synchronized
   fun addOrUpdateUser(userData: UserData) {
     userData.also { next ->
       users.compute(next.id) { k, curr ->
@@ -159,7 +147,24 @@ object Live {
     }
   }
   
-  @Synchronized
+  fun addOrUpdateSession(sessionData: SessionData) {
+    sessionData.also { next ->
+      sessions.compute(next.id) { k, curr ->
+        // TODO calculate changes and notify
+        next
+      }
+    }
+  }
+  
+  fun addOrUpdateWsSession(wsData: WsData) {
+    wsData.also { next ->
+      wsSessions.compute(next.wsSession) { k, curr ->
+        // Here you can calculate changes and notify about state updates
+        next
+      }
+    }
+  }
+  
   fun addOrUpdateSessionToWsSession(sessionToWsSessionData: SessionToWsSessionData) {
     sessionToWsSessionData.also { next ->
       sessionToWsSessions
@@ -174,7 +179,8 @@ object Live {
     }
   }
   
-  @Synchronized
+  
+  
   fun addOrUpdateFullSession(fullSession: FullSessionUpdate) {
     addOrUpdateWsSession(WsData(
       fullSession.wsSession
@@ -199,6 +205,22 @@ object Live {
         fullSession.onlineAt,
         fullSession.online,
       ))
+    }
+  }
+  
+  
+  
+  fun removeWsSession(wsSession: WsSession) {
+    val wsData = wsSessions.remove(wsSession)
+    val sessionIds = wsSessionToSessionIds.remove(wsSession)
+    sessionIds?.forEach { sessionId ->
+      sessionToWsSessions.computeIfPresent(sessionId) { k, wsMap ->
+        val sToWs = wsMap.remove(wsSession)
+        sToWs?.also { sToWs ->
+          // TODO sToWs was removed so push update to session & user
+        }
+        wsMap.ifEmpty { null }
+      }
     }
   }
   
