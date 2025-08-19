@@ -2,11 +2,12 @@ package com.rrain.kupidon.plugin
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.rrain.kupidon.service.jwt.AccessToken
-import com.rrain.kupidon.service.live3.Live
-import com.rrain.kupidon.service.live3.SessionData
+import com.rrain.kupidon.service.live3.LiveInternal
 import com.rrain.kupidon.service.live3.WsData
 import com.rrain.kupidon.service.live.UserLiveStatusService
 import com.rrain.kupidon.service.live.UserStatus
+import com.rrain.kupidon.service.live3.FullSessionUpdate
+import com.rrain.kupidon.service.live3.Live
 import com.rrain.util.base.any.cast
 import com.rrain.util.base.`date-time`.now
 import com.rrain.util.base.uuid.toUuid
@@ -81,7 +82,7 @@ fun Application.configureWebSocketRouting() {
       */
       
       // Register opened websocket connection
-      Live.use { serv ->
+      LiveInternal.use { serv ->
         serv.addOrUpdateWsSession(WsData(this))
       }
       
@@ -101,27 +102,27 @@ fun Application.configureWebSocketRouting() {
                     JacksonObjectMapper.readValue<WsMsg<SessionsDataIn>>(textData).data
                   sessionsData.sessions.forEach { sessionsData ->
                     val accessToken = AccessToken(sessionsData.accessToken, noVerify = true)
-                    // Make some checks - to be implemented in the future
+                    // TODO Check session validity, permission to see other user's info
                     
-                    Live.use { serv ->
-                      serv.addOrUpdateSession(SessionData(
-                        id = accessToken.sessionId,
-                        userId = accessToken.userId,
-                        expiresAt = accessToken.sessionExpiresAt,
-                        onlineAt = now,
-                        online = sessionsData.online,
-                      ))
-                    }
                     accessToken.also { tok ->
                       val userId = tok.userId
                       val sessionId = tok.sessionId
                       val sessionExpiresAt = tok.sessionExpiresAt
+                      val online = sessionsData.sessionOnline
+                      Live.addOrUpdateFullSession(FullSessionUpdate(
+                        wsSession = this,
+                        sessionId = sessionId,
+                        userId = userId,
+                        expiresAt = sessionExpiresAt,
+                        updatedAt = now,
+                        onlineAt = if (online) now else null,
+                        online = online,
+                      ))
                     }
                   }
-                  
-                  
-                  
                 }
+                
+                
                 
                 "BECAME_ONLINE" -> {
                   val accessToken = AccessToken(ev.data["accessToken"] as String, noVerify = true)
@@ -208,9 +209,8 @@ fun Application.configureWebSocketRouting() {
         }
       }
       finally {
-        Live.use { serv ->
-          serv.removeWsSession(this)
-        }
+        Live.removeWsSession(this)
+        
         UserLiveStatusService.use { service -> service.offlineWs(this) }
           .forEach { userStatus -> userStatus.apply {
             val msg = WsMsgToClient(
@@ -231,7 +231,7 @@ fun Application.configureWebSocketRouting() {
 
 data class SessionDataIn(
   val accessToken: String,
-  val online: Boolean,
+  val sessionOnline: Boolean,
 )
 
 data class SessionsDataIn(
