@@ -3,25 +3,32 @@ package com.rrain.util.base.any
 import com.rrain.util.base.bool.bool
 
 
+
+// value.cast<T>() -> (value as T)
 inline fun <reified T> Any?.cast(): T = this as T
 
 
-// Maps value by block if it == null
-// Analog for (value ?: defaultValue) but can be used without ()
-inline fun <T : Any?> T.mapNull(block: () -> T & Any): T & Any {
+// Maps value by block if value is null.
+// value.ifNull { defaultValue } -> (value ?: defaultValue)
+// I want to write fun <T, R> T.ifNull(block: () -> R): (T & Any) | R but it is impossible.
+fun <T> T.ifNull(block: () -> T & Any): T & Any {
   return this ?: block()
 }
+// Platform declaration clash: The following declarations have the same JVM signature
+// fun <T, R> T.ifNull(block: () -> R): R where T : R {
+//   return this ?: block()
+// }
 
-// Maps value by block if it casts to true
-inline fun <T : Any?> T.mapTruly(block: (it: T) -> T): T {
-  return if (this.bool) block(this) else this
+// value.ifNotNull { } -> value?.let { }
+
+// Maps value by block if it coerces to true
+fun <T, R> T.ifTruly(block: (it: T) -> R): R where T : R {
+  if (this.bool) return block(this)
+  return this
 }
 
-
-
-fun <T : Comparable<T>> maxOf(a: T?, b: T?): T? {
-  return if (b == null) a
-  else if (a == null) b
-  else if (a >= b) a
-  else b
+// Maps value by block if it coerces to false
+fun <T, R> T.ifFalsy(block: (it: T) -> R): R where T : R {
+  if (!this.bool) return block(this)
+  return this
 }

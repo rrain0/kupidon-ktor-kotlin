@@ -1,6 +1,6 @@
 package com.rrain.kupidon.model.db
 
-import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
+import com.rrain.kupidon.route.routes.http.`app-api-v1`.ApiV1Routes
 import io.ktor.http.*
 import java.util.UUID
 import kotlin.text.get

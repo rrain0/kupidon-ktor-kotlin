@@ -1,7 +1,7 @@
 package com.rrain.kupidon.plugin
 
-import com.rrain.util.base.any.mapNull
-import com.rrain.util.base.any.mapTruly
+import com.rrain.util.base.any.ifNull
+import com.rrain.util.base.any.ifTruly
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -101,7 +101,7 @@ fun Application.configureLogging() {
       val url = call.request.origin.uri
       
       listOf(
-        callId.mapNull { "" }.mapTruly { "call-id=$it" },
+        callId.ifNull { "" }.ifTruly { "call-id=$it" },
         httpMethod,
         status,
         "$statusText:",

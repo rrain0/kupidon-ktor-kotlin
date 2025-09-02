@@ -1,7 +1,6 @@
 package com.rrain.kupidon.service.live
 
-import com.rrain.util.base.any.mapNull
-import com.rrain.util.base.any.maxOf
+import com.rrain.util.base.comparison.maxOf
 import com.rrain.util.base.collections.concurrentMapOf
 import com.rrain.util.base.collections.concurrentSetOf
 import com.rrain.util.base.`date-time`.isExpired
@@ -44,7 +43,7 @@ object UserLiveStatusService {
   
   
   fun getUser(id: UserId) = userStatus[id]
-  fun isUserOnline(id: UserId) = getUser(id)?.online.mapNull { false }
+  fun isUserOnline(id: UserId) = getUser(id)?.online ?: false
   
   fun getOrAddUser(userToAdd: UserStatus) = userStatus.getOrPut(userToAdd.id) { userToAdd }
   

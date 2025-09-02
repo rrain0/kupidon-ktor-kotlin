@@ -5,7 +5,7 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.rrain.kupidon.model.Role
 import com.rrain.kupidon.route.`response-errors`.CodeMsg
-import com.rrain.kupidon.route.routes.`app-api-v1`.ApiV1Routes
+import com.rrain.kupidon.route.routes.http.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.service.env.Env
 import com.rrain.util.base.`date-time`.now
 import com.rrain.util.base.uuid.toUuid
