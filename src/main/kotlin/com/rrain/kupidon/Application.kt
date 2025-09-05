@@ -1,14 +1,14 @@
 package com.rrain.kupidon
 
 import io.ktor.server.application.*
-import com.rrain.kupidon.plugin.*
-import com.rrain.kupidon.plugin.configureJsonSerialization
-import com.rrain.kupidon.plugin.configureStatusPages
-import com.rrain.kupidon.plugin.configureWebSocketRouting
-import com.rrain.kupidon.service.email.configureEmailService
-import com.rrain.kupidon.service.jwt.configureJwtService
-import com.rrain.kupidon.service.`pwd-hash`.configurePwdHashService
-import com.rrain.kupidon.service.mongo.configureMongoDbService
+import com.rrain.kupidon.plugins.*
+import com.rrain.kupidon.plugins.configureJsonSerialization
+import com.rrain.kupidon.plugins.configureStatusPages
+import com.rrain.kupidon.plugins.configureWebSocketRouting
+import com.rrain.kupidon.services.email.configureEmailService
+import com.rrain.kupidon.services.jwt.configureJwtService
+import com.rrain.kupidon.services.`pwd-hash`.configurePwdHashService
+import com.rrain.kupidon.services.mongo.configureMongoDbService
 
 
 
