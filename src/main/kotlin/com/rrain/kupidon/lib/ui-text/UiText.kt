@@ -1,4 +1,4 @@
-package com.rrain.kupidon.libs.`ui-text`
+package com.rrain.kupidon.lib.`ui-text`
 
 
 abstract class UiValue<L : Enum<L>> {

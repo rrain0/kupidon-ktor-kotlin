@@ -10,7 +10,7 @@ import com.rrain.kupidon.routes.`response-errors`.respondBadRequest
 import com.rrain.kupidon.routes.`response-errors`.respondInvalidBody
 import com.rrain.kupidon.models.db.UserM
 import com.rrain.kupidon.services.lang.Lang
-import com.rrain.kupidon.libs.`ui-text`.pickUiValue
+import com.rrain.kupidon.lib.`ui-text`.pickUiValue
 import com.rrain.kupidon.routes.routes.http.`app-api-v1`.ApiV1Routes
 import com.rrain.kupidon.services.mongo.collUsers
 import com.rrain.kupidon.models.db.UserDataType

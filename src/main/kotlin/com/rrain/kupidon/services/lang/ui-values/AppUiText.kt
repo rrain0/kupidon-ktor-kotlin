@@ -1,6 +1,6 @@
 package com.rrain.kupidon.services.lang.`ui-values`
 
-import com.rrain.kupidon.libs.`ui-text`.UiText
+import com.rrain.kupidon.lib.`ui-text`.UiText
 import com.rrain.kupidon.services.lang.Lang
 
 

@@ -64,7 +64,8 @@ dependencies {
   
   // Kotlin coroutine MongoDB driver
   // BOM - Bill of Materials - organizes dependency versions
-  val mongoKotlinCoroutineDriverV = "5.5.1"
+  // https://www.mongodb.com/docs/drivers/kotlin/coroutine/current/quick-start/
+  val mongoKotlinCoroutineDriverV = "5.5.0"
   implementation(platform("org.mongodb:mongodb-driver-bom:$mongoKotlinCoroutineDriverV"))
   implementation("org.mongodb:mongodb-driver-kotlin-coroutine")
   implementation("org.mongodb:bson-kotlinx")
